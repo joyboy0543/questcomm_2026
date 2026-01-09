@@ -155,10 +155,6 @@
       display: none;
     }
 
-    .center {
-      text-align: center;
-    }
-
     .badge {
       display: inline-block;
       padding: 0.2rem 0.5rem;
@@ -181,6 +177,53 @@
       color: var(--accent2);
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    /* --- Reset modal styles --- */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 11, 25, 0.75);
+      backdrop-filter: blur(2px);
+      display: grid;
+      place-items: center;
+      z-index: 9999;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 560px;
+      background: #11152f;
+      border: 1px solid #2a2e56;
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal h2 {
+      margin: 0 0 0.5rem 0;
+    }
+
+    .modal p {
+      margin: 0.25rem 0 0.75rem 0;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    button.warn {
+      background: linear-gradient(90deg, #fcd34d, #f59e0b);
+      color: #0b1024;
+    }
+
+    button.danger {
+      background: linear-gradient(90deg, #fca5a5, #ef4444);
+      color: #0b1024;
     }
   </style>
 </head>
@@ -288,6 +331,20 @@
           </p>
         </div>
       </section>
+
+      <!-- Reset / Resume modal -->
+      <div id="resetModal" class="modal hidden" aria-modal="true" role="dialog">
+        <div class="modal-card">
+          <h2 id="resetTitle">Resume or reset?</h2>
+          <p id="resetDesc">You reloaded during a puzzle. What would you like to do?</p>
+          <div class="modal-actions">
+            <button id="btnContinue">Continue</button>
+            <button id="btnResetCurrent" class="warn">Reset current level</button>
+            <button id="btnResetAll" class="danger">Reset all levels</button>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -299,8 +356,13 @@
     const $ = sel => document.querySelector(sel);
     const params = new URLSearchParams(location.search);
 
-    // Allow a hard reset via URL query parameter
-    if (params.get('reset') === '1') localStorage.removeItem('qrHuntState');
+    // Navigation type (reload vs. fresh)
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const isReload = navEntry?.type === 'reload';
+
+    // Allow a hard reset via URL query parameter (but we prompt later if progress exists)
+    // NOTE: we do NOT clear localStorage here; we only use ?reset=1 to decide if we show the modal.
+    const forcedReset = params.get('reset') === '1';
 
     // localStorage helpers
     const saveState = (obj) => {
@@ -325,6 +387,25 @@
       return s.runId;
     };
 
+    // Which level appears next, based on stored progress
+    function getCurrentLevelFromState() {
+      const s = getState();
+      const lc = (s.levelCompleted ?? -1);
+      return Math.min(lc + 1, 4); // 1..4 (4=done screen)
+    }
+
+    // Clear UI fields for a given level (without wiping state)
+    function clearLevelInputs(level) {
+      const msgs = ['#msg1', '#msg2', '#msg3'];
+      const inputs = ['#ans1', '#ans2', '#ans3'];
+      if (level >= 1 && level <= 3) {
+        $(inputs[level - 1]).value = '';
+        const m = $(msgs[level - 1]);
+        m.textContent = '';
+        m.classList.remove('error');
+      }
+    }
+
     // ========= LOGGER =========
     async function logEvent(event, extras = {}) {
       try {
@@ -332,7 +413,7 @@
         const body = {
           name: s.name || '',
           team: s.team || '',
-          event,                         // "start" | "level_complete" | "finished"
+          event,                         // "start" | "level_complete" | "finished" | "reset_current" | "reset_all"
           level: extras.level ?? '',
           success: extras.success ?? '',
           siteUrl: location.href,
@@ -363,17 +444,23 @@
       if (nameQ) $('#name').value = nameQ;
     })();
 
-    // Render from storage (resume)
+    // Render from storage (resume) with safe refresh modal
     (function initFromStorage() {
       const s = getState();
+      const activeLevel = getCurrentLevelFromState();
+
       if (s.name || s.team) {
-        $('#name').value = s.name || '';
-        $('#team').value = s.team || '';
-      }
-      if (s.levelCompleted >= 0) {
         hide('#onboarding'); show('#game');
         $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
-        revealLevel(s.levelCompleted + 1);
+
+        // If the user reloaded mid-game (not finished) OR visited with ?reset=1, show choices
+        if ((isReload || forcedReset) && activeLevel <= 3) {
+          $('#resetDesc').textContent = `You reloaded during Level ${activeLevel}. What would you like to do?`;
+          show('#resetModal'); // wait for user choice
+        } else {
+          // Normal resume
+          revealLevel(Math.min(activeLevel, 4));
+        }
       }
     })();
 
@@ -460,21 +547,38 @@
       }
     });
 
-    // Reset on success screen
+    // Success reset
     $('#reset').addEventListener('click', () => {
       clearState();
       location.reload();
     });
 
-    // Resume if reloaded mid-game
-    window.addEventListener('DOMContentLoaded', () => {
-      const s = getState();
-      if (s.name || s.team) {
-        hide('#onboarding'); show('#game');
-        $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
-        const nextLevel = (s.levelCompleted ?? -1) + 1;
-        revealLevel(Math.min(nextLevel, 4));
-      }
+    // ========= RESET MODAL ACTIONS =========
+    // Continue from current level
+    $('#btnContinue').addEventListener('click', () => {
+      hide('#resetModal');
+      revealLevel(getCurrentLevelFromState());
+    });
+
+    // Reset only the current level (keep previous completions)
+    $('#btnResetCurrent').addEventListener('click', () => {
+      const level = getCurrentLevelFromState();
+      clearLevelInputs(level);
+      hide('#resetModal');
+      revealLevel(level);
+      logEvent('reset_current', { level, success: false });
+    });
+
+    // Reset all levels (start over but keep QR/tag parameters)
+    $('#btnResetAll').addEventListener('click', () => {
+      const level = getCurrentLevelFromState();
+      logEvent('reset_all', { level, success: false });
+      clearState();
+
+      // Preserve QR/tag params but remove any ?reset=1
+      const url = new URL(location.href);
+      url.searchParams.delete('reset');
+      location.href = url.toString();
     });
   </script>
 </body>

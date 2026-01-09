@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,6 +16,7 @@
       --danger: #fca5a5;
       --success: #86efac;
     }
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, "ComicShanns Mono", sans-serif;
@@ -25,34 +27,51 @@
       place-items: center;
       padding: 2rem;
     }
+
     .card {
       width: 100%;
       max-width: 720px;
       background: var(--panel);
       border: 1px solid #22264a;
       border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
       overflow: hidden;
     }
+
     header {
       padding: 1.1rem 1.5rem;
       background: linear-gradient(90deg, #1b1e38, #20244a);
       border-bottom: 1px solid #2a2e56;
     }
+
     header h1 {
       margin: 0;
       font-size: 1.25rem;
       letter-spacing: 0.3px;
     }
+
     main {
       padding: 1.5rem;
     }
-    .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
     .field {
       flex: 1 1 240px;
-      display: flex; flex-direction: column; gap: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
     }
-    label { font-size: 0.9rem; color: var(--muted); }
+
+    label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
     input[type="text"] {
       padding: 0.75rem 0.9rem;
       border-radius: 10px;
@@ -62,7 +81,11 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    input[type="text"]:focus { border-color: var(--accent2); }
+
+    input[type="text"]:focus {
+      border-color: var(--accent2);
+    }
+
     button {
       padding: 0.75rem 1rem;
       border: none;
@@ -73,15 +96,35 @@
       cursor: pointer;
       transition: transform 0.05s ease;
     }
-    button:active { transform: translateY(1px); }
-    .muted { color: var(--muted); font-size: 0.9rem; }
-    .hint { color: var(--accent2); font-size: 0.95rem; margin-top: 0.25rem; }
-    .error { color: var(--danger); }
-    .ok { color: var(--success); }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hint {
+      color: var(--accent2);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .ok {
+      color: var(--success);
+    }
+
     .divider {
       margin: 1rem 0 1.25rem;
       border-top: 1px dashed #2a2e56;
     }
+
     .puzzle {
       background: #121534;
       border: 1px solid #2a2e56;
@@ -89,8 +132,17 @@
       padding: 1rem;
       margin-bottom: 1rem;
     }
-    .puzzle h2 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
-    .puzzle-number { color: var(--accent); font-weight: 700; }
+
+    .puzzle h2 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.1rem;
+    }
+
+    .puzzle-number {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
     .foot {
       display: flex;
       align-items: center;
@@ -98,8 +150,15 @@
       gap: 0.75rem;
       margin-top: 1rem;
     }
-    .hidden { display: none; }
-    .center { text-align: center; }
+
+    .hidden {
+      display: none;
+    }
+
+    .center {
+      text-align: center;
+    }
+
     .badge {
       display: inline-block;
       padding: 0.2rem 0.5rem;
@@ -109,6 +168,7 @@
       font-size: 0.8rem;
       color: var(--muted);
     }
+
     .success-box {
       background: #0d2518;
       border: 1px solid #1e6b4a;
@@ -116,9 +176,15 @@
       border-radius: 10px;
       color: #a7f3d0;
     }
-    .link { color: var(--accent2); text-decoration: underline; cursor: pointer; }
+
+    .link {
+      color: var(--accent2);
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
     <header>
@@ -145,7 +211,8 @@
         <p id="onboardingMsg" class="error hidden"></p>
         <div class="divider"></div>
         <p class="muted">
-          Tip: You can prefill via QR query params like <code>?team=ClueMasters&name=Jay</code>.
+          Tip: Prefill via QR query params like <code>?team=ClueMasters&name=Jay</code>.
+          &nbsp;|&nbsp; Troubleshooting: <span id="hardReset" class="link">Reset progress</span>
         </p>
       </section>
 
@@ -225,19 +292,17 @@
   </div>
 
   <script>
-    // --- Utilities ---
+    // ========= CONFIG =========
+    const LOG_URL = 'https://script.google.com/macros/s/AKfycbz__kDopuMd2AMvVJBKqSTV5B74U-7b6d_LNbj3T78TqeAVLozBd8_Sw29kszkSYkrtQg/exec';
+
+    // ========= UTILITIES =========
     const $ = sel => document.querySelector(sel);
     const params = new URLSearchParams(location.search);
 
-    // Prefill from URL query (QR can set these)
-    const prefill = () => {
-      const teamQ = params.get('team') || '';
-      const nameQ = params.get('name') || '';
-      if (teamQ) $('#team').value = teamQ;
-      if (nameQ) $('#name').value = nameQ;
-    };
+    // Allow a hard reset via URL query parameter
+    if (params.get('reset') === '1') localStorage.removeItem('qrHuntState');
 
-    // Save state to localStorage
+    // localStorage helpers
     const saveState = (obj) => {
       const state = JSON.parse(localStorage.getItem('qrHuntState') || '{}');
       const merged = { ...state, ...obj };
@@ -250,24 +315,69 @@
     const show = id => $(id).classList.remove('hidden');
     const hide = id => $(id).classList.add('hidden');
 
-    // --- Onboarding ---
-    prefill();
-    const initFromStorage = () => {
+    // Session id
+    const getRunId = () => {
+      const s = getState();
+      if (!s.runId) {
+        s.runId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        saveState({ runId: s.runId });
+      }
+      return s.runId;
+    };
+
+    // ========= LOGGER =========
+    async function logEvent(event, extras = {}) {
+      try {
+        const s = getState();
+        const body = {
+          name: s.name || '',
+          team: s.team || '',
+          event,                         // "start" | "level_complete" | "finished"
+          level: extras.level ?? '',
+          success: extras.success ?? '',
+          siteUrl: location.href,
+          qp: location.search,
+          clientTime: new Date().toISOString(),
+          clientTZ: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          runId: getRunId(),
+          ua: navigator.userAgent        // standard UA string
+        };
+        // CORS-safe (Apps Script will still receive the payload)
+        await fetch(LOG_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(body),
+        });
+      } catch (e) {
+        console.warn('logEvent failed', e);
+      }
+    }
+
+    // ========= ONBOARDING =========
+    // Prefill from URL query
+    (function prefill() {
+      const teamQ = params.get('team') || '';
+      const nameQ = params.get('name') || '';
+      if (teamQ) $('#team').value = teamQ;
+      if (nameQ) $('#name').value = nameQ;
+    })();
+
+    // Render from storage (resume)
+    (function initFromStorage() {
       const s = getState();
       if (s.name || s.team) {
         $('#name').value = s.name || '';
         $('#team').value = s.team || '';
       }
       if (s.levelCompleted >= 0) {
-        // Resume game
-        hide('#onboarding');
-        show('#game');
+        hide('#onboarding'); show('#game');
         $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
         revealLevel(s.levelCompleted + 1);
       }
-    };
-    initFromStorage();
+    })();
 
+    // Start button
     $('#startBtn').addEventListener('click', () => {
       const name = $('#name').value.trim();
       const team = $('#team').value.trim();
@@ -277,35 +387,29 @@
         return;
       }
       saveState({ name, team, levelCompleted: -1, startedAt: Date.now() });
+      logEvent('start', { level: 1, success: true });
 
-      // OPTIONAL: Netlify Forms auto-capture (requires Netlify deploy)
-      // See instructions below. If using Netlify, uncomment:
-      /*
-      const formData = new FormData();
-      formData.append('form-name', 'qr-hunt-signup');
-      formData.append('name', name);
-      formData.append('team', team);
-      fetch('/', { method: 'POST', body: formData });
-      */
-
-      hide('#onboarding');
-      show('#game');
+      hide('#onboarding'); show('#game');
       $('#welcome').textContent = `Welcome${team ? ' Team ' + team : ''}${name ? ', ' + name : ''}!`;
       revealLevel(1);
     });
 
-    // --- Game logic ---
+    // Manual reset from onboarding
+    $('#hardReset').addEventListener('click', () => {
+      clearState();
+      location.reload();
+    });
+
+    // ========= GAME LOGIC =========
     function revealLevel(n) {
-      // Hide all
       hide('#p1'); hide('#p2'); hide('#p3'); hide('#done');
-      // Show appropriate level or done
       if (n === 1) show('#p1');
       else if (n === 2) show('#p2');
       else if (n === 3) show('#p3');
       else show('#done');
     }
 
-    // Level 1 check
+    // Level 1
     $('#check1').addEventListener('click', () => {
       const val = $('#ans1').value.trim().toLowerCase();
       const ok = ['keyboard'].includes(val);
@@ -313,6 +417,7 @@
       if (ok) {
         msg.textContent = '✅ Correct! Level 2 unlocked.';
         saveState({ levelCompleted: 0, l1At: Date.now() });
+        logEvent('level_complete', { level: 1, success: true });
         revealLevel(2);
       } else {
         msg.textContent = '❌ Not quite. Try again! (Hint: computer)';
@@ -320,7 +425,7 @@
       }
     });
 
-    // Level 2 check
+    // Level 2
     $('#check2').addEventListener('click', () => {
       const val = $('#ans2').value.trim();
       const ok = val === '234';
@@ -328,6 +433,7 @@
       if (ok) {
         msg.textContent = '✅ Nice! Level 3 unlocked.';
         saveState({ levelCompleted: 1, l2At: Date.now() });
+        logEvent('level_complete', { level: 2, success: true });
         revealLevel(3);
       } else {
         msg.textContent = '❌ That code doesn’t match. Re-check the clues.';
@@ -335,7 +441,7 @@
       }
     });
 
-    // Level 3 check
+    // Level 3
     $('#check3').addEventListener('click', () => {
       const val = $('#ans3').value.trim().toLowerCase();
       const ok = ['pencil', 'graphite', 'pencil lead'].includes(val);
@@ -344,24 +450,23 @@
         const s = getState();
         msg.textContent = '✅ Correct!';
         saveState({ levelCompleted: 2, completedAt: Date.now() });
+        logEvent('finished', { level: 3, success: true });
         const nameOrTeam = s.team ? `Team ${s.team}` : (s.name || 'Player');
         $('#congrats').textContent = `Congrats ${nameOrTeam}! You finished all puzzles. 🎉`;
         revealLevel(4);
-
-        // OPTIONAL: log completion to a Google Apps Script or Netlify Forms (see below)
       } else {
         msg.textContent = '❌ Close! Think of the material inside a pencil.';
         msg.classList.add('error');
       }
     });
 
-    // Reset
+    // Reset on success screen
     $('#reset').addEventListener('click', () => {
       clearState();
       location.reload();
     });
 
-    // Restore UI if reloaded mid-game
+    // Resume if reloaded mid-game
     window.addEventListener('DOMContentLoaded', () => {
       const s = getState();
       if (s.name || s.team) {
@@ -372,12 +477,6 @@
       }
     });
   </script>
-
-  <!-- OPTIONAL: Netlify Forms hidden form (works only on Netlify) -->
-  <!-- When deployed on Netlify, this captures onboarding submissions automatically. -->
-  <form name="qr-hunt-signup" data-netlify="true" hidden>
-    <input type="text" name="name" />
-    <input type="text" name="team" />
-  </form>
 </body>
+
 </html>

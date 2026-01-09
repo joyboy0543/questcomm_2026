@@ -225,6 +225,14 @@
       background: linear-gradient(90deg, #fca5a5, #ef4444);
       color: #0b1024;
     }
+
+    /* --- Modal visibility overrides (place at the END of <style>) --- */
+    .modal.hidden,
+    .hidden {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
   </style>
 </head>
 
@@ -338,7 +346,7 @@
       </section>
 
       <!-- Reset / Resume modal -->
-      <div id="resetModal" class="modal hidden" aria-modal="true" role="dialog">
+      <div id="resetModal" class="modal hidden" style="display:none" aria-modal="true" role="dialog" tabindex="-1">
         <div class="modal-card">
           <h2 id="resetTitle">Resume or reset?</h2>
           <p id="resetDesc">You reloaded during a puzzle. What would you like to do?</p>
@@ -360,8 +368,29 @@
     // ========= SAFE HELPERS =========
     const $ = sel => document.querySelector(sel);
     function on(sel, ev, fn) { const el = $(sel); if (!el) { console.error('Missing element:', sel); return false; } el.addEventListener(ev, fn); return true; }
-    function show(sel) { const el = $(sel); if (!el) return console.error('show(): missing', sel); el.classList.remove('hidden'); }
-    function hide(sel) { const el = $(sel); if (!el) return console.error('hide(): missing', sel); el.classList.add('hidden'); }
+
+    // Strong hide/show (handles stubborn overlays)
+    function show(sel) {
+      const el = $(sel); if (!el) return console.error('show(): missing', sel);
+      el.classList.remove('hidden'); el.style.removeProperty('display'); el.style.removeProperty('visibility'); el.style.removeProperty('pointer-events');
+    }
+    function hide(sel) {
+      const el = $(sel); if (!el) return console.error('hide(): missing', sel);
+      el.classList.add('hidden'); el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none';
+    }
+
+    // Hard-close for modal (remove from DOM to avoid any overlay remnants)
+    function closeResetModal() {
+      const m = $('#resetModal'); if (!m) return;
+      try {
+        m.setAttribute('aria-hidden', 'true'); hide('#resetModal');
+        // If it's still visible due to CSS specificity, remove it entirely
+        setTimeout(() => {
+          const stillVisible = m && !m.classList.contains('hidden') && m.offsetParent !== null;
+          if (stillVisible) { console.warn('Modal still visible — removing from DOM'); m.remove(); }
+        }, 50);
+      } catch (e) { console.warn('closeResetModal failed', e); }
+    }
 
     // ========= UTILITIES =========
     const params = new URLSearchParams(location.search);
@@ -369,11 +398,36 @@
     const isReload = navEntry?.type === 'reload';
     const forcedReset = params.get('reset') === '1';
 
+    // One-shot removal of query params (e.g., ?reset=1)
+    function removeQueryParam(param) {
+      const url = new URL(location.href);
+      url.searchParams.delete(param);
+      history.replaceState(null, '', url.toString());
+    }
+
+    // Robust state helpers (recover from corrupted localStorage)
     const saveState = (obj) => {
-      const state = JSON.parse(localStorage.getItem('qrHuntState') || '{}');
-      localStorage.setItem('qrHuntState', JSON.stringify({ ...state, ...obj }));
+      const raw = localStorage.getItem('qrHuntState');
+      let state = {};
+      try { state = raw ? JSON.parse(raw) : {}; }
+      catch (e) { console.warn('saveState(): clearing bad state', e); localStorage.removeItem('qrHuntState'); state = {}; }
+      try { localStorage.setItem('qrHuntState', JSON.stringify({ ...state, ...obj })); }
+      catch (e) { console.warn('saveState(): failed to persist', e); }
     };
-    const getState = () => JSON.parse(localStorage.getItem('qrHuntState') || '{}');
+
+    const getState = () => {
+      try {
+        const raw = localStorage.getItem('qrHuntState');
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === 'object') ? parsed : {};
+      } catch (e) {
+        console.warn('getState(): bad qrHuntState, clearing', e);
+        localStorage.removeItem('qrHuntState');
+        return {};
+      }
+    };
+
     const clearState = () => localStorage.removeItem('qrHuntState');
 
     const getRunId = () => {
@@ -402,12 +456,11 @@
         const body = {
           name: s.name || '', team: s.team || '', event,
           level: extras.level ?? '', success: extras.success ?? '',
-          siteUrl: location.href, qp: location.search, // includes ?qr=posterA etc.
+          siteUrl: location.href, qp: location.search,
           clientTime: new Date().toISOString(),
           clientTZ: Intl.DateTimeFormat().resolvedOptions().timeZone,
           runId: getRunId(), ua: navigator.userAgent
         };
-        // CORS-safe: Apps Script receives JSON via e.postData.contents
         await fetch(LOG_URL, {
           method: 'POST', mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body)
@@ -430,10 +483,14 @@
         hide('#onboarding'); show('#game');
         $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
 
+        // If ?reset=1 is present, make it ONE-SHOT immediately
+        if (forcedReset) removeQueryParam('reset');
+
         // Show modal only if we actually started and are mid-game
         if ((isReload || forcedReset) && hasStarted && activeLevel <= 3) {
           $('#resetDesc').textContent = `You reloaded during Level ${activeLevel}. What would you like to do?`;
           show('#resetModal');
+          setTimeout(() => $('#btnContinue')?.focus(), 50);
         } else {
           revealLevel(activeLevel);
         }
@@ -498,22 +555,50 @@
 
     // ========= RESET MODAL ACTIONS =========
     function bindResetModalHandlers() {
-      const ok1 = on('#btnContinue', 'click', () => { hide('#resetModal'); revealLevel(getCurrentLevelFromState()); });
-      const ok2 = on('#btnResetCurrent', 'click', () => {
-        const level = getCurrentLevelFromState(); clearLevelInputs(level);
-        hide('#resetModal'); revealLevel(level); logEvent('reset_current', { level, success: false });
+      const ok1 = on('#btnContinue', 'click', () => {
+        removeQueryParam('reset'); // ensure one-shot
+        logEvent('resume', { level: getCurrentLevelFromState(), success: true });
+        closeResetModal();
+        revealLevel(getCurrentLevelFromState());
+        // Safety re-check
+        setTimeout(() => closeResetModal(), 100);
       });
+
+      const ok2 = on('#btnResetCurrent', 'click', () => {
+        removeQueryParam('reset'); // ensure one-shot
+        const level = getCurrentLevelFromState(); clearLevelInputs(level);
+        closeResetModal();
+        revealLevel(level);
+        logEvent('reset_current', { level, success: false });
+        setTimeout(() => closeResetModal(), 100);
+      });
+
       const ok3 = on('#btnResetAll', 'click', () => {
         const level = getCurrentLevelFromState(); logEvent('reset_all', { level, success: false });
-        clearState(); const url = new URL(location.href); url.searchParams.delete('reset'); location.href = url.toString();
+        clearState(); removeQueryParam('reset'); closeResetModal(); location.reload();
       });
+
+      // ESC closes the modal (continue)
+      on('#resetModal', 'keydown', (e) => {
+        if (e.key === 'Escape') { closeResetModal(); revealLevel(getCurrentLevelFromState()); }
+      });
+
       // Fallback if any button didn’t bind—auto-continue so user isn’t stuck
       if (!ok1 || !ok2 || !ok3) {
         console.warn('Modal handlers not fully bound—auto-continue fallback');
-        hide('#resetModal'); revealLevel(getCurrentLevelFromState());
+        closeResetModal(); revealLevel(getCurrentLevelFromState());
       }
+
+      // Extra safety: if the modal is visible after 2s, auto-remove
+      setTimeout(() => {
+        const modal = $('#resetModal');
+        if (modal && !modal.classList.contains('hidden') && modal.offsetParent !== null) {
+          console.warn('Modal still visible after timeout—auto-remove');
+          closeResetModal(); revealLevel(getCurrentLevelFromState());
+        }
+      }, 2000);
     }
-    window.addEventListener('load', bindResetModalHandlers);
+    window.addEventListener('DOMContentLoaded', bindResetModalHandlers);
   </script>
 </body>
 

@@ -179,7 +179,7 @@
       cursor: pointer;
     }
 
-    /* --- Reset modal styles --- */
+    /* Reset modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -263,7 +263,7 @@
       <section id="game" class="hidden">
         <p id="welcome" class="muted"></p>
 
-        <!-- Puzzle 1 -->
+        <!-- Level 1 -->
         <div id="p1" class="puzzle">
           <h2><span class="puzzle-number">Level 1</span> — Riddle</h2>
           <p>What has cities, but no houses; forests, but no trees; and water, but no fish?</p>
@@ -280,7 +280,7 @@
           <p id="msg1" class="muted"></p>
         </div>
 
-        <!-- Puzzle 2 -->
+        <!-- Level 2 -->
         <div id="p2" class="puzzle hidden">
           <h2><span class="puzzle-number">Level 2</span> — Caesar Shift</h2>
           <p><strong>Encoded word:</strong> <code>wuhdvxuh</code></p>
@@ -301,7 +301,7 @@
           <p id="msg2" class="muted"></p>
         </div>
 
-        <!-- Puzzle 3 -->
+        <!-- Level 3 -->
         <div id="p3" class="puzzle hidden">
           <h2><span class="puzzle-number">Level 3</span> — 4‑Digit Logic Code</h2>
           <ul class="muted">
@@ -355,141 +355,94 @@
 
   <script>
     // ========= CONFIG =========
-    // Keep your existing Apps Script Web App URL:
     const LOG_URL = 'https://script.google.com/macros/s/AKfycbz__kDopuMd2AMvVJBKqSTV5B74U-7b6d_LNbj3T78TqeAVLozBd8_Sw29kszkSYkrtQg/exec';
 
     // ========= SAFE HELPERS =========
     const $ = sel => document.querySelector(sel);
-    function on(sel, ev, fn) {
-      const el = $(sel);
-      if (!el) { console.error('Missing element for selector:', sel); return false; }
-      el.addEventListener(ev, fn);
-      return true;
-    }
-    function show(sel) {
-      const el = $(sel);
-      if (!el) return console.error('show(): missing', sel);
-      el.classList.remove('hidden');
-    }
-    function hide(sel) {
-      const el = $(sel);
-      if (!el) return console.error('hide(): missing', sel);
-      el.classList.add('hidden');
-    }
+    function on(sel, ev, fn) { const el = $(sel); if (!el) { console.error('Missing element:', sel); return false; } el.addEventListener(ev, fn); return true; }
+    function show(sel) { const el = $(sel); if (!el) return console.error('show(): missing', sel); el.classList.remove('hidden'); }
+    function hide(sel) { const el = $(sel); if (!el) return console.error('hide(): missing', sel); el.classList.add('hidden'); }
 
     // ========= UTILITIES =========
     const params = new URLSearchParams(location.search);
-
-    // Navigation type (reload vs. fresh)
     const navEntry = performance.getEntriesByType('navigation')[0];
     const isReload = navEntry?.type === 'reload';
-    const forcedReset = params.get('reset') === '1'; // we prompt later if progress exists
+    const forcedReset = params.get('reset') === '1';
 
-    // localStorage helpers
     const saveState = (obj) => {
       const state = JSON.parse(localStorage.getItem('qrHuntState') || '{}');
-      const merged = { ...state, ...obj };
-      localStorage.setItem('qrHuntState', JSON.stringify(merged));
+      localStorage.setItem('qrHuntState', JSON.stringify({ ...state, ...obj }));
     };
     const getState = () => JSON.parse(localStorage.getItem('qrHuntState') || '{}');
     const clearState = () => localStorage.removeItem('qrHuntState');
 
-    // Session id
     const getRunId = () => {
       const s = getState();
-      if (!s.runId) {
-        s.runId = Math.random().toString(36).slice(2) + Date.now().toString(36);
-        saveState({ runId: s.runId });
-      }
+      if (!s.runId) { s.runId = Math.random().toString(36).slice(2) + Date.now().toString(36); saveState({ runId: s.runId }); }
       return s.runId;
     };
 
-    // Which level appears next, based on stored progress
+    // ✅ Correct mapping: -1→1, 0→2, 1→3, 2→4
     function getCurrentLevelFromState() {
-      const s = getState();
-      const lc = (s.levelCompleted ?? -1);
-      return Math.min(lc + 1, 4); // 1..4 (4=done screen)
+      const lc = (getState().levelCompleted ?? -1);
+      return lc < 2 ? lc + 2 : 4;
     }
 
-    // Clear UI fields for a given level (without wiping state)
     function clearLevelInputs(level) {
-      const msgs = ['#msg1', '#msg2', '#msg3'];
-      const inputs = ['#ans1', '#ans2', '#ans3'];
+      const msgs = ['#msg1', '#msg2', '#msg3']; const inputs = ['#ans1', '#ans2', '#ans3'];
       if (level >= 1 && level <= 3) {
         $(inputs[level - 1]).value = '';
-        const m = $(msgs[level - 1]);
-        m.textContent = '';
-        m.classList.remove('error');
+        const m = $(msgs[level - 1]); m.textContent = ''; m.classList.remove('error');
       }
     }
 
-    // ========= LOGGER =========
     async function logEvent(event, extras = {}) {
       try {
         const s = getState();
         const body = {
-          name: s.name || '',
-          team: s.team || '',
-          event,                         // "start" | "level_complete" | "finished" | "reset_current" | "reset_all"
-          level: extras.level ?? '',
-          success: extras.success ?? '',
-          siteUrl: location.href,
-          qp: location.search,           // includes ?qr=posterA etc.
+          name: s.name || '', team: s.team || '', event,
+          level: extras.level ?? '', success: extras.success ?? '',
+          siteUrl: location.href, qp: location.search, // includes ?qr=posterA etc.
           clientTime: new Date().toISOString(),
           clientTZ: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          runId: getRunId(),
-          ua: navigator.userAgent
+          runId: getRunId(), ua: navigator.userAgent
         };
-        // CORS-safe (Apps Script will still receive the payload)
+        // CORS-safe: Apps Script receives JSON via e.postData.contents
         await fetch(LOG_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(body),
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body)
         });
-      } catch (e) {
-        console.warn('logEvent failed', e);
-      }
+      } catch (e) { console.warn('logEvent failed', e); }
     }
 
     // ========= ONBOARDING =========
-    // Prefill from URL query
     (function prefill() {
-      const teamQ = params.get('team') || '';
-      const nameQ = params.get('name') || '';
-      if (teamQ) $('#team').value = teamQ;
-      if (nameQ) $('#name').value = nameQ;
+      const teamQ = params.get('team') || ''; const nameQ = params.get('name') || '';
+      if (teamQ) $('#team').value = teamQ; if (nameQ) $('#name').value = nameQ;
     })();
 
-    // Render from storage (resume) with safe refresh modal
     (function initFromStorage() {
       const s = getState();
       const activeLevel = getCurrentLevelFromState();
+      const hasStarted = !!s.startedAt;
 
       if (s.name || s.team) {
         hide('#onboarding'); show('#game');
         $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
 
-        // If the user reloaded mid-game (not finished) OR visited with ?reset=1, show choices
-        if ((isReload || forcedReset) && activeLevel <= 3) {
+        // Show modal only if we actually started and are mid-game
+        if ((isReload || forcedReset) && hasStarted && activeLevel <= 3) {
           $('#resetDesc').textContent = `You reloaded during Level ${activeLevel}. What would you like to do?`;
-          show('#resetModal'); // wait for user choice
+          show('#resetModal');
         } else {
-          // Normal resume
-          revealLevel(Math.min(activeLevel, 4));
+          revealLevel(activeLevel);
         }
       }
     })();
 
-    // Start button
     on('#startBtn', 'click', () => {
-      const name = $('#name').value.trim();
-      const team = $('#team').value.trim();
-      if (!name && !team) {
-        $('#onboardingMsg').textContent = 'Please enter at least a name or a team name.';
-        $('#onboardingMsg').classList.remove('hidden');
-        return;
-      }
+      const name = $('#name').value.trim(); const team = $('#team').value.trim();
+      if (!name && !team) { $('#onboardingMsg').textContent = 'Please enter at least a name or a team name.'; $('#onboardingMsg').classList.remove('hidden'); return; }
       saveState({ name, team, levelCompleted: -1, startedAt: Date.now() });
       logEvent('start', { level: 1, success: true });
 
@@ -498,61 +451,38 @@
       revealLevel(1);
     });
 
-    // Manual reset from onboarding
-    on('#hardReset', 'click', () => {
-      clearState();
-      location.reload();
-    });
+    on('#hardReset', 'click', () => { clearState(); location.reload(); });
 
-    // ========= GAME LOGIC =========
     function revealLevel(n) {
       hide('#p1'); hide('#p2'); hide('#p3'); hide('#done');
-      if (n === 1) show('#p1');
-      else if (n === 2) show('#p2');
-      else if (n === 3) show('#p3');
-      else show('#done');
+      if (n === 1) show('#p1'); else if (n === 2) show('#p2'); else if (n === 3) show('#p3'); else show('#done');
     }
 
-    // Level 1 (answer: map)
+    // Level 1 (map)
     on('#check1', 'click', () => {
-      const val = $('#ans1').value.trim().toLowerCase();
-      const ok = ['map'].includes(val);
-      const msg = $('#msg1');
+      const ok = $('#ans1').value.trim().toLowerCase() === 'map'; const msg = $('#msg1');
       if (ok) {
-        msg.textContent = '✅ Correct! Level 2 unlocked.';
-        saveState({ levelCompleted: 0, l1At: Date.now() });
-        logEvent('level_complete', { level: 1, success: true });
-        revealLevel(2);
-      } else {
-        msg.textContent = '❌ Not quite. Think: paper, roads, rivers.';
-        msg.classList.add('error');
+        msg.textContent = '✅ Correct! Level 2 unlocked.'; saveState({ levelCompleted: 0, l1At: Date.now() });
+        logEvent('level_complete', { level: 1, success: true }); revealLevel(2);
       }
+      else { msg.textContent = '❌ Not quite. Think: paper, roads, rivers.'; msg.classList.add('error'); }
     });
 
-    // Level 2 (answer: treasure; Caesar shift 3)
+    // Level 2 (treasure)
     on('#check2', 'click', () => {
-      const val = $('#ans2').value.trim().toLowerCase();
-      const ok = val === 'treasure';
-      const msg = $('#msg2');
+      const ok = $('#ans2').value.trim().toLowerCase() === 'treasure'; const msg = $('#msg2');
       if (ok) {
-        msg.textContent = '✅ Nice! Level 3 unlocked.';
-        saveState({ levelCompleted: 1, l2At: Date.now() });
-        logEvent('level_complete', { level: 2, success: true });
-        revealLevel(3);
-      } else {
-        msg.textContent = '❌ Try decoding with a shift of 3.';
-        msg.classList.add('error');
+        msg.textContent = '✅ Nice! Level 3 unlocked.'; saveState({ levelCompleted: 1, l2At: Date.now() });
+        logEvent('level_complete', { level: 2, success: true }); revealLevel(3);
       }
+      else { msg.textContent = '❌ Try decoding with a shift of 3.'; msg.classList.add('error'); }
     });
 
-    // Level 3 (answer: 4631)
+    // Level 3 (4631)
     on('#check3', 'click', () => {
-      const val = $('#ans3').value.trim();
-      const ok = val === '4631';
-      const msg = $('#msg3');
+      const ok = $('#ans3').value.trim() === '4631'; const msg = $('#msg3');
       if (ok) {
-        const s = getState();
-        msg.textContent = '✅ Correct!';
+        const s = getState(); msg.textContent = '✅ Correct!';
         saveState({ levelCompleted: 2, completedAt: Date.now() });
         logEvent('finished', { level: 3, success: true });
         const nameOrTeam = s.team ? `Team ${s.team}` : (s.name || 'Player');
@@ -564,45 +494,25 @@
       }
     });
 
-    // Success reset
-    on('#reset', 'click', () => {
-      clearState();
-      location.reload();
-    });
+    on('#reset', 'click', () => { clearState(); location.reload(); });
 
     // ========= RESET MODAL ACTIONS =========
     function bindResetModalHandlers() {
-      const ok1 = on('#btnContinue', 'click', () => {
-        hide('#resetModal');
-        revealLevel(getCurrentLevelFromState());
-      });
-
+      const ok1 = on('#btnContinue', 'click', () => { hide('#resetModal'); revealLevel(getCurrentLevelFromState()); });
       const ok2 = on('#btnResetCurrent', 'click', () => {
-        const level = getCurrentLevelFromState();
-        clearLevelInputs(level);
-        hide('#resetModal');
-        revealLevel(level);
-        logEvent('reset_current', { level, success: false });
+        const level = getCurrentLevelFromState(); clearLevelInputs(level);
+        hide('#resetModal'); revealLevel(level); logEvent('reset_current', { level, success: false });
       });
-
       const ok3 = on('#btnResetAll', 'click', () => {
-        const level = getCurrentLevelFromState();
-        logEvent('reset_all', { level, success: false });
-        clearState();
-        const url = new URL(location.href);
-        url.searchParams.delete('reset');
-        location.href = url.toString();
+        const level = getCurrentLevelFromState(); logEvent('reset_all', { level, success: false });
+        clearState(); const url = new URL(location.href); url.searchParams.delete('reset'); location.href = url.toString();
       });
-
       // Fallback if any button didn’t bind—auto-continue so user isn’t stuck
       if (!ok1 || !ok2 || !ok3) {
         console.warn('Modal handlers not fully bound—auto-continue fallback');
-        hide('#resetModal');
-        revealLevel(getCurrentLevelFromState());
+        hide('#resetModal'); revealLevel(getCurrentLevelFromState());
       }
     }
-
-    // Bind after DOM is fully ready
     window.addEventListener('load', bindResetModalHandlers);
   </script>
 </body>

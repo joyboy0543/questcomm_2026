@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Treasure Hunt</title>
+  <style>
+    :root {
+      --bg: #0f1223;
+      --panel: #171a2e;
+      --accent: #6ee7b7;
+      --accent2: #93c5fd;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #fca5a5;
+      --success: #86efac;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "ComicShanns Mono", sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, #121533, #0c0f1f);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: var(--panel);
+      border: 1px solid #22264a;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+    header {
+      padding: 1.1rem 1.5rem;
+      background: linear-gradient(90deg, #1b1e38, #20244a);
+      border-bottom: 1px solid #2a2e56;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.3px;
+    }
+    main {
+      padding: 1.5rem;
+    }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .field {
+      flex: 1 1 240px;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    label { font-size: 0.9rem; color: var(--muted); }
+    input[type="text"] {
+      padding: 0.75rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid #30365f;
+      background: #11132a;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent2); }
+    button {
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1024;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.05s ease;
+    }
+    button:active { transform: translateY(1px); }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .hint { color: var(--accent2); font-size: 0.95rem; margin-top: 0.25rem; }
+    .error { color: var(--danger); }
+    .ok { color: var(--success); }
+    .divider {
+      margin: 1rem 0 1.25rem;
+      border-top: 1px dashed #2a2e56;
+    }
+    .puzzle {
+      background: #121534;
+      border: 1px solid #2a2e56;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .puzzle h2 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+    .puzzle-number { color: var(--accent); font-weight: 700; }
+    .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .hidden { display: none; }
+    .center { text-align: center; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 8px;
+      background: #0d1026;
+      border: 1px solid #2a2e56;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .success-box {
+      background: #0d2518;
+      border: 1px solid #1e6b4a;
+      padding: 0.75rem;
+      border-radius: 10px;
+      color: #a7f3d0;
+    }
+    .link { color: var(--accent2); text-decoration: underline; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>🎯 QR Treasure Hunt</h1>
+    </header>
+    <main>
+      <!-- Onboarding -->
+      <section id="onboarding">
+        <p class="muted">Scan the QR, enter your details, and start the hunt. Solve each level to unlock the next!</p>
+        <div class="row">
+          <div class="field">
+            <label for="team">Team name (optional)</label>
+            <input type="text" id="team" placeholder="e.g., Clue Masters" />
+          </div>
+          <div class="field">
+            <label for="name">Your name</label>
+            <input type="text" id="name" placeholder="e.g., Jay" />
+          </div>
+        </div>
+        <div class="foot">
+          <span class="badge">Progress is auto-saved.</span>
+          <button id="startBtn">Start</button>
+        </div>
+        <p id="onboardingMsg" class="error hidden"></p>
+        <div class="divider"></div>
+        <p class="muted">
+          Tip: You can prefill via QR query params like <code>?team=ClueMasters&name=Jay</code>.
+        </p>
+      </section>
+
+      <!-- Game -->
+      <section id="game" class="hidden">
+        <p id="welcome" class="muted"></p>
+
+        <!-- Puzzle 1 -->
+        <div id="p1" class="puzzle">
+          <h2><span class="puzzle-number">Level 1</span> — Riddle</h2>
+          <p>I have keys but no locks, space but no rooms; you can enter but can’t go outside. What am I?</p>
+          <div class="row">
+            <div class="field">
+              <label for="ans1">Answer</label>
+              <input type="text" id="ans1" placeholder="Type your answer…" />
+            </div>
+          </div>
+          <div class="foot">
+            <span class="hint">Hint: Think about your computer.</span>
+            <button id="check1">Check</button>
+          </div>
+          <p id="msg1" class="muted"></p>
+        </div>
+
+        <!-- Puzzle 2 -->
+        <div id="p2" class="puzzle hidden">
+          <h2><span class="puzzle-number">Level 2</span> — 3‑Digit Logic Code</h2>
+          <ul class="muted">
+            <li>The <strong>sum</strong> of the digits is <strong>9</strong>.</li>
+            <li>The <strong>first</strong> digit = number of <strong>vowels</strong> in “quest”.</li>
+            <li>The <strong>second</strong> digit = number of <strong>corners</strong> in a triangle.</li>
+            <li>The <strong>third</strong> digit = <code>9 - (first + second)</code>.</li>
+          </ul>
+          <div class="row">
+            <div class="field">
+              <label for="ans2">Code</label>
+              <input type="text" id="ans2" placeholder="e.g., 234" />
+            </div>
+          </div>
+          <div class="foot">
+            <span class="hint">No spaces. Numbers only.</span>
+            <button id="check2">Check</button>
+          </div>
+          <p id="msg2" class="muted"></p>
+        </div>
+
+        <!-- Puzzle 3 -->
+        <div id="p3" class="puzzle hidden">
+          <h2><span class="puzzle-number">Level 3</span> — Riddle</h2>
+          <p>Taken from a mine, locked in a wooden case, used by nearly everyone — what am I?</p>
+          <div class="row">
+            <div class="field">
+              <label for="ans3">Answer</label>
+              <input type="text" id="ans3" placeholder="Type your answer…" />
+            </div>
+          </div>
+          <div class="foot">
+            <span class="hint">Think school supplies.</span>
+            <button id="check3">Check</button>
+          </div>
+          <p id="msg3" class="muted"></p>
+        </div>
+
+        <!-- Success -->
+        <div id="done" class="hidden">
+          <div class="success-box">
+            <p id="congrats" class="ok"></p>
+            <p class="muted">You’ve completed all levels. 🎉</p>
+          </div>
+          <p class="muted">
+            Want to play again or share with friends? Reset your progress:
+            <span id="reset" class="link">Reset</span>
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // --- Utilities ---
+    const $ = sel => document.querySelector(sel);
+    const params = new URLSearchParams(location.search);
+
+    // Prefill from URL query (QR can set these)
+    const prefill = () => {
+      const teamQ = params.get('team') || '';
+      const nameQ = params.get('name') || '';
+      if (teamQ) $('#team').value = teamQ;
+      if (nameQ) $('#name').value = nameQ;
+    };
+
+    // Save state to localStorage
+    const saveState = (obj) => {
+      const state = JSON.parse(localStorage.getItem('qrHuntState') || '{}');
+      const merged = { ...state, ...obj };
+      localStorage.setItem('qrHuntState', JSON.stringify(merged));
+    };
+    const getState = () => JSON.parse(localStorage.getItem('qrHuntState') || '{}');
+    const clearState = () => localStorage.removeItem('qrHuntState');
+
+    // Show/hide helpers
+    const show = id => $(id).classList.remove('hidden');
+    const hide = id => $(id).classList.add('hidden');
+
+    // --- Onboarding ---
+    prefill();
+    const initFromStorage = () => {
+      const s = getState();
+      if (s.name || s.team) {
+        $('#name').value = s.name || '';
+        $('#team').value = s.team || '';
+      }
+      if (s.levelCompleted >= 0) {
+        // Resume game
+        hide('#onboarding');
+        show('#game');
+        $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
+        revealLevel(s.levelCompleted + 1);
+      }
+    };
+    initFromStorage();
+
+    $('#startBtn').addEventListener('click', () => {
+      const name = $('#name').value.trim();
+      const team = $('#team').value.trim();
+      if (!name && !team) {
+        $('#onboardingMsg').textContent = 'Please enter at least a name or a team name.';
+        $('#onboardingMsg').classList.remove('hidden');
+        return;
+      }
+      saveState({ name, team, levelCompleted: -1, startedAt: Date.now() });
+
+      // OPTIONAL: Netlify Forms auto-capture (requires Netlify deploy)
+      // See instructions below. If using Netlify, uncomment:
+      /*
+      const formData = new FormData();
+      formData.append('form-name', 'qr-hunt-signup');
+      formData.append('name', name);
+      formData.append('team', team);
+      fetch('/', { method: 'POST', body: formData });
+      */
+
+      hide('#onboarding');
+      show('#game');
+      $('#welcome').textContent = `Welcome${team ? ' Team ' + team : ''}${name ? ', ' + name : ''}!`;
+      revealLevel(1);
+    });
+
+    // --- Game logic ---
+    function revealLevel(n) {
+      // Hide all
+      hide('#p1'); hide('#p2'); hide('#p3'); hide('#done');
+      // Show appropriate level or done
+      if (n === 1) show('#p1');
+      else if (n === 2) show('#p2');
+      else if (n === 3) show('#p3');
+      else show('#done');
+    }
+
+    // Level 1 check
+    $('#check1').addEventListener('click', () => {
+      const val = $('#ans1').value.trim().toLowerCase();
+      const ok = ['keyboard'].includes(val);
+      const msg = $('#msg1');
+      if (ok) {
+        msg.textContent = '✅ Correct! Level 2 unlocked.';
+        saveState({ levelCompleted: 0, l1At: Date.now() });
+        revealLevel(2);
+      } else {
+        msg.textContent = '❌ Not quite. Try again! (Hint: computer)';
+        msg.classList.add('error');
+      }
+    });
+
+    // Level 2 check
+    $('#check2').addEventListener('click', () => {
+      const val = $('#ans2').value.trim();
+      const ok = val === '234';
+      const msg = $('#msg2');
+      if (ok) {
+        msg.textContent = '✅ Nice! Level 3 unlocked.';
+        saveState({ levelCompleted: 1, l2At: Date.now() });
+        revealLevel(3);
+      } else {
+        msg.textContent = '❌ That code doesn’t match. Re-check the clues.';
+        msg.classList.add('error');
+      }
+    });
+
+    // Level 3 check
+    $('#check3').addEventListener('click', () => {
+      const val = $('#ans3').value.trim().toLowerCase();
+      const ok = ['pencil', 'graphite', 'pencil lead'].includes(val);
+      const msg = $('#msg3');
+      if (ok) {
+        const s = getState();
+        msg.textContent = '✅ Correct!';
+        saveState({ levelCompleted: 2, completedAt: Date.now() });
+        const nameOrTeam = s.team ? `Team ${s.team}` : (s.name || 'Player');
+        $('#congrats').textContent = `Congrats ${nameOrTeam}! You finished all puzzles. 🎉`;
+        revealLevel(4);
+
+        // OPTIONAL: log completion to a Google Apps Script or Netlify Forms (see below)
+      } else {
+        msg.textContent = '❌ Close! Think of the material inside a pencil.';
+        msg.classList.add('error');
+      }
+    });
+
+    // Reset
+    $('#reset').addEventListener('click', () => {
+      clearState();
+      location.reload();
+    });
+
+    // Restore UI if reloaded mid-game
+    window.addEventListener('DOMContentLoaded', () => {
+      const s = getState();
+      if (s.name || s.team) {
+        hide('#onboarding'); show('#game');
+        $('#welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
+        const nextLevel = (s.levelCompleted ?? -1) + 1;
+        revealLevel(Math.min(nextLevel, 4));
+      }
+    });
+  </script>
+
+  <!-- OPTIONAL: Netlify Forms hidden form (works only on Netlify) -->
+  <!-- When deployed on Netlify, this captures onboarding submissions automatically. -->
+  <form name="qr-hunt-signup" data-netlify="true" hidden>
+    <input type="text" name="name" />
+    <input type="text" name="team" />
+  </form>
+</body>
+</html>

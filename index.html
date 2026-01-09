@@ -254,7 +254,7 @@
         <p id="onboardingMsg" class="error hidden"></p>
         <div class="divider"></div>
         <p class="muted">
-          Tip: Prefill via QR query params like <code>?team=ClueMasters&name=Jay</code>.
+          Tip: Prefill via QR query params like <code>?team=ClueMasters&name=Jay&qr=posterA</code>.
           &nbsp;|&nbsp; Troubleshooting: <span id="hardReset" class="link">Reset progress</span>
         </p>
       </section>
@@ -266,7 +266,7 @@
         <!-- Puzzle 1 -->
         <div id="p1" class="puzzle">
           <h2><span class="puzzle-number">Level 1</span> — Riddle</h2>
-          <p>I have keys but no locks, space but no rooms; you can enter but can’t go outside. What am I?</p>
+          <p>What has cities, but no houses; forests, but no trees; and water, but no fish?</p>
           <div class="row">
             <div class="field">
               <label for="ans1">Answer</label>
@@ -274,7 +274,7 @@
             </div>
           </div>
           <div class="foot">
-            <span class="hint">Hint: Think about your computer.</span>
+            <span class="hint">One word.</span>
             <button id="check1">Check</button>
           </div>
           <p id="msg1" class="muted"></p>
@@ -282,21 +282,20 @@
 
         <!-- Puzzle 2 -->
         <div id="p2" class="puzzle hidden">
-          <h2><span class="puzzle-number">Level 2</span> — 3‑Digit Logic Code</h2>
+          <h2><span class="puzzle-number">Level 2</span> — Caesar Shift</h2>
+          <p><strong>Encoded word:</strong> <code>wuhdvxuh</code></p>
           <ul class="muted">
-            <li>The <strong>sum</strong> of the digits is <strong>9</strong>.</li>
-            <li>The <strong>first</strong> digit = number of <strong>vowels</strong> in “quest”.</li>
-            <li>The <strong>second</strong> digit = number of <strong>corners</strong> in a triangle.</li>
-            <li>The <strong>third</strong> digit = <code>9 - (first + second)</code>.</li>
+            <li>Hint: The shift equals the number of corners in a triangle.</li>
+            <li>Enter the decoded word (letters only).</li>
           </ul>
           <div class="row">
             <div class="field">
-              <label for="ans2">Code</label>
-              <input type="text" id="ans2" placeholder="e.g., 234" />
+              <label for="ans2">Answer</label>
+              <input type="text" id="ans2" placeholder="e.g., treasure" />
             </div>
           </div>
           <div class="foot">
-            <span class="hint">No spaces. Numbers only.</span>
+            <span class="hint">Shift by 3 in the alphabet.</span>
             <button id="check2">Check</button>
           </div>
           <p id="msg2" class="muted"></p>
@@ -304,16 +303,22 @@
 
         <!-- Puzzle 3 -->
         <div id="p3" class="puzzle hidden">
-          <h2><span class="puzzle-number">Level 3</span> — Riddle</h2>
-          <p>Taken from a mine, locked in a wooden case, used by nearly everyone — what am I?</p>
+          <h2><span class="puzzle-number">Level 3</span> — 4‑Digit Logic Code</h2>
+          <ul class="muted">
+            <li>All four digits are different.</li>
+            <li>The <strong>sum</strong> of the digits is <strong>14</strong>.</li>
+            <li><strong>1st</strong> = letters in “TEAM”.</li>
+            <li><strong>2nd</strong> = vowels in “communication”.</li>
+            <li><strong>3rd</strong> = (1st − 1). <strong>4th</strong> = 1.</li>
+          </ul>
           <div class="row">
             <div class="field">
-              <label for="ans3">Answer</label>
-              <input type="text" id="ans3" placeholder="Type your answer…" />
+              <label for="ans3">Code</label>
+              <input type="text" id="ans3" placeholder="e.g., 4631" />
             </div>
           </div>
           <div class="foot">
-            <span class="hint">Think school supplies.</span>
+            <span class="hint">Digits only. No spaces.</span>
             <button id="check3">Check</button>
           </div>
           <p id="msg3" class="muted"></p>
@@ -350,19 +355,35 @@
 
   <script>
     // ========= CONFIG =========
+    // Keep your existing Apps Script Web App URL:
     const LOG_URL = 'https://script.google.com/macros/s/AKfycbz__kDopuMd2AMvVJBKqSTV5B74U-7b6d_LNbj3T78TqeAVLozBd8_Sw29kszkSYkrtQg/exec';
 
-    // ========= UTILITIES =========
+    // ========= SAFE HELPERS =========
     const $ = sel => document.querySelector(sel);
+    function on(sel, ev, fn) {
+      const el = $(sel);
+      if (!el) { console.error('Missing element for selector:', sel); return false; }
+      el.addEventListener(ev, fn);
+      return true;
+    }
+    function show(sel) {
+      const el = $(sel);
+      if (!el) return console.error('show(): missing', sel);
+      el.classList.remove('hidden');
+    }
+    function hide(sel) {
+      const el = $(sel);
+      if (!el) return console.error('hide(): missing', sel);
+      el.classList.add('hidden');
+    }
+
+    // ========= UTILITIES =========
     const params = new URLSearchParams(location.search);
 
     // Navigation type (reload vs. fresh)
     const navEntry = performance.getEntriesByType('navigation')[0];
     const isReload = navEntry?.type === 'reload';
-
-    // Allow a hard reset via URL query parameter (but we prompt later if progress exists)
-    // NOTE: we do NOT clear localStorage here; we only use ?reset=1 to decide if we show the modal.
-    const forcedReset = params.get('reset') === '1';
+    const forcedReset = params.get('reset') === '1'; // we prompt later if progress exists
 
     // localStorage helpers
     const saveState = (obj) => {
@@ -372,10 +393,6 @@
     };
     const getState = () => JSON.parse(localStorage.getItem('qrHuntState') || '{}');
     const clearState = () => localStorage.removeItem('qrHuntState');
-
-    // Show/hide helpers
-    const show = id => $(id).classList.remove('hidden');
-    const hide = id => $(id).classList.add('hidden');
 
     // Session id
     const getRunId = () => {
@@ -417,11 +434,11 @@
           level: extras.level ?? '',
           success: extras.success ?? '',
           siteUrl: location.href,
-          qp: location.search,
+          qp: location.search,           // includes ?qr=posterA etc.
           clientTime: new Date().toISOString(),
           clientTZ: Intl.DateTimeFormat().resolvedOptions().timeZone,
           runId: getRunId(),
-          ua: navigator.userAgent        // standard UA string
+          ua: navigator.userAgent
         };
         // CORS-safe (Apps Script will still receive the payload)
         await fetch(LOG_URL, {
@@ -465,7 +482,7 @@
     })();
 
     // Start button
-    $('#startBtn').addEventListener('click', () => {
+    on('#startBtn', 'click', () => {
       const name = $('#name').value.trim();
       const team = $('#team').value.trim();
       if (!name && !team) {
@@ -482,7 +499,7 @@
     });
 
     // Manual reset from onboarding
-    $('#hardReset').addEventListener('click', () => {
+    on('#hardReset', 'click', () => {
       clearState();
       location.reload();
     });
@@ -496,10 +513,10 @@
       else show('#done');
     }
 
-    // Level 1
-    $('#check1').addEventListener('click', () => {
+    // Level 1 (answer: map)
+    on('#check1', 'click', () => {
       const val = $('#ans1').value.trim().toLowerCase();
-      const ok = ['keyboard'].includes(val);
+      const ok = ['map'].includes(val);
       const msg = $('#msg1');
       if (ok) {
         msg.textContent = '✅ Correct! Level 2 unlocked.';
@@ -507,15 +524,15 @@
         logEvent('level_complete', { level: 1, success: true });
         revealLevel(2);
       } else {
-        msg.textContent = '❌ Not quite. Try again! (Hint: computer)';
+        msg.textContent = '❌ Not quite. Think: paper, roads, rivers.';
         msg.classList.add('error');
       }
     });
 
-    // Level 2
-    $('#check2').addEventListener('click', () => {
-      const val = $('#ans2').value.trim();
-      const ok = val === '234';
+    // Level 2 (answer: treasure; Caesar shift 3)
+    on('#check2', 'click', () => {
+      const val = $('#ans2').value.trim().toLowerCase();
+      const ok = val === 'treasure';
       const msg = $('#msg2');
       if (ok) {
         msg.textContent = '✅ Nice! Level 3 unlocked.';
@@ -523,15 +540,15 @@
         logEvent('level_complete', { level: 2, success: true });
         revealLevel(3);
       } else {
-        msg.textContent = '❌ That code doesn’t match. Re-check the clues.';
+        msg.textContent = '❌ Try decoding with a shift of 3.';
         msg.classList.add('error');
       }
     });
 
-    // Level 3
-    $('#check3').addEventListener('click', () => {
-      const val = $('#ans3').value.trim().toLowerCase();
-      const ok = ['pencil', 'graphite', 'pencil lead'].includes(val);
+    // Level 3 (answer: 4631)
+    on('#check3', 'click', () => {
+      const val = $('#ans3').value.trim();
+      const ok = val === '4631';
       const msg = $('#msg3');
       if (ok) {
         const s = getState();
@@ -542,44 +559,51 @@
         $('#congrats').textContent = `Congrats ${nameOrTeam}! You finished all puzzles. 🎉`;
         revealLevel(4);
       } else {
-        msg.textContent = '❌ Close! Think of the material inside a pencil.';
+        msg.textContent = '❌ Re-check the clues: letters, vowels, minus one, then 1.';
         msg.classList.add('error');
       }
     });
 
     // Success reset
-    $('#reset').addEventListener('click', () => {
+    on('#reset', 'click', () => {
       clearState();
       location.reload();
     });
 
     // ========= RESET MODAL ACTIONS =========
-    // Continue from current level
-    $('#btnContinue').addEventListener('click', () => {
-      hide('#resetModal');
-      revealLevel(getCurrentLevelFromState());
-    });
+    function bindResetModalHandlers() {
+      const ok1 = on('#btnContinue', 'click', () => {
+        hide('#resetModal');
+        revealLevel(getCurrentLevelFromState());
+      });
 
-    // Reset only the current level (keep previous completions)
-    $('#btnResetCurrent').addEventListener('click', () => {
-      const level = getCurrentLevelFromState();
-      clearLevelInputs(level);
-      hide('#resetModal');
-      revealLevel(level);
-      logEvent('reset_current', { level, success: false });
-    });
+      const ok2 = on('#btnResetCurrent', 'click', () => {
+        const level = getCurrentLevelFromState();
+        clearLevelInputs(level);
+        hide('#resetModal');
+        revealLevel(level);
+        logEvent('reset_current', { level, success: false });
+      });
 
-    // Reset all levels (start over but keep QR/tag parameters)
-    $('#btnResetAll').addEventListener('click', () => {
-      const level = getCurrentLevelFromState();
-      logEvent('reset_all', { level, success: false });
-      clearState();
+      const ok3 = on('#btnResetAll', 'click', () => {
+        const level = getCurrentLevelFromState();
+        logEvent('reset_all', { level, success: false });
+        clearState();
+        const url = new URL(location.href);
+        url.searchParams.delete('reset');
+        location.href = url.toString();
+      });
 
-      // Preserve QR/tag params but remove any ?reset=1
-      const url = new URL(location.href);
-      url.searchParams.delete('reset');
-      location.href = url.toString();
-    });
+      // Fallback if any button didn’t bind—auto-continue so user isn’t stuck
+      if (!ok1 || !ok2 || !ok3) {
+        console.warn('Modal handlers not fully bound—auto-continue fallback');
+        hide('#resetModal');
+        revealLevel(getCurrentLevelFromState());
+      }
+    }
+
+    // Bind after DOM is fully ready
+    window.addEventListener('load', bindResetModalHandlers);
   </script>
 </body>
 

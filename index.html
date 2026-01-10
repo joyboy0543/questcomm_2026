@@ -1,358 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang=\"en\">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset=\"UTF-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
   <title>QR Treasure Hunt — Police Case</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#171a2e">
+  <link rel=\"manifest\" href=\"manifest.json\">
+  <meta name=\"theme-color\" content=\"#171a2e\">
   <style>
-    :root {
-      --bg: #0f1223;
-      --panel: #171a2e;
-      --accent: #6ee7b7;
-      --accent2: #93c5fd;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --danger: #fca5a5;
-      --success: #86efac;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, "ComicShanns Mono", sans-serif;
-      background: radial-gradient(1200px 600px at 20% 0%, #121533, #0c0f1f);
-      color: var(--text);
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 2rem;
-    }
-
-    .card {
-      width: 100%;
-      max-width: 820px;
-      background: var(--panel);
-      border: 1px solid #22264a;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-      overflow: hidden;
-    }
-
-    header {
-      padding: 1.1rem 1.5rem;
-      background: linear-gradient(90deg, #1b1e38, #20244a);
-      border-bottom: 1px solid #2a2e56;
-    }
-
-    header h1 { margin: 0; font-size: 1.25rem; letter-spacing: 0.3px; }
-    header small { color: var(--muted); }
-
-    main { padding: 1.5rem; }
-
-    .row { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .field { flex: 1 1 240px; display: flex; flex-direction: column; gap: 0.4rem; }
-    label { font-size: 0.9rem; color: var(--muted); }
-
-    input[type="text"] {
-      padding: 0.75rem 0.9rem; border-radius: 10px; border: 1px solid #30365f;
-      background: #11132a; color: var(--text); outline: none; transition: border-color 0.2s;
-    }
-    input[type="text"]:focus { border-color: var(--accent2); }
-
-    button {
-      padding: 0.75rem 1rem; border: none; border-radius: 10px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      color: #0b1024; font-weight: 700; cursor: pointer; transition: transform 0.05s ease;
-    }
+    :root { --bg:#0f1223; --panel:#171a2e; --accent:#6ee7b7; --accent2:#93c5fd; --text:#e5e7eb; --muted:#9ca3af; --danger:#fca5a5; --success:#86efac; }
+    body { margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,\"ComicShanns Mono\",sans-serif; background: radial-gradient(1200px 600px at 20% 0%, #121533, #0c0f1f); color:var(--text); min-height:100vh; display:grid; place-items:center; padding:2rem; }
+    .card { width:100%; max-width: 820px; background:var(--panel); border:1px solid #22264a; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); overflow:hidden; }
+    header { padding:1.1rem 1.5rem; background: linear-gradient(90deg,#1b1e38,#20244a); border-bottom:1px solid #2a2e56; }
+    header h1 { margin:0; font-size:1.25rem; letter-spacing:.3px; }
+    header small { color:var(--muted); }
+    main { padding:1.5rem; }
+    .row { display:flex; gap:1rem; flex-wrap:wrap; }
+    .field { flex:1 1 240px; display:flex; flex-direction:column; gap:.4rem; }
+    label { font-size:.9rem; color:var(--muted); }
+    input[type=text] { padding:.75rem .9rem; border-radius:10px; border:1px solid #30365f; background:#11132a; color:var(--text); outline:none; transition:border-color .2s; }
+    input[type=text]:focus { border-color:var(--accent2); }
+    input[disabled] { opacity:.7; cursor:not-allowed; }
+    button { padding:.75rem 1rem; border:none; border-radius:10px; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#0b1024; font-weight:700; cursor:pointer; transition: transform .05s ease; }
     button:active { transform: translateY(1px); }
-
-    .muted { color: var(--muted); font-size: 0.9rem; }
-    .hint { color: var(--accent2); font-size: 0.95rem; margin-top: 0.25rem; }
+    .muted { color:var(--muted); font-size:.9rem; }
+    .hint { color:var(--accent2); font-size:.95rem; margin-top:.25rem; }
     .error { color: var(--danger); }
     .ok { color: var(--success); }
-
-    .divider { margin: 1rem 0 1.25rem; border-top: 1px dashed #2a2e56; }
-
-    .puzzle { background: #121534; border: 1px solid #2a2e56; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
-    .puzzle h2 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
-    .puzzle-number { color: var(--accent); font-weight: 700; }
-
-    .foot { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1rem; }
-
-    .hidden { display: none; }
-    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 8px; background: #0d1026; border: 1px solid #2a2e56; font-size: 0.8rem; color: var(--muted); }
-    .success-box { background: #0d2518; border: 1px solid #1e6b4a; padding: 0.75rem; border-radius: 10px; color: #a7f3d0; }
-    .link { color: var(--accent2); text-decoration: underline; cursor: pointer; }
-
-    /* Reset modal */
-    .modal { position: fixed; inset: 0; background: rgba(9, 11, 25, 0.75); backdrop-filter: blur(2px); display: grid; place-items: center; z-index: 9999; }
-    .modal-card { width: 100%; max-width: 560px; background: #11152f; border: 1px solid #2a2e56; border-radius: 14px; padding: 1rem 1.25rem; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); }
-    .modal h2 { margin: 0 0 0.5rem 0; }
-    .modal p { margin: 0.25rem 0 0.75rem 0; color: var(--muted); }
-    .modal-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.75rem; }
-    button.warn { background: linear-gradient(90deg, #fcd34d, #f59e0b); color: #0b1024; }
-    button.danger { background: linear-gradient(90deg, #fca5a5, #ef4444); color: #0b1024; }
-
-    /* --- Modal visibility overrides (place at the END of <style>) --- */
-    .modal.hidden, .hidden { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+    .divider { margin:1rem 0 1.25rem; border-top:1px dashed #2a2e56; }
+    .puzzle { background:#121534; border:1px solid #2a2e56; border-radius:12px; padding:1rem; margin-bottom:1rem; }
+    .puzzle h2 { margin:0 0 .25rem 0; font-size:1.1rem; }
+    .puzzle-number { color:var(--accent); font-weight:700; }
+    .foot { display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-top:1rem; }
+    .nav { display:flex; gap:.5rem; }
+    .hidden { display:none; }
+    .badge { display:inline-block; padding:.2rem .5rem; border-radius:8px; background:#0d1026; border:1px solid #2a2e56; font-size:.8rem; color:var(--muted); }
+    .success-box { background:#0d2518; border:1px solid #1e6b4a; padding:.75rem; border-radius:10px; color:#a7f3d0; }
+    .link { color:var(--accent2); text-decoration:underline; cursor:pointer; }
+    .modal { position:fixed; inset:0; background:rgba(9,11,25,.75); backdrop-filter: blur(2px); display:grid; place-items:center; z-index:9999; }
+    .modal-card { width:100%; max-width:560px; background:#11152f; border:1px solid #2a2e56; border-radius:14px; padding:1rem 1.25rem; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+    .modal h2 { margin:0 0 .5rem 0; }
+    .modal p { margin:.25rem 0 .75rem 0; color:var(--muted); }
+    .modal-actions { display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.75rem; }
+    button.warn { background: linear-gradient(90deg,#fcd34d,#f59e0b); color:#0b1024; }
+    button.danger { background: linear-gradient(90deg,#fca5a5,#ef4444); color:#0b1024; }
+    .modal.hidden, .hidden { display:none !important; visibility:hidden !important; pointer-events:none !important; }
   </style>
 </head>
-
 <body>
-  <div class="card">
+  <div class=\"card\">
     <header>
       <h1>🚔 QR Treasure Hunt — Police Case</h1>
       <small>Theme: thief–police investigation • 5 levels</small>
     </header>
     <main>
-      <!-- Onboarding -->
-      <section id="onboarding">
-        <p class="muted">Scan the QR, enter your details, and start the case. Solve each level to unlock the next.</p>
-        <div class="row">
-          <div class="field">
-            <label for="team">Team name (optional)</label>
-            <input type="text" id="team" placeholder="e.g., Detective Squad" />
-          </div>
-          <div class="field">
-            <label for="name">Your name</label>
-            <input type="text" id="name" placeholder="e.g., Jay" />
-          </div>
+      <section id=\"onboarding\">
+        <p class=\"muted\">Scan the QR, enter your details, and start the case. Solve each level to unlock the next.</p>
+        <div class=\"row\">
+          <div class=\"field\"><label for=\"team\">Team name (optional)</label><input type=\"text\" id=\"team\" placeholder=\"e.g., Detective Squad\"/></div>
+          <div class=\"field\"><label for=\"name\">Your name</label><input type=\"text\" id=\"name\" placeholder=\"e.g., Jay\"/></div>
         </div>
-        <div class="foot">
-          <span class="badge">Progress is auto-saved.</span>
-          <button id="startBtn">Start Investigation</button>
-        </div>
-        <p id="onboardingMsg" class="error hidden"></p>
-        <div class="divider"></div>
-        <p class="muted">
-          Tip: Prefill via QR query params like <code>?team=Detectives&name=Jay&qr=posterA</code>.
-          &nbsp;|&nbsp; Troubleshooting: <span id="hardReset" class="link">Reset progress</span>
-        </p>
+        <div class=\"foot\"><span class=\"badge\">Progress is auto-saved.</span><button id=\"startBtn\">Start Investigation</button></div>
+        <p id=\"onboardingMsg\" class=\"error hidden\"></p>
+        <div class=\"divider\"></div>
+        <p class=\"muted\">Tip: Prefill via QR query params like <code>?team=Detectives&name=Jay&qr=posterA</code>.
+          &nbsp;|&nbsp; Troubleshooting: <span id=\"hardReset\" class=\"link\">Reset progress</span></p>
       </section>
 
-      <!-- Game -->
-      <section id="game" class="hidden">
-        <p id="welcome" class="muted"></p>
-
-        <!-- Level containers -->
-        <div id="p1" class="puzzle hidden"></div>
-        <div id="p2" class="puzzle hidden"></div>
-        <div id="p3" class="puzzle hidden"></div>
-        <div id="p4" class="puzzle hidden"></div>
-        <div id="p5" class="puzzle hidden"></div>
-
-        <!-- Success -->
-        <div id="done" class="hidden">
-          <div class="success-box">
-            <p id="congrats" class="ok"></p>
-            <p class="muted">Case closed. 🎉</p>
+      <section id=\"game\" class=\"hidden\">
+        <p id=\"welcome\" class=\"muted\"></p>
+        <div id=\"p1\" class=\"puzzle hidden\"></div>
+        <div id=\"p2\" class=\"puzzle hidden\"></div>
+        <div id=\"p3\" class=\"puzzle hidden\"></div>
+        <div id=\"p4\" class=\"puzzle hidden\"></div>
+        <div id=\"p5\" class=\"puzzle hidden\"></div>
+        <div class=\"foot hidden\" id=\"navBar\">
+          <div><span class=\"badge\" id=\"progressBadge\"></span></div>
+          <div class=\"nav\">
+            <button id=\"prevBtn\">◀ Prev</button>
+            <button id=\"nextBtn\">Next ▶</button>
           </div>
-          <p class="muted">
-            Want to run the case again or share with friends? Reset your progress:
-            <span id="reset" class="link">Reset</span>
-          </p>
+        </div>
+        <div id=\"done\" class=\"hidden\">
+          <div class=\"success-box\"><p id=\"congrats\" class=\"ok\"></p><p class=\"muted\">Case closed. 🎉</p></div>
+          <p class=\"muted\">Want to run the case again? <span id=\"reset\" class=\"link\">Reset</span></p>
         </div>
       </section>
 
-      <!-- Reset / Resume modal -->
-      <div id="resetModal" class="modal hidden" style="display:none" aria-modal="true" role="dialog" tabindex="-1">
-        <div class="modal-card">
-          <h2 id="resetTitle">Resume or reset?</h2>
-          <p id="resetDesc">You reloaded during a level. What would you like to do?</p>
-          <div class="modal-actions">
-            <button id="btnContinue">Continue</button>
-            <button id="btnResetCurrent" class="warn">Reset current level</button>
-            <button id="btnResetAll" class="danger">Reset all levels</button>
-          </div>
+      <section class=\"puzzle\">
+        <h2>Share / Access</h2>
+        <p class=\"muted\">Anyone can open the case by scanning this QR:</p>
+        <div class=\"row\">
+          <img id=\"qrImg\" alt=\"QR to open\" style=\"width:160px;height:160px;border:1px solid #2a2e56;border-radius:8px;background:#0b1024;\"/>
+          <div class=\"field\" style=\"flex:2\"><label>Direct link</label><input id=\"appLink\" type=\"text\" readonly value=\"\"></div>
         </div>
+      </section>
+
+      <div id=\"resetModal\" class=\"modal hidden\" style=\"display:none\" aria-modal=\"true\" role=\"dialog\" tabindex=\"-1\">
+        <div class=\"modal-card\"><h2 id=\"resetTitle\">Resume or reset?</h2><p id=\"resetDesc\">You reloaded during a level. What would you like to do?</p>
+          <div class=\"modal-actions\"><button id=\"btnContinue\">Continue</button><button id=\"btnResetCurrent\" class=\"warn\">Reset current level</button><button id=\"btnResetAll\" class=\"danger\">Reset all levels</button></div></div>
       </div>
 
     </main>
   </div>
 
-  <script>
-    // ========= CONFIG =========
-    const LOG_URL = 'https://script.google.com/macros/s/AKfycbz__kDopuMd2AMvVJBKqSTV5B74U-7b6d_LNbj3T78TqeAVLozBd8_Sw29kszkSYkrtQg/exec'; // Participation logging only
-    const LEVEL_COUNT = 5;
-    const ASK_ON_RELOAD = false; // auto-resume on reload unless ?reset=1
+<script>
+  const LOG_URL = 'https://script.google.com/macros/s/AKfycbz__kDopuMd2AMvVJBKqSTV5B74U-7b6d_LNbj3T78TqeAVLozBd8_Sw29kszkSYkrtQg/exec';
+  const LEVEL_COUNT = 5;
+  const ASK_ON_RELOAD = false;
+  const $ = s => document.querySelector(s);
+  function on(s,ev,fn){const el=$(s); if(!el){console.error('Missing',s); return false;} el.addEventListener(ev,fn); return true;}
+  function show(s){const el=$(s); if(!el) return; el.classList.remove('hidden'); el.style.removeProperty('display'); el.style.removeProperty('visibility'); el.style.removeProperty('pointer-events');}
+  function hide(s){const el=$(s); if(!el) return; el.classList.add('hidden'); el.style.display='none'; el.style.visibility='hidden'; el.style.pointerEvents='none';}
+  function closeResetModal(){const m=$('#resetModal'); if(!m) return; m.setAttribute('aria-hidden','true'); hide('#resetModal'); setTimeout(()=>{ const v=m && !m.classList.contains('hidden') && m.offsetParent!==null; if(v) m.remove(); },50);}
+  const params=new URLSearchParams(location.search); const navEntry=performance.getEntriesByType('navigation')[0]; const isReload=navEntry?.type==='reload'; const forcedReset=params.get('reset')==='1';
+  function removeQueryParam(p){ const url=new URL(location.href); url.searchParams.delete(p); history.replaceState(null,'',url.toString()); }
+  const SCHEMA_VER=2;
+  const saveState = (obj)=>{ const raw=localStorage.getItem('qrHuntState'); let st={}; try{st=raw?JSON.parse(raw):{}}catch(e){localStorage.removeItem('qrHuntState'); st={};} localStorage.setItem('qrHuntState', JSON.stringify({...st, ...obj})); };
+  const getState = ()=>{ try{ const raw=localStorage.getItem('qrHuntState'); if(!raw) return {}; const p=JSON.parse(raw); return p&&typeof p==='object'?p:{}; }catch(e){ localStorage.removeItem('qrHuntState'); return {}; } };
+  const clearState=()=>localStorage.removeItem('qrHuntState');
+  const getRunId=()=>{ const s=getState(); if(!s.runId){ s.runId=Math.random().toString(36).slice(2)+Date.now().toString(36); saveState({runId:s.runId}); } return s.runId; };
+  function migrateState(){ const s=getState(); if(s.schemaVer!==SCHEMA_VER){ saveState({ schemaVer:SCHEMA_VER, levelCompleted: s.levelCompleted ?? -1, answers: s.answers || {} }); } }
+  function getCurrentLevelFromState(){ const lc=(getState().levelCompleted ?? -1); return lc < (LEVEL_COUNT-1) ? (lc+2) : (LEVEL_COUNT+1); }
+  async function logEvent(ev, extras={}){ if(ev!=='start' && ev!=='finished') return; try{ const s=getState(); const body={ name:s.name||'', team:s.team||'', event:ev, level:extras.level??'', success:extras.success??'', siteUrl:location.href, qp:location.search, clientTime:new Date().toISOString(), clientTZ:Intl.DateTimeFormat().resolvedOptions().timeZone, runId:getRunId(), ua:navigator.userAgent }; await fetch(LOG_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(body)});}catch(e){} }
 
-    // ========= SAFE HELPERS =========
-    const $ = sel => document.querySelector(sel);
-    function on(sel, ev, fn) { const el = $(sel); if (!el) { console.error('Missing element:', sel); return false; } el.addEventListener(ev, fn); return true; }
-    function show(sel) { const el = $(sel); if (!el) return console.error('show(): missing', sel); el.classList.remove('hidden'); el.style.removeProperty('display'); el.style.removeProperty('visibility'); el.style.removeProperty('pointer-events'); }
-    function hide(sel) { const el = $(sel); if (!el) return console.error('hide(): missing', sel); el.classList.add('hidden'); el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; }
-    function closeResetModal() { const m = $('#resetModal'); if (!m) return; m.setAttribute('aria-hidden','true'); hide('#resetModal'); setTimeout(()=>{ const visible = m && !m.classList.contains('hidden') && m.offsetParent !== null; if (visible) m.remove(); }, 50); }
+  // ===== PUZZLES (placeholders neutral: no hints in input) =====
+  const PUZZLES=[
+    {id:1,title:'Level 1 — Crime‑Scene Riddle', html:'<p>Worn by those who protect, a symbol of authority at the scene — what is it?</p>', placeholder:'Your answer…', hint:'Authority symbol.', check:v=>v.trim().toLowerCase()==='badge'},
+    {id:2,title:'Level 2 — Caesar Clue', html:'<p><strong>Encoded clue:</strong> <code>wklhi</code></p><ul class="muted"><li>Hint: The shift equals the number of corners in a triangle.</li><li>Enter the decoded word (letters only).</li></ul>', placeholder:'Your answer…', hint:'Shift by 3 backwards.', check:v=>v.trim().toLowerCase()==='thief'},
+    {id:3,title:'Level 3 — Case Code (4 digits)', html:'<ul class="muted"><li>All four digits are different.</li><li>The <strong>sum</strong> of the digits is <strong>14</strong>.</li><li><strong>1st</strong> = letters in “CASE”.</li><li><strong>2nd</strong> = vowels in “investigation”.</li><li><strong>3rd</strong> = (2nd − 3). <strong>4th</strong> = 1.</li></ul>', placeholder:'Your answer…', hint:'Digits only. No spaces.', check:v=>v.trim()==='4631'},
+    {id:4,title:'Level 4 — Suspect Note (Anagram)', html:'<p>Unscramble the note to form a police action word: <code>RAREST</code></p>', placeholder:'Your answer…', hint:'Action taken after investigation.', check:v=>v.trim().toLowerCase()==='arrest'},
+    {id:5,title:'Level 5 — Evidence Tag Sequence', html:'<p>Tag numbers follow: <strong>2, 3, 5, 7, 11, …</strong> What is the next tag?</p>', placeholder:'Your answer…', hint:'Prime numbers.', check:v=>v.trim()==='13'}
+  ];
 
-    // ========= UTILITIES =========
-    const params = new URLSearchParams(location.search);
-    const navEntry = performance.getEntriesByType('navigation')[0];
-    const isReload = navEntry?.type === 'reload';
-    const forcedReset = params.get('reset') === '1';
-    function removeQueryParam(param) { const url = new URL(location.href); url.searchParams.delete(param); history.replaceState(null, '', url.toString()); }
+  function renderLevel(n){ const p=PUZZLES.find(x=>x.id===n); if(!p) return; const c=document.getElementById('p'+n); c.innerHTML=`
+      <h2><span class=\"puzzle-number\">${p.title.split(' — ')[0]}</span> — ${p.title.split(' — ')[1]}</h2>
+      ${p.html}
+      <div class=\"row\"><div class=\"field\"><label for=\"ans${n}\">Answer</label><input type=\"text\" id=\"ans${n}\" placeholder=\"${p.placeholder}\" /></div></div>
+      <div class=\"foot\"><span class=\"hint\">${p.hint}</span><div class=\"nav\"><button id=\"check${n}\">Check</button></div></div>
+      <p id=\"msg${n}\" class=\"muted\"></p>`;
+    // bind check
+    on('#check'+n,'click',()=>submitAnswer(n));
+  }
 
-    // Robust state helpers
-    const SCHEMA_VER = 1;
-    const saveState = (obj) => { const raw = localStorage.getItem('qrHuntState'); let state = {}; try { state = raw ? JSON.parse(raw) : {}; } catch (e) { console.warn('saveState(): clearing bad state', e); localStorage.removeItem('qrHuntState'); state = {}; } try { localStorage.setItem('qrHuntState', JSON.stringify({ ...state, ...obj })); } catch (e) { console.warn('saveState(): failed to persist', e); } };
-    const getState = () => { try { const raw = localStorage.getItem('qrHuntState'); if (!raw) return {}; const parsed = JSON.parse(raw); return (parsed && typeof parsed === 'object') ? parsed : {}; } catch (e) { console.warn('getState(): bad qrHuntState, clearing', e); localStorage.removeItem('qrHuntState'); return {}; } };
-    const clearState = () => localStorage.removeItem('qrHuntState');
-    const getRunId = () => { const s = getState(); if (!s.runId) { s.runId = Math.random().toString(36).slice(2) + Date.now().toString(36); saveState({ runId: s.runId }); } return s.runId; };
-    function migrateState(){ const s = getState(); if (s.schemaVer !== SCHEMA_VER) saveState({ schemaVer: SCHEMA_VER, levelCompleted: s.levelCompleted ?? -1 }); }
+  function submitAnswer(n){ const p=PUZZLES.find(x=>x.id===n); const inp=$('#ans'+n); const msg=$('#msg'+n); const val=inp.value; const ok=p.check(val); const st=getState(); const answers=st.answers||{}; answers[n]={ value:val, correct:ok, ts:Date.now() }; saveState({ answers }); if(ok){ msg.textContent='✅ Correct!'; msg.classList.remove('error'); const nextCompleted=n-1; const saveObj={ levelCompleted: nextCompleted }; saveObj['l'+n+'At']=Date.now(); if(n===LEVEL_COUNT) saveObj.completedAt=Date.now(); saveState(saveObj); lockLevel(n); if(n<LEVEL_COUNT) goTo(n+1); else finishCase(); } else { msg.textContent='❌ Not quite. Check the hint and try again.'; msg.classList.add('error'); }
+  }
 
-    // Current level mapping for LEVEL_COUNT
-    function getCurrentLevelFromState() { const lc = (getState().levelCompleted ?? -1); return lc < (LEVEL_COUNT - 1) ? (lc + 2) : (LEVEL_COUNT + 1); }
+  function lockLevel(n){ const inp=$('#ans'+n); const btn=$('#check'+n); if(inp) inp.setAttribute('disabled',''); if(btn) btn.setAttribute('disabled',''); }
 
-    async function logEvent(event, extras = {}) {
-      // Participation logging only (start/finished)
-      if (event !== 'start' && event !== 'finished') return;
-      try {
-        const s = getState();
-        const body = {
-          name: s.name || '', team: s.team || '', event,
-          level: extras.level ?? '', success: extras.success ?? '',
-          siteUrl: location.href, qp: location.search,
-          clientTime: new Date().toISOString(), clientTZ: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          runId: getRunId(), ua: navigator.userAgent
-        };
-        await fetch(LOG_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
-      } catch (e) { console.warn('logEvent failed', e); }
-    }
+  function populateLevelState(n){ const st=getState(); const a=st.answers?.[n]; const inp=$('#ans'+n); const msg=$('#msg'+n); if(!inp||!msg) return; if(a){ inp.value=a.value; if(a.correct){ msg.textContent='✅ Correct (locked).'; msg.classList.remove('error'); lockLevel(n); } else { msg.textContent='❌ Your previous attempt was incorrect.'; msg.classList.add('error'); }
+    } else { msg.textContent=''; msg.classList.remove('error'); }
+  }
 
-    // ========= PUZZLE ENGINE =========
-    const PUZZLES = [
-      {
-        id: 1, title: 'Level 1 — Crime‑Scene Riddle',
-        html: `<p>Worn by those who protect, a symbol of authority at the scene — what is it?</p>`,
-        placeholder: 'one word…', hint: 'Authority symbol.', check: v => v.trim().toLowerCase() === 'badge'
-      },
-      {
-        id: 2, title: 'Level 2 — Caesar Clue',
-        html: `<p><strong>Encoded clue:</strong> <code>wklhi</code></p><ul class="muted"><li>Hint: The shift equals the number of corners in a triangle.</li><li>Enter the decoded word (letters only).</li></ul>`,
-        placeholder: 'decoded word…', hint: 'Shift by 3 backwards.', check: v => v.trim().toLowerCase() === 'thief'
-      },
-      {
-        id: 3, title: 'Level 3 — Case Code (4 digits)',
-        html: `<ul class="muted"><li>All four digits are different.</li><li>The <strong>sum</strong> of the digits is <strong>14</strong>.</li><li><strong>1st</strong> = letters in “CASE”.</li><li><strong>2nd</strong> = vowels in “investigation”.</li><li><strong>3rd</strong> = (2nd − 3). <strong>4th</strong> = 1.</li></ul>`,
-        placeholder: 'e.g., 4631', hint: 'Digits only. No spaces.', check: v => v.trim() === '4631'
-      },
-      {
-        id: 4, title: 'Level 4 — Suspect Note (Anagram)',
-        html: `<p>Unscramble the note to form a police action word: <code>RAREST</code></p>`,
-        placeholder: 'anagram…', hint: 'Action taken after investigation.', check: v => v.trim().toLowerCase() === 'arrest'
-      },
-      {
-        id: 5, title: 'Level 5 — Evidence Tag Sequence',
-        html: `<p>Tag numbers follow: <strong>2, 3, 5, 7, 11, …</strong> What is the next tag?</p>`,
-        placeholder: 'next number…', hint: 'Prime numbers.', check: v => v.trim() === '13'
-      }
-    ];
+  function updateNav(n){ const badge=$('#progressBadge'); badge.textContent=`Level ${n} of ${LEVEL_COUNT}`; $('#prevBtn').disabled = (n<=1); const st=getState(); const lastUnlocked = Math.min(LEVEL_COUNT, (st.levelCompleted ?? -1)+2); // max level the player can reach
+    $('#nextBtn').disabled = (n>=lastUnlocked); }
 
-    function renderLevel(n){
-      const p = PUZZLES.find(x=>x.id===n); if(!p) return;
-      const container = document.getElementById('p'+n);
-      container.innerHTML = `
-        <h2><span class="puzzle-number">${p.title.split(' — ')[0]}</span> — ${p.title.split(' — ')[1]}</h2>
-        ${p.html}
-        <div class="row"><div class="field">
-          <label for="ans${n}">Answer</label>
-          <input type="text" id="ans${n}" placeholder="${p.placeholder}" />
-        </div></div>
-        <div class="foot">
-          <span class="hint">${p.hint}</span>
-          <button id="check${n}">Check</button>
-        </div>
-        <p id="msg${n}" class="muted"></p>
-      `;
-      on('#check'+n, 'click', () => {
-        const val = document.getElementById('ans'+n).value;
-        const msg = document.getElementById('msg'+n);
-        const ok = p.check(val);
-        if (ok) {
-          msg.textContent = `✅ Correct! Level ${n+1 <= LEVEL_COUNT ? (n+1) : 'complete'} unlocked.`;
-          const nextCompleted = n-1; // levelCompleted indexes from 0
-          const s = getState();
-          const saveObj = { levelCompleted: nextCompleted };
-          if (n === 1) saveObj.l1At = Date.now();
-          if (n === 2) saveObj.l2At = Date.now();
-          if (n === 3) saveObj.l3At = Date.now();
-          if (n === 4) saveObj.l4At = Date.now();
-          if (n === 5) saveObj.completedAt = Date.now();
-          saveState(saveObj);
-          if (n < LEVEL_COUNT) revealLevel(n+1); else finishCase();
-        } else {
-          msg.textContent = '❌ Not quite. Check the hint and try again.';
-          msg.classList.add('error');
-        }
-      });
-    }
+  function revealLevel(n){ for(let i=1;i<=LEVEL_COUNT;i++) hide('#p'+i); hide('#done'); show('#p'+n); show('#navBar'); populateLevelState(n); updateNav(n); currentLevel=n; }
 
-    function revealLevel(n){
-      for(let i=1;i<=LEVEL_COUNT;i++){ hide('#p'+i); }
-      hide('#done');
-      show('#p'+n);
-    }
+  function finishCase(){ const s=getState(); const nameOrTeam = s.team ? `Team ${s.team}` : (s.name || 'Player'); $('#congrats').textContent = `Congrats ${nameOrTeam}! Case closed.`; logEvent('finished', { level: LEVEL_COUNT, success: true }); for(let i=1;i<=LEVEL_COUNT;i++) hide('#p'+i); hide('#navBar'); show('#done'); currentLevel=LEVEL_COUNT+1; }
 
-    function finishCase(){
-      const s = getState();
-      const nameOrTeam = s.team ? `Team ${s.team}` : (s.name || 'Player');
-      document.getElementById('congrats').textContent = `Congrats ${nameOrTeam}! Case closed.`;
-      logEvent('finished', { level: LEVEL_COUNT, success: true });
-      for(let i=1;i<=LEVEL_COUNT;i++){ hide('#p'+i); }
-      show('#done');
-    }
+  // Navigation
+  let currentLevel=1;
+  function goTo(n){ const st=getState(); const lastUnlocked = Math.min(LEVEL_COUNT, (st.levelCompleted ?? -1)+2); if(n<1) n=1; if(n>lastUnlocked) n=lastUnlocked; revealLevel(n); }
 
-    // ========= ONBOARDING =========
-    (function prefill(){ const teamQ = params.get('team') || ''; const nameQ = params.get('name') || ''; if (teamQ) document.getElementById('team').value = teamQ; if (nameQ) document.getElementById('name').value = nameQ; })();
+  // Onboarding & init
+  (function prefill(){ const teamQ=params.get('team')||''; const nameQ=params.get('name')||''; if(teamQ) $('#team').value=teamQ; if(nameQ) $('#name').value=nameQ; })();
+  migrateState();
+  PUZZLES.forEach(p=>renderLevel(p.id));
+  on('#startBtn','click',()=>{ const name=$('#name').value.trim(); const team=$('#team').value.trim(); if(!name && !team){ const m=$('#onboardingMsg'); m.textContent='Please enter at least a name or a team name.'; m.classList.remove('hidden'); return; } saveState({ name, team, levelCompleted:-1, startedAt:Date.now(), schemaVer:SCHEMA_VER, answers:{} }); logEvent('start',{level:1, success:true}); hide('#onboarding'); show('#game'); $('#welcome').textContent = `Welcome${team ? ' Team '+team : ''}${name ? ', '+name : ''}!`; revealLevel(1); });
+  on('#hardReset','click',()=>{ clearState(); location.reload(); });
+  on('#reset','click',()=>{ clearState(); location.reload(); });
 
-    migrateState();
+  // Prev/Next buttons
+  on('#prevBtn','click',()=>goTo(currentLevel-1));
+  on('#nextBtn','click',()=>goTo(currentLevel+1));
 
-    (function initFromStorage(){
-      const s = getState();
-      PUZZLES.forEach(p=>renderLevel(p.id));
-      const activeLevel = getCurrentLevelFromState();
-      const hasStarted = !!s.startedAt;
-      if (s.name || s.team) {
-        hide('#onboarding'); show('#game');
-        document.getElementById('welcome').textContent = `Welcome${s.team ? ' Team ' + s.team : ''}${s.name ? ', ' + s.name : ''}!`;
-        if (forcedReset) removeQueryParam('reset');
-        const shouldShowModal = (forcedReset || (ASK_ON_RELOAD && isReload));
-        if (shouldShowModal && hasStarted && activeLevel <= LEVEL_COUNT) {
-          document.getElementById('resetDesc').textContent = `You reloaded during Level ${activeLevel}. What would you like to do?`;
-          show('#resetModal'); setTimeout(() => document.getElementById('btnContinue')?.focus(), 50);
-        } else {
-          if (activeLevel <= LEVEL_COUNT) revealLevel(activeLevel); else finishCase();
-        }
-      }
-    })();
+  // Resume flow
+  (function initFromStorage(){ const s=getState(); const active = getCurrentLevelFromState(); const hasStarted=!!s.startedAt; // render levels above already
+    if(s.name||s.team){ hide('#onboarding'); show('#game'); $('#welcome').textContent=`Welcome${s.team ? ' Team '+s.team : ''}${s.name ? ', '+s.name : ''}!`; if(forcedReset) removeQueryParam('reset'); const shouldShow = (forcedReset || (ASK_ON_RELOAD && isReload)); if(shouldShow && hasStarted && active <= LEVEL_COUNT){ $('#resetDesc').textContent=`You reloaded during Level ${active}. What would you like to do?`; show('#resetModal'); setTimeout(()=>$('#btnContinue')?.focus(),50); } else { if(active <= LEVEL_COUNT) revealLevel(active); else finishCase(); } }})();
 
-    on('#startBtn','click',()=>{
-      const name = document.getElementById('name').value.trim(); const team = document.getElementById('team').value.trim();
-      if (!name && !team) { const m = document.getElementById('onboardingMsg'); m.textContent = 'Please enter at least a name or a team name.'; m.classList.remove('hidden'); return; }
-      saveState({ name, team, levelCompleted: -1, startedAt: Date.now(), schemaVer: SCHEMA_VER });
-      logEvent('start', { level: 1, success: true });
-      hide('#onboarding'); show('#game');
-      document.getElementById('welcome').textContent = `Welcome${team ? ' Team ' + team : ''}${name ? ', ' + name : ''}!`;
-      revealLevel(1);
-    });
+  function bindResetModalHandlers(){ on('#btnContinue','click',()=>{ removeQueryParam('reset'); closeResetModal(); revealLevel(getCurrentLevelFromState()); setTimeout(()=>closeResetModal(),100); }); on('#btnResetCurrent','click',()=>{ removeQueryParam('reset'); const level=getCurrentLevelFromState(); const msg=$('#msg'+level); const inp=$('#ans'+level); if(inp) inp.value=''; if(msg){ msg.textContent=''; msg.classList.remove('error'); } closeResetModal(); revealLevel(level); }); on('#btnResetAll','click',()=>{ clearState(); removeQueryParam('reset'); closeResetModal(); location.reload(); }); on('#resetModal','keydown',(e)=>{ if(e.key==='Escape'){ closeResetModal(); revealLevel(getCurrentLevelFromState()); } }); setTimeout(()=>{ const modal=$('#resetModal'); if(modal && !modal.classList.contains('hidden') && modal.offsetParent!==null){ closeResetModal(); revealLevel(getCurrentLevelFromState()); } }, 2000); }
+  window.addEventListener('DOMContentLoaded', bindResetModalHandlers);
 
-    on('#hardReset','click',()=>{ clearState(); location.reload(); });
+  // PWA
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
 
-    on('#reset','click',()=>{ clearState(); location.reload(); });
-
-    // ========= RESET MODAL ACTIONS =========
-    function bindResetModalHandlers(){
-      const ok1 = on('#btnContinue','click',()=>{ removeQueryParam('reset'); closeResetModal(); revealLevel(getCurrentLevelFromState()); setTimeout(()=>closeResetModal(),100); });
-      const ok2 = on('#btnResetCurrent','click',()=>{ removeQueryParam('reset'); const level = getCurrentLevelFromState(); const inp = document.getElementById('ans'+level); const msg = document.getElementById('msg'+level); if (inp) inp.value=''; if (msg){ msg.textContent=''; msg.classList.remove('error'); } closeResetModal(); revealLevel(level); setTimeout(()=>closeResetModal(),100); });
-      const ok3 = on('#btnResetAll','click',()=>{ const level = getCurrentLevelFromState(); clearState(); removeQueryParam('reset'); closeResetModal(); location.reload(); });
-      on('#resetModal','keydown',(e)=>{ if (e.key==='Escape'){ closeResetModal(); revealLevel(getCurrentLevelFromState()); } });
-      if (!ok1 || !ok2 || !ok3){ console.warn('Modal handlers not fully bound—auto-continue fallback'); closeResetModal(); revealLevel(getCurrentLevelFromState()); }
-      setTimeout(()=>{ const modal = document.getElementById('resetModal'); if (modal && !modal.classList.contains('hidden') && modal.offsetParent !== null){ console.warn('Modal still visible after timeout—auto-remove'); closeResetModal(); revealLevel(getCurrentLevelFromState()); } }, 2000);
-    }
-    window.addEventListener('DOMContentLoaded', bindResetModalHandlers);
-
-    // ========= PWA =========
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(console.error); }
-  </script>
+  // QR block: point to GitHub Pages URL by default
+  (function setupQR(){ const defaultUrl = 'https://joyboy0543.github.io/questcomm_2026/'; const href = defaultUrl; const img = document.getElementById('qrImg'); const link = document.getElementById('appLink'); link.value = href; // local QR asset if present
+    img.src = 'qr_access.png'; img.addEventListener('error',()=>{ // fallback to remote generator (optional)
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(href);
+    }); })();
+</script>
 </body>
 </html>

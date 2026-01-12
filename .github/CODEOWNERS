@@ -1,6 +1,5 @@
 
-# CODEOWNERS: auto-request reviews for changed paths
-# Edit @your-handle to your GitHub username; you can add teams as @org/team
+# CODEOWNERS example — replace @your-handle with your GitHub username
 * @your-handle
 assets/js/ @your-handle
 assets/css/ @your-handle

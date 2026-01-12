@@ -1,10 +1,10 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QuestComm — Minimal Quizzes</title>
+  <title>QuestComm — Police Investigation Quizzes</title>
+  <link rel="icon" type="image/png" href="icons/favicon.png" />
   <style>
     :root { --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b; }
     * { box-sizing: border-box; }
@@ -16,7 +16,9 @@
     button[disabled] { opacity:.5; cursor:not-allowed; }
     .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     .card { padding:16px; border-radius:10px; background:#141832; margin:14px 0; }
-    .question { font-size:1.05rem; margin-bottom:12px; }
+    .media { margin: 10px 0 6px; }
+    .media img { max-width: 100%; border-radius: 10px; border: 1px solid #2a2f48; }
+    .question { font-size:1.05rem; margin: 12px 0; }
     .status { margin-top:10px; font-weight:600; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
@@ -41,6 +43,7 @@
 
   <!-- Quiz view -->
   <div id="quiz" class="card hidden">
+    <div id="media" class="media hidden"></div>
     <div id="question" class="question"></div>
     <label for="answer">Answer</label>
     <input id="answer" type="text" />
@@ -59,25 +62,36 @@
 </div>
 
 <script>
-// Minimal 3 quizzes, text answers only; no hints, no extras
+// Police investigation theme
 const QUIZZES = [
-  { q: "What is 2 + 2?", a: "4" },
-  { q: "Unscramble this word: RAET", a: "TEAR" },
-  { q: "Fill the blank: The capital of France is ____.", a: "PARIS" }
+  {
+    q: "From the crime scene photo, what single object is most out of place?",
+    a: "GLOVE",
+    media: [{ type: 'image', src: 'assets/img/crime_scene.png', alt: 'Crime scene image' }]
+  },
+  {
+    q: "During the flashlight sweep, which hidden item should you report?",
+    a: "KEY",
+    media: [{ type: 'image', src: 'assets/gif/flashlight_sweep.gif', alt: 'Flashlight sweep' }]
+  },
+  {
+    q: "On the evidence board, what link ties suspect to location?",
+    a: "TICKET",
+    media: [{ type: 'image', src: 'assets/img/evidence_board.png', alt: 'Evidence board image' }]
+  }
 ];
 
-// State (no localStorage; in-memory only)
 let current = 0;
-const completed = [false, false, false];
+const completed = Array(QUIZZES.length).fill(false);
 let profile = { name: "", team: "" };
 
-// Elements
 const E = {
   landing: document.getElementById('landing'),
   quiz: document.getElementById('quiz'),
   name: document.getElementById('name'),
   team: document.getElementById('team'),
   startBtn: document.getElementById('startBtn'),
+  media: document.getElementById('media'),
   question: document.getElementById('question'),
   answer: document.getElementById('answer'),
   checkBtn: document.getElementById('checkBtn'),
@@ -103,14 +117,22 @@ function start(){
 
 function render(){
   const item = QUIZZES[current];
+  // Media
+  if (item.media && item.media.length){
+    const m = item.media[0];
+    E.media.innerHTML = `<img src="${m.src}" alt="${m.alt||''}">`;
+    show('media');
+  } else {
+    E.media.innerHTML = '';
+    hide('media');
+  }
+  // Question
   E.question.textContent = item.q;
+  // Reset UI
   E.answer.value = '';
   E.status.textContent = '';
   E.status.className = 'status';
-
-  // Back is enabled if there is a previous quiz (which must have been completed to reach here)
   E.backBtn.disabled = (current === 0);
-  // Next is enabled only if current is completed
   E.nextBtn.disabled = !completed[current];
 }
 
@@ -141,29 +163,15 @@ function resetPuzzle(){
   E.nextBtn.disabled = true;
 }
 
-function back(){
-  if (current > 0){
-    current--;
-    render();
-  }
-}
-
+function back(){ if (current > 0){ current--; render(); } }
 function next(){
   if (completed[current]){
-    if (current < QUIZZES.length - 1){
-      current++;
-      render();
-    } else {
-      // finished all; keep Next disabled
-      E.nextBtn.disabled = true;
-      E.status.textContent = 'All quizzes completed.';
-      E.status.className = 'status ok';
-    }
+    if (current < QUIZZES.length - 1){ current++; render(); }
+    else { E.nextBtn.disabled = true; E.status.textContent = 'All quizzes completed.'; E.status.className = 'status ok'; }
   }
 }
 
 function resetAll(){
-  // Clear everything and return to landing
   profile = { name: '', team: '' };
   current = 0;
   completed.fill(false);
@@ -173,7 +181,6 @@ function resetAll(){
   show('landing');
 }
 
-// Wire up
 E.startBtn.addEventListener('click', start);
 E.checkBtn.addEventListener('click', check);
 E.resetPuzzleBtn.addEventListener('click', resetPuzzle);

@@ -13,20 +13,41 @@
     <div id="loading-tape"><span></span></div>
   </header>
   <main class="container">
-    <section id="puzzle-area"></section>
-    <hr/>
-    <section id="minigame"></section>
-    <section id="fp-scan">
-      <div class="sensor"></div>
-      <button id="scan-btn" class="btn">Scan Fingerprint</button>
+    <!-- Landing form -->
+    <section id="landing" class="landing-card">
+      <h2>Enter Team Details</h2>
+      <form id="landing-form">
+        <label>
+          Team name
+          <input id="team" name="team" type="text" placeholder="e.g., Sector C" required />
+        </label>
+        <label>
+          Your name
+          <input id="player" name="player" type="text" placeholder="e.g., Jay" required />
+        </label>
+        <button class="btn" type="submit">Start Investigation</button>
+      </form>
     </section>
-    <svg id="crime-map" viewBox="0 0 240 120" style="margin-top:12px">
-      <rect x="10" y="10" width="80" height="50" fill="#1b1b1b" stroke="#888"/>
-      <circle id="poi-warehouse" cx="50" cy="35" r="6" fill="#ffa000"/>
-      <text x="20" y="25" fill="#bbb" font-size="10">Warehouse</text>
-    </svg>
+
+    <!-- App content hidden until form submit / prefill -->
+    <section id="app" hidden>
+      <section id="puzzle-area"></section>
+      <hr/>
+      <section id="minigame"></section>
+      <section id="fp-scan">
+        <div class="sensor"></div>
+        <button id="scan-btn" class="btn">Scan Fingerprint</button>
+      </section>
+      <svg id="crime-map" viewBox="0 0 240 120" style="margin-top:12px">
+        <rect x="10" y="10" width="80" height="50" fill="#1b1b1b" stroke="#888"/>
+        <circle id="poi-warehouse" cx="50" cy="35" r="6" fill="#ffa000"/>
+        <text x="20" y="25" fill="#bbb" font-size="10">Warehouse</text>
+      </svg>
+      <button class="btn" id="reset-progress" style="margin-top:12px">Reset Progress</button>
+    </section>
   </main>
   <footer class="container">© 2026 QuestComm — Case File UI prototype</footer>
+
   <script type="module">
     import { sfx, playRadio } from './assets/js/audio.js';
     import { mountSelected } from './assets/js/puzzles.js';
@@ -34,18 +55,46 @@
     import { initMap, advanceLevel } from './assets/js/progress.js';
     import { interrogate, fpScan } from './assets/js/minigames.js';
 
-    // Initialize modules
-    mountSelected('#puzzle-area', 3);
-    showCase(document.querySelector('#puzzle-area'));
-    setProgress(15);
-    initMap();
-    interrogate('#minigame');
-    fpScan();
+    // Landing gate
+    const app = document.getElementById('app');
+    const landing = document.getElementById('landing');
+    const form = document.getElementById('landing-form');
+    const teamInput = document.getElementById('team');
+    const playerInput = document.getElementById('player');
 
-    // Demo radio messages
-    playRadio(['Unit 12, proceed to Sector C.', 'Suspect spotted near the warehouse.', 'Maintain radio silence.']);
-    const next = advanceLevel();
-    console.log('Advanced to level', next);
+    (function prefill(){
+      const params = new URLSearchParams(location.search);
+      const saved = JSON.parse(localStorage.getItem('qc_identity') || '{}');
+      teamInput.value = params.get('team') || saved.team || '';
+      playerInput.value = params.get('name') || saved.name || '';
+      if (teamInput.value && playerInput.value){ landing.hidden = true; app.hidden = false; initApp(); }
+    })();
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const identity = { team: teamInput.value.trim(), name: playerInput.value.trim() };
+      if (!identity.team || !identity.name) return;
+      localStorage.setItem('qc_identity', JSON.stringify(identity));
+      landing.hidden = true; app.hidden = false; initApp();
+    });
+
+    document.getElementById('reset-progress')?.addEventListener('click', () => {
+      localStorage.removeItem('qc_progress_v1');
+      localStorage.removeItem('qc_identity');
+      location.reload();
+    });
+
+    function initApp(){
+      mountSelected('#puzzle-area', 3);
+      showCase(document.querySelector('#puzzle-area'));
+      setProgress(15);
+      initMap();
+      interrogate('#minigame');
+      fpScan();
+      playRadio(['Unit 12, proceed to Sector C.', 'Suspect spotted near the warehouse.', 'Maintain radio silence.']);
+      const next = advanceLevel();
+      console.log('Advanced to level', next);
+    }
   </script>
 </body>
 </html>

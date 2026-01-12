@@ -5,9 +5,16 @@
 }
 body{background:var(--bg); color:var(--fg); font: 500 14px/1.6 "ComicShanns", monospace; margin:0;}
 h1,h2,h3{color:#eaf0f6;}
+img, svg { max-width:100%; height:auto; }
 .container{max-width:920px; margin:24px auto; padding:0 16px;}
-.btn{background:#1c2633; color:#eaf0f6; border:1px solid #2a3647; padding:8px 12px; border-radius:6px; cursor:pointer}
+.btn{background:#1c2633; color:#eaf0f6; border:1px solid #2a3647; padding:10px 12px; border-radius:6px; cursor:pointer; min-height:44px}
 .btn:hover{background:#233042}
+
+/* Landing form */
+.landing-card{ max-width:520px; margin:20px auto; padding:16px; background:#0e141b; border:1px solid #1f2a37; border-radius:10px; }
+.landing-card h2{ margin-top:0; }
+#landing-form label{ display:block; margin:10px 0; }
+#landing-form input{ width:100%; padding:10px; border-radius:6px; border:1px solid #2a3647; background:#111822; color:#e6e6e6; }
 
 /* Radio toast */
 .radio-toast{position:fixed; bottom:24px; left:24px; background:rgba(10,10,10,0.85); color:#9fe5ff;
@@ -34,6 +41,9 @@ h1,h2,h3{color:#eaf0f6;}
 .opts .btn{margin:4px}
 .opts .btn.correct{background:#4caf50; color:#fff}
 
-/* Layout bits */
 header{padding:16px; border-bottom:1px solid #18202b;}
 footer{padding:16px; border-top:1px solid #18202b; color:var(--muted)}
+
+/* Simple grid helper */
+.grid-2{ display:grid; gap:12px; grid-template-columns:1fr; }
+@media (min-width:768px){ .grid-2{ grid-template-columns:1fr 1fr; } }

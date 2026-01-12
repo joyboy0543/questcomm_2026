@@ -1,58 +1,43 @@
 
-# QuestComm UI Upgrade Pack
+# QuestComm 2026 (GitHub Pages)
 
-This bundle adds: dramatic SFX, police radio toasts, puzzle randomizer, optional CCTV puzzle, animated case-file transitions, police-tape loading bar, crime scene mini-map, interrogation mini-game, and a fingerprint scan mini-game.
+A single-page, **media-free** step-by-step puzzle site.
 
-## How to install (new branch)
+## Features
+- Landing form (name/team) → start game
+- 3 puzzles shown **one at a time**; **Next** button unlocks on correct
+- Progress saved in `localStorage`
+- QR prefill via `?name=...&team=...`
+- **Version gate** (`GAME_VERSION`) auto-clears old progress when you publish updates
 
-1. Clone your repo:
-   ```bash
-   git clone https://github.com/joyboy0543/questcomm_2026.git
-   cd questcomm_2026
-   ```
-2. Create a feature branch:
-   ```bash
-   git checkout -b feature/ui-bonus-minigames
-   ```
-3. Copy the contents of this zip **into the repo root** (it contains the `assets/` and `index.html`). If you already have HTML/CSS/JS, merge manually.
-4. Commit & push:
-   ```bash
-   git add -A
-   git commit -m "feat(ui): bonus + cosmetics + minigames"
-   git push -u origin feature/ui-bonus-minigames
-   ```
-5. Open a Pull Request on GitHub (Compare: `feature/ui-bonus-minigames` → `main`).
+## How to Deploy (GitHub Pages)
+1. Repo → **Settings → Pages**
+2. **Source**: `Deploy from a branch`
+3. **Branch**: `main`, **Folder**: `/ (root)`
+4. Wait ~1–10 minutes for global propagation.
 
-## Enable reviews before merging
+## How to Force Fresh Loads
+- Bump the constant `GAME_VERSION` in `index.html` (e.g., `2026-01-12-stepper-v4`).
+- Optional: visit with a querystring:  
+  `https://<user>.github.io/questcomm_2026/?v=2026-01-12-4`
+- Verify via DevTools → **Network** → **Disable cache** → Reload.
 
-In GitHub: **Settings → Branches → Add rule** for `main`:
-- Enable **Require a pull request before merging**
-- Enable **Require approvals** (choose 1+) and **Require review from Code Owners** (optional)
-- Optionally enable **Require status checks** (e.g., CI) and **Require conversation resolution**
+## Editing Puzzles
+Open `index.html` and edit the `PUZZLES` array. Each puzzle:
 
-Add a `CODEOWNERS` file (one is included at `.github/CODEOWNERS`) and replace `@your-handle` with your GitHub username or team. GitHub will auto-request reviews from owners when PRs touch owned paths.
+```js
+{
+  title: "Puzzle X",
+  type: "mcq" | "text",
+  prompt: "Question text",
+  options: ["A","B","C","D"], // for mcq only
+  answer: "B",
+  accept: ["b","beta"], // optional, for text type
+  explain: "Short rationale"
+}
+```
 
-## Free, reusable custom subdomains (no purchase)
+After changes, **bump `GAME_VERSION`** and commit.
 
-If you want a cleaner URL than `joyboy0543.github.io/questcomm_2026/` without buying a domain, you have two solid, free options:
-
-- **JS.ORG** — Get `questcomm.js.org` or `investigation.js.org`. Steps:
-  1) Add a `CNAME` file with the chosen `*.js.org` subdomain to your Pages branch
-  2) Submit a PR to the `js-org/js.org` repo to add your subdomain
-  3) Wait ~24h for activation
-
-- **is-a.dev** — Get `investigation.is-a.dev` (or similar). Steps:
-  1) Fork `is-a-dev/register`, add `domains/<subdomain>.json` with `{"records":{"CNAME":"joyboy0543.github.io"}}`
-  2) Open a PR and, after merge, set `Custom domain` in your repo Pages to `<subdomain>.is-a.dev`, then enforce HTTPS
-
-After activation, regenerate your QR code to point at the new subdomain.
-
-## Optional: QR Code
-
-Once the domain (or subdomain) resolves, generate a QR that points to it. We can provide one from the assistant if needed.
-
-## Notes
-
-- Audio files referenced (`/assets/sounds/*.ogg`) are placeholders. Add tiny OGGs to avoid heavy payload.
-- The CCTV GIF (`/assets/img/cctv_loop.gif`) should be added by you (optimize for <1MB).
-- All features are vanilla JS; toggle modules by commenting imports in `index.html`.
+## License
+MIT (or your preferred)

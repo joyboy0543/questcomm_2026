@@ -1,0 +1,185 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuestComm — Minimal Quizzes</title>
+  <style>
+    :root { --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 720px; margin: 40px auto; padding: 24px; background: var(--panel); border-radius: 12px; }
+    label { display:block; margin: 10px 0 6px; color: var(--muted); }
+    input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2a2f48; background: #121527; color: var(--text); }
+    button { background: var(--accent); color:#001622; border:0; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    button[disabled] { opacity:.5; cursor:not-allowed; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .card { padding:16px; border-radius:10px; background:#141832; margin:14px 0; }
+    .question { font-size:1.05rem; margin-bottom:12px; }
+    .status { margin-top:10px; font-weight:600; }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Landing: ONLY name + team + start -->
+  <div id="landing" class="card">
+    <label for="name">Name</label>
+    <input id="name" type="text" />
+
+    <label for="team">Team</label>
+    <input id="team" type="text" />
+
+    <div class="row">
+      <button id="startBtn">Start</button>
+    </div>
+  </div>
+
+  <!-- Quiz view -->
+  <div id="quiz" class="card hidden">
+    <div id="question" class="question"></div>
+    <label for="answer">Answer</label>
+    <input id="answer" type="text" />
+
+    <div class="row">
+      <button id="checkBtn">Check</button>
+      <button id="resetPuzzleBtn">Reset Puzzle</button>
+      <button id="backBtn">Back</button>
+      <button id="nextBtn" disabled>Next</button>
+      <button id="resetAllBtn">Reset All</button>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+</div>
+
+<script>
+// Minimal 3 quizzes, text answers only; no hints, no extras
+const QUIZZES = [
+  { q: "What is 2 + 2?", a: "4" },
+  { q: "Unscramble this word: RAET", a: "TEAR" },
+  { q: "Fill the blank: The capital of France is ____.", a: "PARIS" }
+];
+
+// State (no localStorage; in-memory only)
+let current = 0;
+const completed = [false, false, false];
+let profile = { name: "", team: "" };
+
+// Elements
+const E = {
+  landing: document.getElementById('landing'),
+  quiz: document.getElementById('quiz'),
+  name: document.getElementById('name'),
+  team: document.getElementById('team'),
+  startBtn: document.getElementById('startBtn'),
+  question: document.getElementById('question'),
+  answer: document.getElementById('answer'),
+  checkBtn: document.getElementById('checkBtn'),
+  resetPuzzleBtn: document.getElementById('resetPuzzleBtn'),
+  backBtn: document.getElementById('backBtn'),
+  nextBtn: document.getElementById('nextBtn'),
+  resetAllBtn: document.getElementById('resetAllBtn'),
+  status: document.getElementById('status')
+};
+
+function show(id){ document.getElementById(id).classList.remove('hidden'); }
+function hide(id){ document.getElementById(id).classList.add('hidden'); }
+
+function start(){
+  profile.name = (E.name.value || '').trim();
+  profile.team = (E.team.value || '').trim();
+  current = 0;
+  completed.fill(false);
+  hide('landing');
+  show('quiz');
+  render();
+}
+
+function render(){
+  const item = QUIZZES[current];
+  E.question.textContent = item.q;
+  E.answer.value = '';
+  E.status.textContent = '';
+  E.status.className = 'status';
+
+  // Back is enabled if there is a previous quiz (which must have been completed to reach here)
+  E.backBtn.disabled = (current === 0);
+  // Next is enabled only if current is completed
+  E.nextBtn.disabled = !completed[current];
+}
+
+function check(){
+  const given = (E.answer.value || '').trim().toUpperCase();
+  const expected = QUIZZES[current].a.toUpperCase();
+  if (!given){
+    E.status.textContent = 'Please enter an answer.';
+    E.status.className = 'status err';
+    return;
+  }
+  if (given === expected){
+    completed[current] = true;
+    E.status.textContent = 'Correct.';
+    E.status.className = 'status ok';
+    E.nextBtn.disabled = false;
+  } else {
+    E.status.textContent = 'Incorrect.';
+    E.status.className = 'status err';
+  }
+}
+
+function resetPuzzle(){
+  completed[current] = false;
+  E.answer.value = '';
+  E.status.textContent = '';
+  E.status.className = 'status';
+  E.nextBtn.disabled = true;
+}
+
+function back(){
+  if (current > 0){
+    current--;
+    render();
+  }
+}
+
+function next(){
+  if (completed[current]){
+    if (current < QUIZZES.length - 1){
+      current++;
+      render();
+    } else {
+      // finished all; keep Next disabled
+      E.nextBtn.disabled = true;
+      E.status.textContent = 'All quizzes completed.';
+      E.status.className = 'status ok';
+    }
+  }
+}
+
+function resetAll(){
+  // Clear everything and return to landing
+  profile = { name: '', team: '' };
+  current = 0;
+  completed.fill(false);
+  E.name.value = '';
+  E.team.value = '';
+  hide('quiz');
+  show('landing');
+}
+
+// Wire up
+E.startBtn.addEventListener('click', start);
+E.checkBtn.addEventListener('click', check);
+E.resetPuzzleBtn.addEventListener('click', resetPuzzle);
+E.backBtn.addEventListener('click', back);
+E.nextBtn.addEventListener('click', next);
+E.resetAllBtn.addEventListener('click', resetAll);
+</script>
+</body>
+</html>

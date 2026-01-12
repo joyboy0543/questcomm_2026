@@ -7,19 +7,24 @@
   <title>QuestComm — QCPD Case File</title>
   <link rel="icon" type="image/png" href="icons/favicon.png" />
   <style>
-    :root { --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b; }
+    :root {
+      --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b;
+      --tap: 48px; /* min tap height */
+    }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
-    .wrap { max-width: 720px; margin: 40px auto; padding: 24px; background: var(--panel); border-radius: 12px; }
+    .wrap { max-width: 720px; margin: 4vh auto; padding: 16px; background: var(--panel); border-radius: 12px; }
+    @media (min-width: 768px){ .wrap{ padding:24px; } }
     label { display:block; margin: 10px 0 6px; color: var(--muted); }
-    input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2a2f48; background: #121527; color: var(--text); }
-    button { background: var(--accent); color:#001622; border:0; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    input[type="text"] { width: 100%; padding: 12px 14px; min-height: var(--tap); border-radius: 10px; border: 1px solid #2a2f48; background: #121527; color: var(--text); font-size: 1rem; }
+    input:focus, button:focus { outline: 3px solid #5cc8ff55; outline-offset: 2px; }
+    button { background: var(--accent); color:#001622; border:0; padding: 12px 18px; min-height: var(--tap); border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem; }
     button[disabled] { opacity:.5; cursor:not-allowed; }
-    .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .card { padding:16px; border-radius:10px; background:#141832; margin:14px 0; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+    .card { padding:16px; border-radius:12px; background:#141832; margin:14px 0; }
     .media { margin: 10px 0 6px; }
-    .media img { max-width: 100%; border-radius: 10px; border: 1px solid #2a2f48; }
-    .dialogue { font-size:1.02rem; margin: 12px 0; line-height:1.5; }
+    .media img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #2a2f48; }
+    .dialogue { font-size:1.05rem; margin: 12px 0; line-height:1.6; }
     .status { margin-top:10px; font-weight:600; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
@@ -28,17 +33,17 @@
 </head>
 <body>
 <div class="wrap">
-  <div id="landing" class="card">
+  <div id="landing" class="card" role="region" aria-label="QCPD Login">
     <label for="name">Name</label>
-    <input id="name" type="text" />
+    <input id="name" type="text" autocomplete="name" />
     <label for="team">Team</label>
     <input id="team" type="text" />
-    <div class="row"><button id="startBtn">Start</button></div>
+    <div class="row"><button id="startBtn" aria-label="Start investigation">Start</button></div>
   </div>
 
-  <div id="quiz" class="card hidden">
-    <div id="media" class="media hidden"></div>
-    <div id="dialogue" class="dialogue"></div>
+  <div id="quiz" class="card hidden" role="region" aria-label="QCPD Case">
+    <div id="media" class="media hidden" aria-hidden="true"></div>
+    <div id="dialogue" class="dialogue" aria-live="polite"></div>
     <label for="answer">Answer</label>
     <input id="answer" type="text" />
     <div class="row">
@@ -48,7 +53,7 @@
       <button id="nextBtn" disabled>Next</button>
       <button id="resetAllBtn">Reset All</button>
     </div>
-    <div id="status" class="status"></div>
+    <div id="status" class="status" aria-live="polite"></div>
   </div>
 </div>
 <script>

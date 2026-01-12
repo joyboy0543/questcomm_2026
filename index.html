@@ -5,7 +5,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>QuestComm Investigation Point</title>
-  <link rel="stylesheet" href="./assets/css/style.css"/>
+  <link rel="stylesheet" href="./assets/css/style.css?v=20260112"/>
 </head>
 <body>
   <header class="container">
@@ -51,11 +51,11 @@
   <footer class="container">© 2026 QuestComm — Case File UI prototype</footer>
 
   <script type="module">
-    import { sfx, playRadio, primeAudio } from './assets/js/audio.js';
-    import { mountAll } from './assets/js/puzzles.js';
-    import { showCase, setProgress } from './assets/js/ui.js';
-    import { initMap, advanceLevel } from './assets/js/progress.js';
-    import { interrogate, fpScan } from './assets/js/minigames.js';
+    import { sfx, playRadio, primeAudio } from './assets/js/audio.js?v=20260112';
+    import { mountAll } from './assets/js/puzzles.js?v=20260112';
+    import { showCase, setProgress } from './assets/js/ui.js?v=20260112';
+    import { initMap, advanceLevel } from './assets/js/progress.js?v=20260112';
+    import { interrogate, fpScan } from './assets/js/minigames.js?v=20260112';
 
     const app=document.getElementById('app');
     const landing=document.getElementById('landing');
@@ -86,7 +86,6 @@
     });
 
     function initApp(){
-      // Show ALL puzzles
       mountAll('#puzzle-area');
       showCase(document.querySelector('#puzzle-area'));
       setProgress(15);

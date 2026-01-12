@@ -1,5 +1,5 @@
 
-// Show ALL puzzles instead of random selection
+// Show ALL puzzles, with relative asset paths for GitHub Project Pages
 export function mountAll(containerSel = '#puzzle-area'){
   const el = document.querySelector(containerSel);
   if (!el) return;
@@ -17,8 +17,6 @@ export function mountAll(containerSel = '#puzzle-area'){
     p.component(section);
   }
 }
-
-// --- Individual puzzle renderers ---
 function renderCipherNote(root){
   root.innerHTML = `
     <h3>Cipher Note</h3>
@@ -45,7 +43,7 @@ function renderTimeline(root){
   `;
 }
 function renderCCTV(root){
-  const url = '/assets/img/cctv_loop.gif';
+  const url = './assets/img/cctv_loop.gif';
   const imgId = 'cctv-img';
   root.innerHTML = `
     <h3>Surveillance Footage</h3>

@@ -13,7 +13,6 @@
     <div id="loading-tape"><span></span></div>
   </header>
   <main class="container">
-    <!-- Landing form -->
     <section id="landing" class="landing-card">
       <h2>Enter Team Details</h2>
       <form id="landing-form">
@@ -27,7 +26,6 @@
       </form>
     </section>
 
-    <!-- App content -->
     <section id="app" hidden>
       <div class="grid-2">
         <section>
@@ -53,13 +51,12 @@
   <footer class="container">© 2026 QuestComm — Case File UI prototype</footer>
 
   <script type="module">
-    import { sfx, playRadio } from './assets/js/audio.js';
-    import { mountSelected } from './assets/js/puzzles.js';
+    import { sfx, playRadio, primeAudio } from './assets/js/audio.js';
+    import { mountAll } from './assets/js/puzzles.js';
     import { showCase, setProgress } from './assets/js/ui.js';
     import { initMap, advanceLevel } from './assets/js/progress.js';
     import { interrogate, fpScan } from './assets/js/minigames.js';
 
-    // Landing gate
     const app=document.getElementById('app');
     const landing=document.getElementById('landing');
     const form=document.getElementById('landing-form');
@@ -71,7 +68,7 @@
       const saved=JSON.parse(localStorage.getItem('qc_identity')||'{}');
       teamInput.value=params.get('team')||saved.team||'';
       playerInput.value=params.get('name')||saved.name||'';
-      if(teamInput.value&&playerInput.value){ landing.hidden=true; app.hidden=false; initApp(); }
+      if(teamInput.value&&playerInput.value){ landing.hidden=true; app.hidden=false; primeAudio(); initApp(); }
     })();
 
     form?.addEventListener('submit', (e)=>{
@@ -79,7 +76,7 @@
       const identity={ team:teamInput.value.trim(), name:playerInput.value.trim() };
       if(!identity.team||!identity.name) return;
       localStorage.setItem('qc_identity', JSON.stringify(identity));
-      landing.hidden=true; app.hidden=false; initApp();
+      landing.hidden=true; app.hidden=false; primeAudio(); initApp();
     });
 
     document.getElementById('reset-progress')?.addEventListener('click',()=>{
@@ -89,7 +86,8 @@
     });
 
     function initApp(){
-      mountSelected('#puzzle-area',3);
+      // Show ALL puzzles
+      mountAll('#puzzle-area');
       showCase(document.querySelector('#puzzle-area'));
       setProgress(15);
       initMap();

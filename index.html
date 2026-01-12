@@ -4,8 +4,55 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QuestComm Investigation Point</title>
-  <link rel="stylesheet" href="./assets/css/style.css?v=20260112"/>
+  <title>QuestComm Investigation Point — Single-file Fix</title>
+  <style>
+    :root{ --bg:#0b0f14; --fg:#e6e6e6; --cyan:#2aa9d2; --yellow:#ffd54f; --red:#ff4d4d; --muted:#9fa7b3; }
+    html,body{ background:var(--bg); color:var(--fg); font:500 14px/1.6 "ComicShanns", monospace; margin:0; }
+    h1,h2,h3{ color:#eaf0f6; }
+    .container{ max-width:920px; margin:24px auto; padding:0 16px; }
+    .btn{ background:#1c2633; color:#eaf0f6; border:1px solid #2a3647; padding:10px 12px; border-radius:6px; cursor:pointer; min-height:44px }
+    .btn:hover{ background:#233042 }
+    img,svg{ max-width:100%; height:auto }
+
+    /* Landing form */
+    .landing-card{ max-width:520px; margin:20px auto; padding:16px; background:#0e141b; border:1px solid #1f2a37; border-radius:10px; }
+    #landing-form label{ display:block; margin:10px 0; }
+    #landing-form input{ width:100%; padding:10px; border-radius:6px; border:1px solid #2a3647; background:#111822; color:#e6e6e6; }
+
+    /* Toasts */
+    .radio-toast{ position:fixed; bottom:24px; left:24px; background:rgba(10,10,10,0.85); color:#9fe5ff; border:1px solid var(--cyan);
+      padding:10px 14px; border-radius:6px; opacity:0; transform:translateY(8px); transition:opacity .25s, transform .25s; z-index:9999 }
+    .radio-toast.show{ opacity:1; transform:translateY(0) }
+
+    /* Tape bar */
+    #loading-tape{ height:10px; background:repeating-linear-gradient(45deg,#111 0 10px,var(--yellow) 10px 20px); border:1px solid #333; overflow:hidden; border-radius:6px; }
+    #loading-tape > span{ display:block; height:100%; width:0%; background:rgba(255,255,255,.12); transition:width .4s }
+
+    /* Case transitions */
+    .case-enter{ opacity:0; transform:translateY(16px) }
+    .case-enter.case-show{ opacity:1; transform:none; transition:all .35s }
+
+    /* CCTV faux block */
+    .cctv-box{ position:relative; width:100%; max-width:420px; aspect-ratio:16/9; background:#10151b; border:1px solid #222; overflow:hidden; }
+    .scanline{ position:absolute; left:0; right:0; height:2px; background:rgba(255,255,255,.06); animation: scan 1.8s linear infinite }
+    @keyframes scan{ 0%{ top:0 } 100%{ top:100% } }
+    .cctv-time{ position:absolute; top:8px; left:8px; color:#ddd; font:12px/1 monospace; text-shadow:0 0 3px #000 }
+    .cctv-rec{ position:absolute; top:8px; right:8px; color:var(--red); font:12px/1 monospace; }
+
+    /* Interrogation */
+    .opts .btn{ margin:4px }
+    .opts .btn.correct{ background:#4caf50; color:#fff }
+
+    /* Fingerprint */
+    #fp-scan .sensor{ width:200px; height:80px; margin:6px 0; background:radial-gradient(#2b2b2b,#121212); box-shadow:inset 0 0 12px rgba(0,0,0,.6); border-radius:10px; position:relative; overflow:hidden }
+    #fp-scan.scanning .sensor::after{ content:""; position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, rgba(0,255,128,.2), transparent); animation: sweep 1.8s ease-out forwards }
+    @keyframes sweep{ to{ width:100% } }
+
+    header{ padding:16px; border-bottom:1px solid #18202b; }
+    footer{ padding:16px; border-top:1px solid #18202b; color:var(--muted) }
+    .grid-2{ display:grid; gap:12px; grid-template-columns:1fr }
+    @media (min-width:768px){ .grid-2{ grid-template-columns:1fr 1fr } }
+  </style>
 </head>
 <body>
   <header class="container">
@@ -48,15 +95,131 @@
       </div>
     </section>
   </main>
-  <footer class="container">© 2026 QuestComm — Case File UI prototype</footer>
+  <footer class="container">© 2026 QuestComm — Single-file interactive fix</footer>
 
-  <script type="module">
-    import { sfx, playRadio, primeAudio } from './assets/js/audio.js?v=20260112';
-    import { mountAll } from './assets/js/puzzles.js?v=20260112';
-    import { showCase, setProgress } from './assets/js/ui.js?v=20260112';
-    import { initMap, advanceLevel } from './assets/js/progress.js?v=20260112';
-    import { interrogate, fpScan } from './assets/js/minigames.js?v=20260112';
+  <!-- All JS inline to avoid path problems on GitHub Pages project URLs -->
+  <script>
+    // --- Utilities & audio (WebAudio beep, no external files) ---
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    function initAudio(){ audioCtx = audioCtx || new AudioCtx(); }
+    function beep(freq=880, ms=120, vol=0.02){
+      if(!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type='square'; osc.frequency.value=freq; gain.gain.value=vol; osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); setTimeout(()=>{ osc.stop(); }, ms);
+    }
+    function showToast(text){
+      return new Promise(r=>{
+        const el = document.createElement('div'); el.className = 'radio-toast'; el.textContent = text; document.body.appendChild(el);
+        setTimeout(()=> el.classList.add('show'), 20);
+        setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>{ el.remove(); r(); }, 300); }, 2200);
+      });
+    }
+    function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
+    // --- Progress
+    const KEY='qc_progress_v1';
+    const getProgress = () => { try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch{return{};} };
+    const setProgress = p => localStorage.setItem(KEY, JSON.stringify(p));
+    const advanceLevel = () => { const p=getProgress(); p.level=(p.level||1)+1; setProgress(p); return p.level; };
+
+    // --- UI helpers
+    function setProgressBar(pct){ const bar=document.querySelector('#loading-tape > span'); if(bar) bar.style.width=`${pct}%`; }
+    function showCase(el){ el.classList.add('case-enter'); requestAnimationFrame(()=> el.classList.add('case-show')); }
+
+    // --- Puzzles: ALL rendered (no random)
+    function mountAll(containerSel='#puzzle-area'){
+      const el=document.querySelector(containerSel); if(!el) return; el.innerHTML='';
+      renderAnomaly(addSection(el,'spot_the_anomaly'));
+      renderTimeline(addSection(el,'timeline_order'));
+      renderCCTV(addSection(el,'surveillance_gif'));
+      renderCipher(addSection(el,'cipher_note'));
+    }
+    function addSection(el,id){ const s=document.createElement('section'); s.className=`puzzle puzzle-${id}`; el.appendChild(s); return s; }
+
+    function renderAnomaly(root){
+      root.innerHTML = `
+        <h3>Spot the Anomaly</h3>
+        <p>Which item does not belong in the evidence list?</p>
+        <div class="opts">
+          <button class="btn" data-ok="0">Lock picks</button>
+          <button class="btn" data-ok="0">Warehouse badge</button>
+          <button class="btn" data-ok="1">Beach towel</button>
+        </div>
+      `;
+      root.querySelectorAll('.opts .btn').forEach(b=>{
+        b.onclick = ()=>{ initAudio(); beep(760); const ok=b.dataset.ok==='1'; alert(ok? 'Correct — beach towel is unrelated.' : 'Close — think again.'); };
+      });
+    }
+
+    function renderTimeline(root){
+      root.innerHTML = `
+        <h3>Timeline Order</h3>
+        <p>Arrange events chronologically:</p>
+        <ol id="tl-list" style="list-style:decimal;">
+          <li><button class="btn tl" data-id="entry">Entry</button></li>
+          <li><button class="btn tl" data-id="glitch">Camera glitch</button></li>
+          <li><button class="btn tl" data-id="exit">Exit</button></li>
+        </ol>
+        <button class="btn" id="tl-check">Check Order</button>
+      `;
+      document.getElementById('tl-check').onclick = ()=>{
+        initAudio(); beep(600);
+        const ids = Array.from(document.querySelectorAll('.tl')).map(b=>b.dataset.id);
+        const ok = ids.join(',') === 'entry,glitch,exit';
+        alert(ok? 'Timeline correct.' : 'Not quite — expected Entry → Glitch → Exit.');
+      };
+    }
+
+    function renderCCTV(root){
+      root.innerHTML = `
+        <h3>Surveillance Footage</h3>
+        <div class="cctv-box">
+          <div class="scanline"></div>
+          <div class="cctv-time">22:41:07</div>
+          <div class="cctv-rec">REC ●</div>
+        </div>
+        <p>Question: What unusual event occurs at the <b>warehouse door</b>?</p>
+        <button class="btn" id="cctv-submit">Submit Observation</button>
+      `;
+      document.getElementById('cctv-submit').onclick = async ()=>{
+        initAudio(); beep(880);
+        await showToast('Dispatch: Observation received.');
+        alert('Logged. Dispatch updated.');
+      };
+    }
+
+    function renderCipher(root){
+      root.innerHTML = `
+        <h3>Cipher Note</h3>
+        <p>Decode: <code>Uifsf jt b tfdsfu wjtf; 22:41</code></p>
+        <button class="btn" id="cipher-btn">Solve</button>
+      `;
+      document.getElementById('cipher-btn').onclick = ()=>{ initAudio(); beep(500); alert('There is a secret vise; 22:41 (Caesar +1)'); };
+    }
+
+    // --- Minigames
+    function interrogate(rootSel='#minigame'){
+      const root=document.querySelector(rootSel); if(!root) return;
+      root.innerHTML = `
+        <h3>Interrogation</h3>
+        <p>Where were you at 22:40?</p>
+        <div class="opts">
+          <button class="btn" data-ok="0">Home</button>
+          <button class="btn" data-ok="1">Warehouse</button>
+          <button class="btn" data-ok="0">Cafe</button>
+        </div>
+      `;
+      root.querySelectorAll('.opts .btn').forEach(b=>{
+        b.onclick = ()=>{ initAudio(); beep(640); const ok=b.dataset.ok==='1'; b.classList.toggle('correct', ok); alert(ok? 'Confession detected.' : 'Inconsistent statement.'); };
+      });
+    }
+    function fpScan(){
+      const root=document.getElementById('fp-scan'); const btn=document.getElementById('scan-btn'); if(!root||!btn) return;
+      btn.onclick = ()=>{ initAudio(); beep(920, 90); root.classList.add('scanning'); setTimeout(()=>{ root.classList.remove('scanning'); const match=Math.random()>0.5; beep(440, 90); alert(match? 'Fingerprint match: 87% confidence.' : 'No match found.'); }, 1900); };
+    }
+
+    // --- Identity + App init
     const app=document.getElementById('app');
     const landing=document.getElementById('landing');
     const form=document.getElementById('landing-form');
@@ -68,15 +231,15 @@
       const saved=JSON.parse(localStorage.getItem('qc_identity')||'{}');
       teamInput.value=params.get('team')||saved.team||'';
       playerInput.value=params.get('name')||saved.name||'';
-      if(teamInput.value&&playerInput.value){ landing.hidden=true; app.hidden=false; primeAudio(); initApp(); }
+      if(teamInput.value&&playerInput.value){ landing.hidden=true; app.hidden=false; initApp(); }
     })();
 
-    form?.addEventListener('submit', (e)=>{
+    form?.addEventListener('submit',(e)=>{
       e.preventDefault();
       const identity={ team:teamInput.value.trim(), name:playerInput.value.trim() };
       if(!identity.team||!identity.name) return;
       localStorage.setItem('qc_identity', JSON.stringify(identity));
-      landing.hidden=true; app.hidden=false; primeAudio(); initApp();
+      landing.hidden=true; app.hidden=false; initAudio(); initApp();
     });
 
     document.getElementById('reset-progress')?.addEventListener('click',()=>{
@@ -88,13 +251,13 @@
     function initApp(){
       mountAll('#puzzle-area');
       showCase(document.querySelector('#puzzle-area'));
-      setProgress(15);
-      initMap();
+      setProgressBar(15);
+      document.getElementById('poi-warehouse').addEventListener('click',()=> alert('Warehouse lock shows tampering at 22:41.'));
       interrogate('#minigame');
       fpScan();
-      playRadio(['Unit 12, proceed to Sector C.','Suspect spotted near the warehouse.','Maintain radio silence.']);
-      const next=advanceLevel();
-      console.log('Advanced to level', next);
+      // Radio messages
+      (async ()=>{ await showToast('Unit 12, proceed to Sector C.'); await wait(900); await showToast('Suspect spotted near the warehouse.'); await wait(900); await showToast('Maintain radio silence.'); })();
+      const next=advanceLevel(); console.log('Advanced to level', next);
     }
   </script>
 </body>

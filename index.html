@@ -1,264 +1,383 @@
-
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QuestComm Investigation Point — Single-file Fix</title>
+  <meta charset="utf-8" />
+  <title>QuestComm 2026 — Step-by-Step Puzzles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    :root{ --bg:#0b0f14; --fg:#e6e6e6; --cyan:#2aa9d2; --yellow:#ffd54f; --red:#ff4d4d; --muted:#9fa7b3; }
-    html,body{ background:var(--bg); color:var(--fg); font:500 14px/1.6 "ComicShanns", monospace; margin:0; }
-    h1,h2,h3{ color:#eaf0f6; }
-    .container{ max-width:920px; margin:24px auto; padding:0 16px; }
-    .btn{ background:#1c2633; color:#eaf0f6; border:1px solid #2a3647; padding:10px 12px; border-radius:6px; cursor:pointer; min-height:44px }
-    .btn:hover{ background:#233042 }
-    img,svg{ max-width:100%; height:auto }
+    :root {
+      --bg: #0f1220;
+      --panel: #1b1f34;
+      --accent: #5cc8ff;
+      --text: #f5f7ff;
+      --muted: #a9b0c7;
+      --success: #48d17a;
+      --error: #ff6b6b;
+    }
 
-    /* Landing form */
-    .landing-card{ max-width:520px; margin:20px auto; padding:16px; background:#0e141b; border:1px solid #1f2a37; border-radius:10px; }
-    #landing-form label{ display:block; margin:10px 0; }
-    #landing-form input{ width:100%; padding:10px; border-radius:6px; border:1px solid #2a3647; background:#111822; color:#e6e6e6; }
+    * {
+      box-sizing: border-box;
+    }
 
-    /* Toasts */
-    .radio-toast{ position:fixed; bottom:24px; left:24px; background:rgba(10,10,10,0.85); color:#9fe5ff; border:1px solid var(--cyan);
-      padding:10px 14px; border-radius:6px; opacity:0; transform:translateY(8px); transition:opacity .25s, transform .25s; z-index:9999 }
-    .radio-toast.show{ opacity:1; transform:translateY(0) }
+    body {
+      margin: 0;
+      font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-    /* Tape bar */
-    #loading-tape{ height:10px; background:repeating-linear-gradient(45deg,#111 0 10px,var(--yellow) 10px 20px); border:1px solid #333; overflow:hidden; border-radius:6px; }
-    #loading-tape > span{ display:block; height:100%; width:0%; background:rgba(255,255,255,.12); transition:width .4s }
+    .wrap {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 24px;
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
 
-    /* Case transitions */
-    .case-enter{ opacity:0; transform:translateY(16px) }
-    .case-enter.case-show{ opacity:1; transform:none; transition:all .35s }
+    h1 {
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
 
-    /* CCTV faux block */
-    .cctv-box{ position:relative; width:100%; max-width:420px; aspect-ratio:16/9; background:#10151b; border:1px solid #222; overflow:hidden; }
-    .scanline{ position:absolute; left:0; right:0; height:2px; background:rgba(255,255,255,.06); animation: scan 1.8s linear infinite }
-    @keyframes scan{ 0%{ top:0 } 100%{ top:100% } }
-    .cctv-time{ position:absolute; top:8px; left:8px; color:#ddd; font:12px/1 monospace; text-shadow:0 0 3px #000 }
-    .cctv-rec{ position:absolute; top:8px; right:8px; color:var(--red); font:12px/1 monospace; }
+    .sub {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
 
-    /* Interrogation */
-    .opts .btn{ margin:4px }
-    .opts .btn.correct{ background:#4caf50; color:#fff }
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      color: var(--muted);
+    }
 
-    /* Fingerprint */
-    #fp-scan .sensor{ width:200px; height:80px; margin:6px 0; background:radial-gradient(#2b2b2b,#121212); box-shadow:inset 0 0 12px rgba(0,0,0,.6); border-radius:10px; position:relative; overflow:hidden }
-    #fp-scan.scanning .sensor::after{ content:""; position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, rgba(0,255,128,.2), transparent); animation: sweep 1.8s ease-out forwards }
-    @keyframes sweep{ to{ width:100% } }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #2a2f48;
+      background: #121527;
+      color: var(--text);
+    }
 
-    header{ padding:16px; border-bottom:1px solid #18202b; }
-    footer{ padding:16px; border-top:1px solid #18202b; color:var(--muted) }
-    .grid-2{ display:grid; gap:12px; grid-template-columns:1fr }
-    @media (min-width:768px){ .grid-2{ grid-template-columns:1fr 1fr } }
+    button {
+      background: var(--accent);
+      color: #001622;
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button[disabled] {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: 10px;
+      background: #141832;
+      margin: 14px 0;
+    }
+
+    .prompt {
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .status.ok {
+      color: var(--success);
+    }
+
+    .status.err {
+      color: var(--error);
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .progress {
+      margin: 12px 0;
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
+
 <body>
-  <header class="container">
-    <h1>QuestComm: Investigation Point</h1>
-    <div id="loading-tape"><span></span></div>
-  </header>
-  <main class="container">
-    <section id="landing" class="landing-card">
-      <h2>Enter Team Details</h2>
-      <form id="landing-form">
-        <label>Team name
-          <input id="team" name="team" type="text" placeholder="e.g., Sector C" required />
-        </label>
-        <label>Your name
-          <input id="player" name="player" type="text" placeholder="e.g., Jay" required />
-        </label>
-        <button class="btn" type="submit">Start Investigation</button>
-      </form>
-    </section>
+  <div class="wrap">
+    <h1>QuestComm 2026</h1>
+    <div class="sub">Clean step-by-step puzzle flow. No images, no GIFs, no audio.</div>
 
-    <section id="app" hidden>
-      <div class="grid-2">
-        <section>
-          <section id="puzzle-area"></section>
-          <hr/>
-          <section id="minigame"></section>
-        </section>
-        <aside>
-          <section id="fp-scan">
-            <div class="sensor"></div>
-            <button id="scan-btn" class="btn">Scan Fingerprint</button>
-          </section>
-          <svg id="crime-map" viewBox="0 0 240 120" style="margin-top:12px">
-            <rect x="10" y="10" width="80" height="50" fill="#1b1b1b" stroke="#888"/>
-            <circle id="poi-warehouse" cx="50" cy="35" r="6" fill="#ffa000"/>
-            <text x="20" y="25" fill="#bbb" font-size="10">Warehouse</text>
-          </svg>
-          <button class="btn" id="reset-progress" style="margin-top:12px">Reset Progress</button>
-        </aside>
+    <!-- Landing -->
+    <div id="landing" class="card">
+      <div class="prompt">Enter your details to start or resume:</div>
+
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="Your name" />
+
+      <label for="team">Team</label>
+      <input id="team" type="text" placeholder="Team name (optional)" />
+
+      <div class="row">
+        <button id="startBtn">Start</button>
+        <button id="resetBtn">Reset Progress</button>
       </div>
-    </section>
-  </main>
-  <footer class="container">© 2026 QuestComm — Single-file interactive fix</footer>
 
-  <!-- All JS inline to avoid path problems on GitHub Pages project URLs -->
+      <div class="progress" id="resumeInfo"></div>
+    </div>
+
+    <!-- Game -->
+    <div id="game" class="card hidden">
+      <div id="stepHeader" class="sub"></div>
+      <div id="questionPrompt" class="prompt"></div>
+
+      <div id="optionsBox" class="row hidden"></div>
+
+      <label id="answerLabel" for="answerInput" class="hidden">Your answer</label>
+      <input id="answerInput" type="text" class="hidden" />
+
+      <div class="row">
+        <button id="checkBtn">Check</button>
+        <button id="nextBtn" disabled>Next</button>
+        <button id="backBtn">Back</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="footer">
+      Build: <span id="buildInfo"></span><br>
+      Normal Ctrl+R now loads updates (version gate ensures fresh load).
+    </div>
+  </div>
+
   <script>
-    // --- Utilities & audio (WebAudio beep, no external files) ---
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    let audioCtx;
-    function initAudio(){ audioCtx = audioCtx || new AudioCtx(); }
-    function beep(freq=880, ms=120, vol=0.02){
-      if(!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-      osc.type='square'; osc.frequency.value=freq; gain.gain.value=vol; osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); setTimeout(()=>{ osc.stop(); }, ms);
-    }
-    function showToast(text){
-      return new Promise(r=>{
-        const el = document.createElement('div'); el.className = 'radio-toast'; el.textContent = text; document.body.appendChild(el);
-        setTimeout(()=> el.classList.add('show'), 20);
-        setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>{ el.remove(); r(); }, 300); }, 2200);
-      });
-    }
-    function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+    /* ---------- CONFIG ---------- */
+    const GAME_VERSION = "2026-01-12-stepper-v1";  // bump on updates
+    const KEYS = {
+      version: "qc_version",
+      profile: "qc_profile",
+      progress: "qc_progress"
+    };
 
-    // --- Progress
-    const KEY='qc_progress_v1';
-    const getProgress = () => { try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch{return{};} };
-    const setProgress = p => localStorage.setItem(KEY, JSON.stringify(p));
-    const advanceLevel = () => { const p=getProgress(); p.level=(p.level||1)+1; setProgress(p); return p.level; };
+    const PUZZLES = [
+      {
+        title: "Puzzle 1 — Warm-up",
+        type: "mcq",
+        prompt: "Which number completes the pattern: 2, 4, 8, 16, ?",
+        options: ["18", "24", "32", "34"],
+        answer: "32",
+        explain: "Powers of two."
+      },
+      {
+        title: "Puzzle 2 — Word",
+        type: "text",
+        prompt: "Unscramble: RAET",
+        answer: "TEAR",
+        accept: ["tear", "rate"],
+        explain: "Accepts TEAR or RATE."
+      },
+      {
+        title: "Puzzle 3 — Logic",
+        type: "mcq",
+        prompt: "Which fields can a QR prefill set?",
+        options: ["Name only", "Team only", "Both name & team", "Neither"],
+        answer: "Both name & team",
+        explain: "Use ?name=&team="
+      }
+    ];
 
-    // --- UI helpers
-    function setProgressBar(pct){ const bar=document.querySelector('#loading-tape > span'); if(bar) bar.style.width=`${pct}%`; }
-    function showCase(el){ el.classList.add('case-enter'); requestAnimationFrame(()=> el.classList.add('case-show')); }
+    /* ---------- ELEMENTS ---------- */
+    const E = {
+      landing: document.getElementById("landing"),
+      game: document.getElementById("game"),
+      name: document.getElementById("name"),
+      team: document.getElementById("team"),
+      startBtn: document.getElementById("startBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      resumeInfo: document.getElementById("resumeInfo"),
+      buildInfo: document.getElementById("buildInfo"),
 
-    // --- Puzzles: ALL rendered (no random)
-    function mountAll(containerSel='#puzzle-area'){
-      const el=document.querySelector(containerSel); if(!el) return; el.innerHTML='';
-      renderAnomaly(addSection(el,'spot_the_anomaly'));
-      renderTimeline(addSection(el,'timeline_order'));
-      renderCCTV(addSection(el,'surveillance_gif'));
-      renderCipher(addSection(el,'cipher_note'));
-    }
-    function addSection(el,id){ const s=document.createElement('section'); s.className=`puzzle puzzle-${id}`; el.appendChild(s); return s; }
+      stepHeader: document.getElementById("stepHeader"),
+      questionPrompt: document.getElementById("questionPrompt"),
+      optionsBox: document.getElementById("optionsBox"),
+      answerLabel: document.getElementById("answerLabel"),
+      answerInput: document.getElementById("answerInput"),
 
-    function renderAnomaly(root){
-      root.innerHTML = `
-        <h3>Spot the Anomaly</h3>
-        <p>Which item does not belong in the evidence list?</p>
-        <div class="opts">
-          <button class="btn" data-ok="0">Lock picks</button>
-          <button class="btn" data-ok="0">Warehouse badge</button>
-          <button class="btn" data-ok="1">Beach towel</button>
-        </div>
-      `;
-      root.querySelectorAll('.opts .btn').forEach(b=>{
-        b.onclick = ()=>{ initAudio(); beep(760); const ok=b.dataset.ok==='1'; alert(ok? 'Correct — beach towel is unrelated.' : 'Close — think again.'); };
-      });
-    }
+      checkBtn: document.getElementById("checkBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      backBtn: document.getElementById("backBtn"),
 
-    function renderTimeline(root){
-      root.innerHTML = `
-        <h3>Timeline Order</h3>
-        <p>Arrange events chronologically:</p>
-        <ol id="tl-list" style="list-style:decimal;">
-          <li><button class="btn tl" data-id="entry">Entry</button></li>
-          <li><button class="btn tl" data-id="glitch">Camera glitch</button></li>
-          <li><button class="btn tl" data-id="exit">Exit</button></li>
-        </ol>
-        <button class="btn" id="tl-check">Check Order</button>
-      `;
-      document.getElementById('tl-check').onclick = ()=>{
-        initAudio(); beep(600);
-        const ids = Array.from(document.querySelectorAll('.tl')).map(b=>b.dataset.id);
-        const ok = ids.join(',') === 'entry,glitch,exit';
-        alert(ok? 'Timeline correct.' : 'Not quite — expected Entry → Glitch → Exit.');
-      };
-    }
+      status: document.getElementById("status")
+    };
 
-    function renderCCTV(root){
-      root.innerHTML = `
-        <h3>Surveillance Footage</h3>
-        <div class="cctv-box">
-          <div class="scanline"></div>
-          <div class="cctv-time">22:41:07</div>
-          <div class="cctv-rec">REC ●</div>
-        </div>
-        <p>Question: What unusual event occurs at the <b>warehouse door</b>?</p>
-        <button class="btn" id="cctv-submit">Submit Observation</button>
-      `;
-      document.getElementById('cctv-submit').onclick = async ()=>{
-        initAudio(); beep(880);
-        await showToast('Dispatch: Observation received.');
-        alert('Logged. Dispatch updated.');
-      };
+    let profile = { name: "", team: "" };
+    let progress = 0;
+
+    /* ---------- UTIL ---------- */
+    function show(id) { document.getElementById(id).classList.remove("hidden"); }
+    function hide(id) { document.getElementById(id).classList.add("hidden"); }
+    function save(k, v) { localStorage.setItem(k, v); }
+    function load(k) { return localStorage.getItem(k); }
+    function normalize(s) { return (s || "").trim().toLowerCase(); }
+    function resetState() {
+      localStorage.removeItem(KEYS.profile);
+      localStorage.removeItem(KEYS.progress);
     }
 
-    function renderCipher(root){
-      root.innerHTML = `
-        <h3>Cipher Note</h3>
-        <p>Decode: <code>Uifsf jt b tfdsfu wjtf; 22:41</code></p>
-        <button class="btn" id="cipher-btn">Solve</button>
-      `;
-      document.getElementById('cipher-btn').onclick = ()=>{ initAudio(); beep(500); alert('There is a secret vise; 22:41 (Caesar +1)'); };
-    }
-
-    // --- Minigames
-    function interrogate(rootSel='#minigame'){
-      const root=document.querySelector(rootSel); if(!root) return;
-      root.innerHTML = `
-        <h3>Interrogation</h3>
-        <p>Where were you at 22:40?</p>
-        <div class="opts">
-          <button class="btn" data-ok="0">Home</button>
-          <button class="btn" data-ok="1">Warehouse</button>
-          <button class="btn" data-ok="0">Cafe</button>
-        </div>
-      `;
-      root.querySelectorAll('.opts .btn').forEach(b=>{
-        b.onclick = ()=>{ initAudio(); beep(640); const ok=b.dataset.ok==='1'; b.classList.toggle('correct', ok); alert(ok? 'Confession detected.' : 'Inconsistent statement.'); };
-      });
-    }
-    function fpScan(){
-      const root=document.getElementById('fp-scan'); const btn=document.getElementById('scan-btn'); if(!root||!btn) return;
-      btn.onclick = ()=>{ initAudio(); beep(920, 90); root.classList.add('scanning'); setTimeout(()=>{ root.classList.remove('scanning'); const match=Math.random()>0.5; beep(440, 90); alert(match? 'Fingerprint match: 87% confidence.' : 'No match found.'); }, 1900); };
-    }
-
-    // --- Identity + App init
-    const app=document.getElementById('app');
-    const landing=document.getElementById('landing');
-    const form=document.getElementById('landing-form');
-    const teamInput=document.getElementById('team');
-    const playerInput=document.getElementById('player');
-
-    (function prefill(){
-      const params=new URLSearchParams(location.search);
-      const saved=JSON.parse(localStorage.getItem('qc_identity')||'{}');
-      teamInput.value=params.get('team')||saved.team||'';
-      playerInput.value=params.get('name')||saved.name||'';
-      if(teamInput.value&&playerInput.value){ landing.hidden=true; app.hidden=false; initApp(); }
+    /* ---------- VERSION GATE ---------- */
+    (function () {
+      const v = load(KEYS.version);
+      if (v !== GAME_VERSION) {
+        resetState();
+        save(KEYS.version, GAME_VERSION);
+      }
     })();
 
-    form?.addEventListener('submit',(e)=>{
-      e.preventDefault();
-      const identity={ team:teamInput.value.trim(), name:playerInput.value.trim() };
-      if(!identity.team||!identity.name) return;
-      localStorage.setItem('qc_identity', JSON.stringify(identity));
-      landing.hidden=true; app.hidden=false; initAudio(); initApp();
-    });
+    /* ---------- PREFILL FROM URL ---------- */
+    (function () {
+      const p = new URLSearchParams(location.search);
+      if (p.get("name")) E.name.value = p.get("name");
+      if (p.get("team")) E.team.value = p.get("team");
+    })();
 
-    document.getElementById('reset-progress')?.addEventListener('click',()=>{
-      localStorage.removeItem('qc_progress_v1');
-      localStorage.removeItem('qc_identity');
-      location.reload();
-    });
+    /* ---------- INIT ---------- */
+    (function () {
+      E.buildInfo.textContent = GAME_VERSION;
 
-    function initApp(){
-      mountAll('#puzzle-area');
-      showCase(document.querySelector('#puzzle-area'));
-      setProgressBar(15);
-      document.getElementById('poi-warehouse').addEventListener('click',()=> alert('Warehouse lock shows tampering at 22:41.'));
-      interrogate('#minigame');
-      fpScan();
-      // Radio messages
-      (async ()=>{ await showToast('Unit 12, proceed to Sector C.'); await wait(900); await showToast('Suspect spotted near the warehouse.'); await wait(900); await showToast('Maintain radio silence.'); })();
-      const next=advanceLevel(); console.log('Advanced to level', next);
+      const savedProfile = load(KEYS.profile);
+      if (savedProfile) {
+        try { profile = JSON.parse(savedProfile); } catch { }
+        E.name.value = profile.name || "";
+        E.team.value = profile.team || "";
+      }
+
+      const savedProgress = load(KEYS.progress);
+      if (!isNaN(parseInt(savedProgress))) progress = parseInt(savedProgress);
+
+      if (profile.name) {
+        E.resumeInfo.textContent = `Resume as ${profile.name} (Puzzle ${progress + 1}/${PUZZLES.length})`;
+      } else {
+        E.resumeInfo.textContent = "No saved game.";
+      }
+    })();
+
+    /* ---------- START ---------- */
+    function start() {
+      profile.name = E.name.value.trim();
+      profile.team = E.team.value.trim();
+      save(KEYS.profile, JSON.stringify(profile));
+
+      hide("landing");
+      show("game");
+      render();
     }
+
+    function render() {
+      const step = PUZZLES[progress];
+      E.stepHeader.textContent = `${step.title} (${progress + 1}/${PUZZLES.length})`;
+      E.questionPrompt.textContent = step.prompt;
+      E.status.textContent = "";
+      E.nextBtn.disabled = true;
+
+      // Reset UI
+      E.optionsBox.innerHTML = "";
+      hide("answerLabel");
+      hide("answerInput");
+      hide("optionsBox");
+
+      if (step.type === "mcq") {
+        show("optionsBox");
+        step.options.forEach(opt => {
+          const b = document.createElement("button");
+          b.textContent = opt;
+          b.onclick = () => check(opt);
+          E.optionsBox.appendChild(b);
+        });
+      } else {
+        show("answerLabel");
+        show("answerInput");
+        E.answerInput.value = "";
+      }
+    }
+
+    function check(value) {
+      const step = PUZZLES[progress];
+      let ok = false;
+
+      if (step.type === "mcq") {
+        ok = (value === step.answer);
+      } else {
+        const input = normalize(E.answerInput.value);
+        ok = input && (input === normalize(step.answer) || (step.accept || []).includes(input));
+      }
+
+      if (ok) {
+        E.status.textContent = "Correct! " + (step.explain || "");
+        E.status.className = "status ok";
+        E.nextBtn.disabled = false;
+        save(KEYS.progress, progress);
+      } else {
+        E.status.textContent = "Incorrect, try again.";
+        E.status.className = "status err";
+      }
+    }
+
+    E.checkBtn.onclick = () => {
+      const step = PUZZLES[progress];
+      if (step.type === "text") check(E.answerInput.value);
+    };
+
+    E.nextBtn.onclick = () => {
+      if (progress < PUZZLES.length - 1) {
+        progress++;
+        save(KEYS.progress, progress);
+        render();
+      } else {
+        E.status.textContent = "🎉 You finished all puzzles!";
+        E.status.className = "status ok";
+        E.nextBtn.disabled = true;
+      }
+    };
+
+    E.backBtn.onclick = () => {
+      hide("game");
+      show("landing");
+    };
+
+    E.startBtn.onclick = start;
+
+    E.resetBtn.onclick = () => {
+      resetState();
+      profile = { name: "", team: "" };
+      progress = 0;
+      E.name.value = "";
+      E.team.value = "";
+      E.resumeInfo.textContent = "Progress reset.";
+    };
   </script>
 </body>
+
 </html>

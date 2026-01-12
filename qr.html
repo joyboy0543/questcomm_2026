@@ -1,0 +1,67 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QCPD — QR Access</title>
+  <style>
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0f1220;color:#f5f7ff}
+    .wrap{max-width:720px;margin:40px auto;padding:24px;background:#1b1f34;border-radius:12px}
+    input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2f48;background:#121527;color:#f5f7ff}
+    button{background:#5cc8ff;color:#001622;border:0;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:10px}
+    label{display:block;margin:10px 0 6px;color:#99a1b8}
+    #qrcode{margin-top:20px;display:flex;justify-content:center}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .tip{color:#99a1b8;margin-top:10px;font-size:.92rem}
+  </style>
+  <!-- Working QRCode lib via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h2>QCPD — Generate QR for Game Link</h2>
+  <label for="url">Game URL</label>
+  <input id="url" type="text" placeholder="https://joyboy0543.github.io/questcomm_2026/" />
+  <div class="row">
+    <div style="flex:1">
+      <label for="name">Prefill Name (optional)</label>
+      <input id="name" type="text" placeholder="Detective" />
+    </div>
+    <div style="flex:1">
+      <label for="team">Prefill Team (optional)</label>
+      <input id="team" type="text" placeholder="QCPD Alpha" />
+    </div>
+  </div>
+  <button id="make">Make QR</button>
+  <div id="qrcode"></div>
+  <div class="tip" id="final"></div>
+</div>
+<script>
+const u=document.getElementById('url');
+const n=document.getElementById('name');
+const t=document.getElementById('team');
+const out=document.getElementById('qrcode');
+const final=document.getElementById('final');
+const p=new URLSearchParams(location.search);
+if(p.get('u')) u.value=p.get('u');
+function buildUrl(){
+  try{
+    const base=new URL(u.value.trim());
+    const qp=new URLSearchParams(base.search);
+    if(n.value.trim()) qp.set('name',n.value.trim());
+    if(t.value.trim()) qp.set('team',t.value.trim());
+    base.search=qp.toString();
+    return base.toString();
+  }catch(e){return u.value.trim();}
+}
+function makeQR(){
+  out.innerHTML='';
+  const link=buildUrl();
+  new QRCode(out,{text:link,width:220,height:220});
+  final.textContent=link;
+}
+document.getElementById('make').addEventListener('click',makeQR);
+</script>
+</body>
+</html>

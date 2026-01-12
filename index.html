@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QuestComm — Police Investigation Quizzes</title>
+  <title>QuestComm — QCPD Case File</title>
   <link rel="icon" type="image/png" href="icons/favicon.png" />
   <style>
     :root { --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b; }
@@ -18,7 +18,7 @@
     .card { padding:16px; border-radius:10px; background:#141832; margin:14px 0; }
     .media { margin: 10px 0 6px; }
     .media img { max-width: 100%; border-radius: 10px; border: 1px solid #2a2f48; }
-    .question { font-size:1.05rem; margin: 12px 0; }
+    .dialogue { font-size:1.02rem; margin: 12px 0; line-height:1.5; }
     .status { margin-top:10px; font-weight:600; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
@@ -44,7 +44,7 @@
   <!-- Quiz view -->
   <div id="quiz" class="card hidden">
     <div id="media" class="media hidden"></div>
-    <div id="question" class="question"></div>
+    <div id="dialogue" class="dialogue"></div>
     <label for="answer">Answer</label>
     <input id="answer" type="text" />
 
@@ -62,20 +62,20 @@
 </div>
 
 <script>
-// Police investigation theme
+// QCPD police investigation — conversation-based prompts (no hints UI)
 const QUIZZES = [
   {
-    q: "From the crime scene photo, what single object is most out of place?",
+    dialogue: "Detective: \"Team, take a look at the crime scene snapshot. One item doesn’t belong here at all. Report that item.\"",
     a: "GLOVE",
     media: [{ type: 'image', src: 'assets/img/crime_scene.png', alt: 'Crime scene image' }]
   },
   {
-    q: "During the flashlight sweep, which hidden item should you report?",
+    dialogue: "Dispatch: \"Lights are out. Sweep the room with your flashlight. If you spot the hidden object, log it now.\"",
     a: "KEY",
     media: [{ type: 'image', src: 'assets/gif/flashlight_sweep.gif', alt: 'Flashlight sweep' }]
   },
   {
-    q: "On the evidence board, what link ties suspect to location?",
+    dialogue: "Lead Investigator: \"Pin the link that connects our suspect to the location on the evidence board. What is that link?\"",
     a: "TICKET",
     media: [{ type: 'image', src: 'assets/img/evidence_board.png', alt: 'Evidence board image' }]
   }
@@ -92,7 +92,7 @@ const E = {
   team: document.getElementById('team'),
   startBtn: document.getElementById('startBtn'),
   media: document.getElementById('media'),
-  question: document.getElementById('question'),
+  dialogue: document.getElementById('dialogue'),
   answer: document.getElementById('answer'),
   checkBtn: document.getElementById('checkBtn'),
   resetPuzzleBtn: document.getElementById('resetPuzzleBtn'),
@@ -126,8 +126,8 @@ function render(){
     E.media.innerHTML = '';
     hide('media');
   }
-  // Question
-  E.question.textContent = item.q;
+  // Conversation text
+  E.dialogue.textContent = item.dialogue;
   // Reset UI
   E.answer.value = '';
   E.status.textContent = '';

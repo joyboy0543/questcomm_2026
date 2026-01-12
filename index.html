@@ -4,74 +4,272 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QuestComm — QCPD Case File</title>
-  <link rel="icon" type="image/png" href="icons/favicon.png" />
+  <title>QCPD — Investigator Portal</title>
+  <link rel="icon" type="image/png" href="icons/qcpd_logo.png" />
   <style>
-    :root {
-      --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b;
-      --tap: 48px; /* min tap height */
-    }
+    :root { --bg:#0f1220; --panel:#1b1f34; --text:#f5f7ff; --accent:#5cc8ff; --muted:#99a1b8; --ok:#3fd27a; --err:#ff6b6b; --tap:48px; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
-    .wrap { max-width: 720px; margin: 4vh auto; padding: 16px; background: var(--panel); border-radius: 12px; }
-    @media (min-width: 768px){ .wrap{ padding:24px; } }
+    a { color: var(--accent); }
+    .wrap { max-width: 920px; margin: 4vh auto; padding: 16px; background: var(--panel); border-radius: 12px; }
+    header { display:flex; align-items:center; gap:14px; margin-bottom: 12px; }
+    header img { width:48px; height:48px; border-radius: 8px; }
+    h1 { margin:0; font-size:1.4rem; }
+    .card { padding:16px; border-radius:12px; background:#141832; margin:14px 0; }
     label { display:block; margin: 10px 0 6px; color: var(--muted); }
-    input[type="text"] { width: 100%; padding: 12px 14px; min-height: var(--tap); border-radius: 10px; border: 1px solid #2a2f48; background: #121527; color: var(--text); font-size: 1rem; }
-    input:focus, button:focus { outline: 3px solid #5cc8ff55; outline-offset: 2px; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 12px 14px; min-height: var(--tap); border-radius: 10px; border: 1px solid #2a2f48; background: #121527; color: var(--text); font-size: 1rem; }
     button { background: var(--accent); color:#001622; border:0; padding: 12px 18px; min-height: var(--tap); border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1rem; }
     button[disabled] { opacity:.5; cursor:not-allowed; }
     .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
-    .card { padding:16px; border-radius:12px; background:#141832; margin:14px 0; }
     .media { margin: 10px 0 6px; }
     .media img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #2a2f48; }
-    .dialogue { font-size:1.05rem; margin: 12px 0; line-height:1.6; }
+    .dialogue, .prompt { font-size:1.05rem; margin: 12px 0; line-height:1.6; }
     .status { margin-top:10px; font-weight:600; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
     .hidden { display:none !important; }
+    .toast { position: fixed; right: 16px; bottom: 16px; background:#121527; border:1px solid #2a2f48; border-radius:10px; padding:10px 12px; color:var(--text); box-shadow:0 6px 14px rgba(0,0,0,.4); }
+    .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
+    .tile { width: 100%; padding-top: 100%; position: relative; border-radius: 6px; border:1px solid #2a2f48; overflow:hidden; cursor:pointer; }
+    .tile-inner { position:absolute; inset:0; background-image:url('assets/img/tourist.png'); background-size: 300% 300%; }
+    .drop-zone { min-height: 80px; background:#121527; border:1px dashed #2a2f48; border-radius:8px; padding:8px; display:flex; gap:8px; flex-wrap:wrap; }
+    .block { background:#2a2f48; color:#f5f7ff; padding:8px 10px; border-radius:8px; cursor:grab; }
+    canvas { background:#0b0e1c; border:1px solid #2a2f48; border-radius:8px; }
+    footer { margin-top:20px; color:var(--muted); font-size:.9rem; }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div id="landing" class="card" role="region" aria-label="QCPD Login">
-    <label for="name">Name</label>
-    <input id="name" type="text" autocomplete="name" />
-    <label for="team">Team</label>
-    <input id="team" type="text" />
-    <div class="row"><button id="startBtn" aria-label="Start investigation">Start</button></div>
-  </div>
+  <header>
+    <img src="icons/qcpd_logo.png" alt="QCPD" />
+    <h1>QCPD Investigator Portal — Police Department Database</h1>
+  </header>
 
-  <div id="quiz" class="card hidden" role="region" aria-label="QCPD Case">
-    <div id="media" class="media hidden" aria-hidden="true"></div>
-    <div id="dialogue" class="dialogue" aria-live="polite"></div>
-    <label for="answer">Answer</label>
-    <input id="answer" type="text" />
+  <div id="radio" class="toast hidden"></div>
+
+  <!-- Landing -->
+  <section id="landing" class="card">
+    <div class="prompt">Loading database… <img src="assets/gif/radio_pulse.gif" alt="loading" style="height:28px;vertical-align:middle;border-radius:6px;"> <span style="color:var(--muted);font-size:.95rem;">Prompts over radio every 5 seconds.</span></div>
+    <label for="name">Enter Name</label>
+    <input id="name" type="text" />
+    <label for="idnum">Investigator ID number (Favourite number :) )</label>
+    <input id="idnum" type="text" />
+    <label for="team">Team name</label>
+    <input id="team" type="text" />
+    <label for="pass">Password <span style="color:var(--muted)">(Hint: Sweden is among the top 5 consumers of this drink in the world)</span></label>
+    <input id="pass" type="password" />
+    <div class="row"><button id="startBtn">Enter</button></div>
+    <div id="loginStatus" class="status"></div>
+  </section>
+
+  <!-- Page 1: Photo + Note -->
+  <section id="page1" class="card hidden">
+    <div class="prompt">Case File — Page 1</div>
+    <div class="media"><img src="assets/img/photo_placeholder.png" alt="Photo space" /></div>
+    <label for="note1">Investigator note (fill later)</label>
+    <input id="note1" type="text" />
     <div class="row">
-      <button id="checkBtn">Check</button>
-      <button id="resetPuzzleBtn">Reset Puzzle</button>
-      <button id="backBtn">Back</button>
-      <button id="nextBtn" disabled>Next</button>
-      <button id="resetAllBtn">Reset All</button>
+      <button id="p1Next">Next</button>
+      <button id="resetAll1">Reset All</button>
     </div>
-    <div id="status" class="status" aria-live="polite"></div>
-  </div>
+  </section>
+
+  <!-- Page 2: Puzzle 1 -->
+  <section id="page2" class="card hidden">
+    <div class="prompt">Puzzle 1 — Riddle</div>
+    <div class="dialogue">Detective: "I stand where directions decide, where choices turn left or right. Find me where correctness points the way and doors align only on the <em>proper side</em>." (Type your answer)</div>
+    <label for="ans1">Answer</label>
+    <input id="ans1" type="text" />
+    <div class="row">
+      <button id="check1">Check</button>
+      <button id="reset1">Reset Puzzle</button>
+      <button id="p1Back">Back</button>
+      <button id="p2Next" disabled>Next</button>
+    </div>
+    <div id="status1" class="status"></div>
+  </section>
+
+  <!-- Page 3: Puzzle 2 — Sliding image + 3-digit code -->
+  <section id="page3" class="card hidden">
+    <div class="prompt">Puzzle 2 — Assemble the tourist image (3×3). When solved, clues will appear.</div>
+    <div class="grid" id="grid"></div>
+    <div id="p2Clues" class="dialogue hidden">
+      <p><strong>Sentence 1:</strong> Prime prints mark the path — three in a row.</p>
+      <p><strong>Sentence 2:</strong> The nearest line is the first station.</p>
+      <p><strong>Sentence 3:</strong> The circle’s whisper begins three-one-four.</p>
+      <p><strong>Sentence 4:</strong> Three words for your trail: "Steps One Quarter".</p>
+      <p>Enter the <strong>3-digit code</strong> (digits from sentences 1–3):</p>
+      <label for="code314">Code</label>
+      <input id="code314" type="text" maxlength="3" />
+    </div>
+    <div class="row">
+      <button id="check314" disabled>Check</button>
+      <button id="reset2">Reset Puzzle</button>
+      <button id="p2Back">Back</button>
+      <button id="p3Next" disabled>Next</button>
+    </div>
+    <div id="status2" class="status"></div>
+  </section>
+
+  <!-- Page 4: Puzzle 3 — Block arranging -->
+  <section id="page4" class="card hidden">
+    <div class="prompt">Puzzle 3 — Arrange the blocks to form a clear clue.</div>
+    <div class="drop-zone" id="drop"></div>
+    <div class="row" id="blocks"></div>
+    <div id="p3Riddle" class="dialogue hidden">Riddle: "Where every country finds its place." Type the answer.</div>
+    <label for="ans3">Answer</label>
+    <input id="ans3" type="text" />
+    <div class="row">
+      <button id="check3">Check</button>
+      <button id="reset3">Reset Puzzle</button>
+      <button id="p3Back">Back</button>
+      <button id="p4Next" disabled>Next</button>
+    </div>
+    <div id="status3" class="status"></div>
+  </section>
+
+  <!-- Page 5: Puzzle 4 — Riddle + Snake -->
+  <section id="page5" class="card hidden">
+    <div class="prompt">Puzzle 4 — Riddle</div>
+    <div class="dialogue">"I am the absence that fills rooms and the quiet beneath every sound. I can be lost without leaving, and found without appearing. What am I?"</div>
+    <label for="ans4">Answer</label>
+    <input id="ans4" type="text" />
+    <div class="row">
+      <button id="check4">Check</button>
+      <button id="reset4">Reset Puzzle</button>
+      <button id="p4Back">Back</button>
+      <button id="p5Next" disabled>Next</button>
+    </div>
+    <div id="status4" class="status"></div>
+    <div id="snakeWrap" class="hidden">
+      <p class="prompt">Vintage Snake — arrow keys / WASD.</p>
+      <canvas id="snake" width="400" height="300"></canvas>
+    </div>
+  </section>
+
+  <!-- Page 6: Completion -->
+  <section id="page6" class="card hidden">
+    <div class="prompt">Congratulations — Official QCPD Recruiting</div>
+    <p>You’ve completed all puzzles. Welcome to the QCPD roster!</p>
+    <ul>
+      <li>Puzzle 1 answer: <strong>RIGHT BUILDING</strong></li>
+      <li>Puzzle 2 code: <strong>314</strong></li>
+      <li>Puzzle 3 answer: <strong>WORLD MAP</strong></li>
+      <li>Puzzle 4 answer: <strong>NOTHING</strong> (enjoy Snake)</li>
+    </ul>
+    <div class="row">
+      <button id="restart">Restart</button>
+      <a href="qr.html" target="_blank"><button>Make QR</button></a>
+    </div>
+  </section>
+
+  <footer>QCPD • Investigation Theme • © 2026</footer>
 </div>
+
 <script>
-const QUIZZES = [
-  { dialogue: 'Detective: "Team, take a look at the crime scene snapshot. One item doesn’t belong here at all. Report that item."', a: 'GLOVE', media: [{type:'image', src:'assets/img/crime_scene.png', alt:'Crime scene'}] },
-  { dialogue: 'Dispatch: "Lights are out. Sweep the room with your flashlight. If you spot the hidden object, log it now."', a: 'KEY', media: [{type:'image', src:'assets/gif/flashlight_sweep.gif', alt:'Flashlight sweep'}] },
-  { dialogue: 'Lead Investigator: "Pin the link that connects our suspect to the location on the evidence board. What is that link?"', a: 'TICKET', media: [{type:'image', src:'assets/img/evidence_board.png', alt:'Evidence board'}] }
+// Simple router
+const pages=['landing','page1','page2','page3','page4','page5','page6'];
+function showPage(id){ pages.forEach(p=>document.getElementById(p).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+// Radio prompts every 5s
+const radioPrompts=[
+  'Dispatch: Stand by for updates.',
+  'Ops: Secure perimeter and proceed.',
+  'Forensics: Samples logged.',
+  'Records: Database synced.',
+  'HQ: Maintain radio discipline.'
 ];
-let current = 0; const completed = Array(QUIZZES.length).fill(false); let profile={name:'',team:''};
-const E={landing:document.getElementById('landing'),quiz:document.getElementById('quiz'),name:document.getElementById('name'),team:document.getElementById('team'),startBtn:document.getElementById('startBtn'),media:document.getElementById('media'),dialogue:document.getElementById('dialogue'),answer:document.getElementById('answer'),checkBtn:document.getElementById('checkBtn'),resetPuzzleBtn:document.getElementById('resetPuzzleBtn'),backBtn:document.getElementById('backBtn'),nextBtn:document.getElementById('nextBtn'),resetAllBtn:document.getElementById('resetAllBtn'),status:document.getElementById('status')};
-function show(id){document.getElementById(id).classList.remove('hidden')} function hide(id){document.getElementById(id).classList.add('hidden')}
-function start(){profile.name=(E.name.value||'').trim(); profile.team=(E.team.value||'').trim(); current=0; completed.fill(false); hide('landing'); show('quiz'); render();}
-function render(){const item=QUIZZES[current]; if(item.media&&item.media.length){const m=item.media[0]; E.media.innerHTML=`<img src="${m.src}" alt="${m.alt||''}">`; show('media');} else {E.media.innerHTML=''; hide('media');} E.dialogue.textContent=item.dialogue; E.answer.value=''; E.status.textContent=''; E.status.className='status'; E.backBtn.disabled=(current===0); E.nextBtn.disabled=!completed[current];}
-function check(){const given=(E.answer.value||'').trim().toUpperCase(); const expected=QUIZZES[current].a.toUpperCase(); if(!given){E.status.textContent='Please enter an answer.'; E.status.className='status err'; return;} if(given===expected){completed[current]=true; E.status.textContent='Correct.'; E.status.className='status ok'; E.nextBtn.disabled=false;} else {E.status.textContent='Incorrect.'; E.status.className='status err';}}
-function resetPuzzle(){completed[current]=false; E.answer.value=''; E.status.textContent=''; E.status.className='status'; E.nextBtn.disabled=true;}
-function back(){if(current>0){current--; render();}} function next(){if(completed[current]){if(current<QUIZZES.length-1){current++; render();} else {E.nextBtn.disabled=true; E.status.textContent='All quizzes completed.'; E.status.className='status ok';}}}
-function resetAll(){profile={name:'',team:''}; current=0; completed.fill(false); E.name.value=''; E.team.value=''; hide('quiz'); show('landing');}
-E.startBtn.addEventListener('click',start); E.checkBtn.addEventListener('click',check); E.resetPuzzleBtn.addEventListener('click',resetPuzzle); E.backBtn.addEventListener('click',back); E.nextBtn.addEventListener('click',next); E.resetAllBtn.addEventListener('click',resetAll);
+let rp=0; const radio=document.getElementById('radio');
+setInterval(()=>{ radio.textContent = radioPrompts[rp%radioPrompts.length]; radio.classList.remove('hidden'); setTimeout(()=>radio.classList.add('hidden'), 2500); rp++; }, 5000);
+
+// Landing -> validate password (COFFEE)
+const startBtn=document.getElementById('startBtn'); const loginStatus=document.getElementById('loginStatus');
+startBtn.onclick=()=>{
+  const pass=(document.getElementById('pass').value||'').trim().toUpperCase();
+  if(pass!=='COFFEE'){ loginStatus.textContent='Access denied. Hint: think of a popular hot drink.'; loginStatus.className='status err'; return; }
+  loginStatus.textContent='Access granted.'; loginStatus.className='status ok'; showPage('page1');
+};
+
+// Page1
+document.getElementById('p1Next').onclick=()=>showPage('page2');
+document.getElementById('resetAll1').onclick=()=>location.reload();
+
+// Page2 — answer RIGHT BUILDING
+function norm(s){ return (s||'').trim().toUpperCase().replace(/\s+/g,''); }
+const status1=document.getElementById('status1');
+document.getElementById('check1').onclick=()=>{
+  const a=norm(document.getElementById('ans1').value);
+  if(a==='RIGHTBUILDING'){ status1.textContent='Correct.'; status1.className='status ok'; document.getElementById('p2Next').disabled=false; }
+  else { status1.textContent='Incorrect.'; status1.className='status err'; }
+};
+document.getElementById('reset1').onclick=()=>{ document.getElementById('ans1').value=''; status1.textContent=''; status1.className='status'; document.getElementById('p2Next').disabled=true; };
+document.getElementById('p1Back').onclick=()=>showPage('page1');
+document.getElementById('p2Next').onclick=()=>showPage('page3');
+
+// Page3 — sliding puzzle (3x3)
+const grid=document.getElementById('grid');
+let order=[0,1,2,3,4,5,6,7,8];
+function posOf(idx){ const x=idx%3, y=Math.floor(idx/3); return {x, y}; }
+function buildTiles(){ grid.innerHTML=''; order.forEach((o,i)=>{
+  const tile=document.createElement('div'); tile.className='tile'; tile.dataset.index=i; tile.dataset.slice=o;
+  const inner=document.createElement('div'); inner.className='tile-inner';
+  const p=posOf(o); inner.style.backgroundPosition=`${p.x*50}% ${p.y*50}%`;
+  tile.appendChild(inner); tile.onclick=()=>onTileClick(i); grid.appendChild(tile);
+  });
+}
+function shuffle(){ order.sort(()=>Math.random()-0.5); buildTiles(); }
+function isSolved(){ return order.every((o,i)=>o===i); }
+function onTileClick(i){
+  // swap clicked with empty-like neighbor: for simplicity allow swapping with any tile
+  if(i<order.length-1){ [order[i], order[i+1]]=[order[i+1], order[i]]; } else { [order[i], order[0]]=[order[0], order[i]]; }
+  buildTiles(); if(isSolved()) { document.getElementById('p2Clues').classList.remove('hidden'); document.getElementById('check314').disabled=false; status2.textContent='Image assembled!'; status2.className='status ok'; }
+}
+shuffle();
+
+const status2=document.getElementById('status2');
+document.getElementById('check314').onclick=()=>{
+  const code=(document.getElementById('code314').value||'').trim();
+  if(code==='314'){ status2.textContent='Correct code.'; status2.className='status ok'; document.getElementById('p3Next').disabled=false; }
+  else { status2.textContent='Incorrect code.'; status2.className='status err'; }
+};
+document.getElementById('reset2').onclick=()=>{ shuffle(); document.getElementById('p2Clues').classList.add('hidden'); document.getElementById('code314').value=''; status2.textContent=''; status2.className='status'; document.getElementById('p3Next').disabled=true; };
+document.getElementById('p2Back').onclick=()=>showPage('page2');
+document.getElementById('p3Next').onclick=()=>showPage('page4');
+
+// Page4 — block arranging
+const blocksText=['Where','every','country','finds','its','place'];
+const blocks=document.getElementById('blocks'); const drop=document.getElementById('drop');
+blocksText.forEach(w=>{ const b=document.createElement('div'); b.className='block'; b.textContent=w; b.draggable=true; b.ondragstart=e=>{ e.dataTransfer.setData('text/plain', w); }; blocks.appendChild(b); });
+drop.ondragover=e=>{ e.preventDefault(); };
+drop.ondrop=e=>{ e.preventDefault(); const w=e.dataTransfer.getData('text/plain'); const b=document.createElement('div'); b.className='block'; b.textContent=w; drop.appendChild(b); checkPhrase(); };
+function checkPhrase(){ const phrase=[...drop.children].map(el=>el.textContent).join(' ');
+  if(phrase==='Where every country finds its place'){ document.getElementById('p3Riddle').classList.remove('hidden'); status3.textContent='Blocks arranged.'; status3.className='status ok'; }
+}
+const status3=document.getElementById('status3');
+document.getElementById('check3').onclick=()=>{ const a=norm(document.getElementById('ans3').value); if(a==='WORLDMAP'){ status3.textContent='Correct.'; status3.className='status ok'; document.getElementById('p4Next').disabled=false; } else { status3.textContent='Incorrect.'; status3.className='status err'; } };
+document.getElementById('reset3').onclick=()=>{ drop.innerHTML=''; document.getElementById('p3Riddle').classList.add('hidden'); document.getElementById('ans3').value=''; status3.textContent=''; status3.className='status'; document.getElementById('p4Next').disabled=true; };
+document.getElementById('p3Back').onclick=()=>showPage('page3');
+document.getElementById('p4Next').onclick=()=>showPage('page5');
+
+// Page5 — riddle NOTHING + Snake
+let snakeOn=false;
+function startSnake(){ if(snakeOn) return; snakeOn=true; const c=document.getElementById('snake'); const ctx=c.getContext('2d'); let dir={x:1,y:0}; let snake=[{x:5,y:5},{x:4,y:5},{x:3,y:5}]; let food={x:10,y:7}; const cols=20, rows=15, size=20; function draw(){ ctx.clearRect(0,0,c.width,c.height); // grid
+  ctx.fillStyle='#3fd27a'; snake.forEach(s=>ctx.fillRect(s.x*size, s.y*size, size-2, size-2)); ctx.fillStyle='#ff6b6b'; ctx.fillRect(food.x*size, food.y*size, size-2, size-2); }
+  function step(){ const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y}; snake.unshift(head); if(head.x===food.x && head.y===food.y){ food={x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)}; } else { snake.pop(); }
+    // bounds
+    if(head.x<0||head.y<0||head.x>=cols||head.y>=rows|| snake.slice(1).some(s=>s.x===head.x&&s.y===head.y)){ // reset
+      snake=[{x:5,y:5},{x:4,y:5},{x:3,y:5}]; dir={x:1,y:0}; }
+    draw(); }
+  draw(); let timer=setInterval(step,150); window.addEventListener('keydown',e=>{ if(['ArrowUp','KeyW'].includes(e.code)) dir={x:0,y:-1}; if(['ArrowDown','KeyS'].includes(e.code)) dir={x:0,y:1}; if(['ArrowLeft','KeyA'].includes(e.code)) dir={x:-1,y:0}; if(['ArrowRight','KeyD'].includes(e.code)) dir={x:1,y:0}; }); }
+const status4=document.getElementById('status4');
+document.getElementById('check4').onclick=()=>{ const a=norm(document.getElementById('ans4').value); if(a==='NOTHING'){ status4.textContent='Correct.'; status4.className='status ok'; document.getElementById('p5Next').disabled=false; document.getElementById('snakeWrap').classList.remove('hidden'); startSnake(); } else { status4.textContent='Incorrect.'; status4.className='status err'; } };
+document.getElementById('reset4').onclick=()=>{ document.getElementById('ans4').value=''; status4.textContent=''; status4.className='status'; document.getElementById('p5Next').disabled=true; };
+document.getElementById('p4Back').onclick=()=>showPage('page4');
+document.getElementById('p5Next').onclick=()=>showPage('page6');
+
+// Page6 restart
+document.getElementById('restart').onclick=()=>location.reload();
+
 </script>
 </body>
 </html>

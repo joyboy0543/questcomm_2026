@@ -47,21 +47,11 @@ const final=document.getElementById('final');
 const p=new URLSearchParams(location.search);
 if(p.get('u')) u.value=p.get('u');
 function buildUrl(){
-  try{
-    const base=new URL(u.value.trim());
-    const qp=new URLSearchParams(base.search);
-    if(n.value.trim()) qp.set('name',n.value.trim());
-    if(t.value.trim()) qp.set('team',t.value.trim());
-    base.search=qp.toString();
-    return base.toString();
-  }catch(e){return u.value.trim();}
+  try{ const base=new URL(u.value.trim()); const qp=new URLSearchParams(base.search);
+    if(n.value.trim()) qp.set('name',n.value.trim()); if(t.value.trim()) qp.set('team',t.value.trim()); base.search=qp.toString(); return base.toString();
+  }catch(e){ return u.value.trim(); }
 }
-function makeQR(){
-  out.innerHTML='';
-  const link=buildUrl();
-  new QRCode(out,{text:link,width:256,height:256});
-  final.textContent=link;
-}
+function makeQR(){ out.innerHTML=''; const link=buildUrl(); new QRCode(out,{text:link,width:256,height:256}); final.textContent=link; }
 document.getElementById('make').addEventListener('click',makeQR);
 </script>
 </body>

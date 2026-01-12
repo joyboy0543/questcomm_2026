@@ -1,57 +1,58 @@
 
-# QR Treasure Hunt — Police Case (5 Levels)
+# QuestComm UI Upgrade Pack
 
-A lightweight, installable web app with a thief–police investigation theme. It auto-saves progress locally and logs **participation only** (no leaderboard).
+This bundle adds: dramatic SFX, police radio toasts, puzzle randomizer, optional CCTV puzzle, animated case-file transitions, police-tape loading bar, crime scene mini-map, interrogation mini-game, and a fingerprint scan mini-game.
 
-## Features
-- 5 themed puzzles (riddle, Caesar cipher, logic code, anagram, sequence)
-- Robust modal + reload behavior (one-shot `?reset=1`)
-- LocalStorage schema with migration
-- PWA: manifest + service worker
-- Optional Google Apps Script endpoint for participation counts (events: `start`, `finished`)
+## How to install (new branch)
 
-## Files
-- `index.html` — single-page app with puzzle engine
-- `manifest.json` — PWA manifest
-- `sw.js` — service worker for offline caching
-- `icons/icon-192.png`, `icons/icon-512.png` — app icons
+1. Clone your repo:
+   ```bash
+   git clone https://github.com/joyboy0543/questcomm_2026.git
+   cd questcomm_2026
+   ```
+2. Create a feature branch:
+   ```bash
+   git checkout -b feature/ui-bonus-minigames
+   ```
+3. Copy the contents of this zip **into the repo root** (it contains the `assets/` and `index.html`). If you already have HTML/CSS/JS, merge manually.
+4. Commit & push:
+   ```bash
+   git add -A
+   git commit -m "feat(ui): bonus + cosmetics + minigames"
+   git push -u origin feature/ui-bonus-minigames
+   ```
+5. Open a Pull Request on GitHub (Compare: `feature/ui-bonus-minigames` → `main`).
 
-## Deploy
-Serve the folder over HTTPS (service worker requires HTTPS) — GitHub Pages, Netlify, Vercel, or any static host.
+## Enable reviews before merging
 
-## Participation Logging (optional)
-Update `LOG_URL` in `index.html` to your Apps Script Web App URL. Only `start` and `finished` events are posted, with `runId`, `team`, `name`.
+In GitHub: **Settings → Branches → Add rule** for `main`:
+- Enable **Require a pull request before merging**
+- Enable **Require approvals** (choose 1+) and **Require review from Code Owners** (optional)
+- Optionally enable **Require status checks** (e.g., CI) and **Require conversation resolution**
 
-**Apps Script example** (`Code.gs`):
-```js
-function doPost(e) {
-  const body = JSON.parse(e.postData.contents || '{}');
-  const ss = SpreadsheetApp.openById('PUT_SPREADSHEET_ID');
-  const sheet = ss.getSheetByName('Participation') || ss.insertSheet('Participation');
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['timestamp','event','runId','team','name','clientTZ']);
-  }
-  sheet.appendRow([new Date(), body.event || '', body.runId || '', body.team || '', body.name || '', body.clientTZ || '' ]);
-  return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
-}
-```
-Publish the web app and paste the deployment URL into `LOG_URL`.
+Add a `CODEOWNERS` file (one is included at `.github/CODEOWNERS`) and replace `@your-handle` with your GitHub username or team. GitHub will auto-request reviews from owners when PRs touch owned paths.
 
-## Update your repository
-```bash
-# From your repo root
-git checkout -b feature/pwa-police-case
-# Copy these files in
-# (or unzip the provided archive and move contents here)
+## Free, reusable custom subdomains (no purchase)
 
-git add index.html manifest.json sw.js icons/*
-git commit -m "Add PWA + 5 police-themed levels; robust modal & participation logging"
-git push -u origin feature/pwa-police-case
-```
+If you want a cleaner URL than `joyboy0543.github.io/questcomm_2026/` without buying a domain, you have two solid, free options:
 
-## Configuration
-- To **auto-resume on reload**, `ASK_ON_RELOAD` is `false`. Set `true` to always ask.
-- Participation-only logging: `logEvent()` ignores non-participation events.
+- **JS.ORG** — Get `questcomm.js.org` or `investigation.js.org`. Steps:
+  1) Add a `CNAME` file with the chosen `*.js.org` subdomain to your Pages branch
+  2) Submit a PR to the `js-org/js.org` repo to add your subdomain
+  3) Wait ~24h for activation
 
-## Credits
-Design & implementation assistance by M365 Copilot.
+- **is-a.dev** — Get `investigation.is-a.dev` (or similar). Steps:
+  1) Fork `is-a-dev/register`, add `domains/<subdomain>.json` with `{"records":{"CNAME":"joyboy0543.github.io"}}`
+  2) Open a PR and, after merge, set `Custom domain` in your repo Pages to `<subdomain>.is-a.dev`, then enforce HTTPS
+
+After activation, regenerate your QR code to point at the new subdomain.
+
+## Optional: QR Code
+
+Once the domain (or subdomain) resolves, generate a QR that points to it. We can provide one from the assistant if needed.
+
+## Notes
+
+- Audio files referenced (`/assets/sounds/*.ogg`) are placeholders. Add tiny OGGs to avoid heavy payload.
+- The CCTV GIF (`/assets/img/cctv_loop.gif`) should be added by you (optimize for <1MB).
+- All features are vanilla JS; toggle modules by commenting imports in `index.html`.

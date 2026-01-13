@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QCPD — Investigator Portal</title>
+  <title>QCPD — Investigator Portal (Mobile-Optimized)</title>
   <link rel="icon" type="image/png" href="icons/qcpd_logo_badge.png" />
   <style>
     :root { --bg:#0b0f1e; --panel:#12172b; --text:#e8ecf8; --muted:#9aa6c7; --accent:#5cc8ff; --accent2:#ffd700; --ok:#3fd27a; --err:#ff6b6b; --tap:48px; }
@@ -16,12 +16,15 @@
     header img.logo { width:64px; height:64px; border-radius: 12px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
     .wm { position: fixed; right: 8px; bottom: 8px; opacity:.06; pointer-events:none; }
     .wm img { width: 160px; }
+    /* subtle scanlines */
     .scanlines::before { content:""; position:absolute; inset:0; background: repeating-linear-gradient( to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 2px, transparent 3px, transparent 6px ); animation: sl 6s linear infinite; mix-blend-mode: overlay; }
     @keyframes sl { 0%{ transform: translateY(0);} 100%{ transform: translateY(-6px);} }
     .grid-bg { background-image: url('assets/img/database_bg.png'); background-size: cover; background-position:center; }
+
     .card { padding:16px; border-radius:12px; background:#111632; margin:14px 0; border: 1px solid #2b3559; position:relative; }
     .badge { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
     .badge img { width: 36px; height:36px; border-radius:8px; }
+
     label { display:block; margin: 10px 0 6px; color: var(--muted); }
     input[type="text"], input[type="password"] { width: 100%; padding: 12px 14px; min-height: var(--tap); border-radius: 10px; border: 1px solid #2a3357; background: #0e1230; color: var(--text); font-size: 1rem; }
     input:focus, button:focus { outline: 3px solid #5cc8ff55; outline-offset: 2px; }
@@ -29,23 +32,48 @@
     button.alt { background: #28335f; color:#e8ecf8; }
     button[disabled] { opacity:.5; cursor:not-allowed; }
     .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+
     .two-col { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
     .three-col { display:grid; grid-template-columns: 1fr 1.2fr 1fr; gap:16px; }
     .side img { max-width:100%; border-radius:12px; border:1px solid #2a3357; }
     .media img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #2a3357; }
+
     .dialogue, .prompt { font-size:1.05rem; margin: 12px 0; line-height:1.6; }
     .status { margin-top:10px; font-weight:600; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
     .hidden { display:none !important; }
     .toast { position: fixed; left: 16px; bottom: 16px; background:#0e1230; border:1px solid #2a3357; border-radius:10px; padding:10px 12px; color:var(--text); box-shadow:0 6px 14px rgba(0,0,0,.4); }
+
     .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
     .tile { width: 100%; padding-top: 100%; position: relative; border-radius: 6px; border:1px solid #2a3357; overflow:hidden; cursor:pointer; }
     .tile-inner { position:absolute; inset:0; background-image:url('assets/img/tourist.png'); background-size: 300% 300%; filter: contrast(1.05) saturate(1.05); }
+
     .drop-zone { min-height: 80px; background:#0e1230; border:1px dashed #2a3357; border-radius:8px; padding:8px; display:flex; gap:8px; flex-wrap:wrap; }
     .block { background:#28335f; color:#f5f7ff; padding:8px 10px; border-radius:8px; cursor:grab; }
-    canvas { background:#0b0e1c; border:1px solid #2a3357; border-radius:8px; }
+
+    canvas { background:#0b0e1c; border:1px solid #2a3357; border-radius:8px; width: 100%; height: auto; image-rendering: pixelated; }
+
     footer { margin:20px 0; text-align:center; color:var(--muted); font-size:.9rem; }
+
+    /* ===== Mobile optimizations ===== */
+    @media (max-width: 768px) {
+      .wrap { max-width: 96vw; margin: 2vh auto; padding: 8px; }
+      header img.logo { width:52px; height:52px; }
+      header .title { font-size:1.05rem; }
+      .wm img { width: 90px; }
+      .two-col, .three-col { display:block; }
+      .side { display:none; } /* hide decorative side panels on mobile */
+      .row { gap:8px; }
+      .badge img { width: 30px; height:30px; }
+      button { padding: 12px 14px; }
+      .grid { gap:6px; }
+    }
+    @media (max-width: 420px) {
+      .row { flex-direction: column; }
+      .row button { width: 100%; }
+      .badge { gap:8px; }
+    }
   </style>
 </head>
 <body>
@@ -188,7 +216,7 @@
     <div class="side"><img src="assets/img/fingerprint_scan.png" alt="Fingerprint"/></div>
   </section>
 
-  <!-- Page 6: Completion (no Make QR button) -->
+  <!-- Page 6: Completion -->
   <section id="page6" class="card hidden">
     <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Case Complete — QCPD Recruiting</strong></div>
     <p>You’ve completed all puzzles. Welcome to the QCPD roster!</p>

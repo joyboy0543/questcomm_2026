@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QCPD — Investigator Portal (Mobile-Optimized)</title>
+  <title>QCPD — Evidence Desk</title>
   <link rel="icon" type="image/png" href="icons/qcpd_logo_badge.png" />
   <style>
     :root { --bg:#0b0f1e; --panel:#12172b; --text:#e8ecf8; --muted:#9aa6c7; --accent:#5cc8ff; --accent2:#ffd700; --ok:#3fd27a; --err:#ff6b6b; --tap:48px; }
@@ -16,7 +16,6 @@
     header img.logo { width:64px; height:64px; border-radius: 12px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
     .wm { position: fixed; right: 8px; bottom: 8px; opacity:.06; pointer-events:none; }
     .wm img { width: 160px; }
-    /* subtle scanlines */
     .scanlines::before { content:""; position:absolute; inset:0; background: repeating-linear-gradient( to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 2px, transparent 3px, transparent 6px ); animation: sl 6s linear infinite; mix-blend-mode: overlay; }
     @keyframes sl { 0%{ transform: translateY(0);} 100%{ transform: translateY(-6px);} }
     .grid-bg { background-image: url('assets/img/database_bg.png'); background-size: cover; background-position:center; }
@@ -33,46 +32,41 @@
     button[disabled] { opacity:.5; cursor:not-allowed; }
     .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
 
-    .two-col { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
-    .three-col { display:grid; grid-template-columns: 1fr 1.2fr 1fr; gap:16px; }
-    .side img { max-width:100%; border-radius:12px; border:1px solid #2a3357; }
-    .media img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #2a3357; }
+    /* Tabs (file structure) */
+    .tabs { display:flex; gap:8px; overflow-x:auto; padding:8px; background:#0e1230; border:1px solid #2a3357; border-radius:12px; }
+    .tab { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:#20274a; color:var(--text); cursor:pointer; white-space:nowrap; }
+    .tab img { width:22px; height:22px; border-radius:6px; }
+    .tab.active { background:var(--accent); color:#001622; font-weight:700; }
+    .tab.locked { background:#161a33; color:#7783a8; cursor:not-allowed; }
 
-    .dialogue, .prompt { font-size:1.05rem; margin: 12px 0; line-height:1.6; }
-    .status { margin-top:10px; font-weight:600; }
-    .status.ok { color: var(--ok); }
-    .status.err { color: var(--err); }
+    .section { margin-top:14px; }
     .hidden { display:none !important; }
-    .toast { position: fixed; left: 16px; bottom: 16px; background:#0e1230; border:1px solid #2a3357; border-radius:10px; padding:10px 12px; color:var(--text); box-shadow:0 6px 14px rgba(0,0,0,.4); }
 
+    .media img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #2a3357; }
     .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
     .tile { width: 100%; padding-top: 100%; position: relative; border-radius: 6px; border:1px solid #2a3357; overflow:hidden; cursor:pointer; }
     .tile-inner { position:absolute; inset:0; background-image:url('assets/img/tourist.png'); background-size: 300% 300%; filter: contrast(1.05) saturate(1.05); }
-
     .drop-zone { min-height: 80px; background:#0e1230; border:1px dashed #2a3357; border-radius:8px; padding:8px; display:flex; gap:8px; flex-wrap:wrap; }
     .block { background:#28335f; color:#f5f7ff; padding:8px 10px; border-radius:8px; cursor:grab; }
-
     canvas { background:#0b0e1c; border:1px solid #2a3357; border-radius:8px; width: 100%; height: auto; image-rendering: pixelated; }
+
+    .status { margin-top:10px; font-weight:600; }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+
+    .toast { position: fixed; left: 16px; bottom: 16px; background:#0e1230; border:1px solid #2a3357; border-radius:10px; padding:10px 12px; color:var(--text); box-shadow:0 6px 14px rgba(0,0,0,.4); }
 
     footer { margin:20px 0; text-align:center; color:var(--muted); font-size:.9rem; }
 
-    /* ===== Mobile optimizations ===== */
+    /* Mobile */
     @media (max-width: 768px) {
       .wrap { max-width: 96vw; margin: 2vh auto; padding: 8px; }
       header img.logo { width:52px; height:52px; }
       header .title { font-size:1.05rem; }
       .wm img { width: 90px; }
-      .two-col, .three-col { display:block; }
-      .side { display:none; } /* hide decorative side panels on mobile */
-      .row { gap:8px; }
-      .badge img { width: 30px; height:30px; }
-      button { padding: 12px 14px; }
       .grid { gap:6px; }
-    }
-    @media (max-width: 420px) {
-      .row { flex-direction: column; }
-      .row button { width: 100%; }
-      .badge { gap:8px; }
+      .tabs { gap:6px; }
+      .tab { padding:8px 10px; }
     }
   </style>
 </head>
@@ -80,72 +74,52 @@
 <div class="wrap scanlines grid-bg">
   <header class="scanlines">
     <img class="logo" src="icons/qcpd_logo_badge.png" alt="QCPD"/>
-    <div class="title">QCPD Investigator Portal — Internal Database</div>
+    <div class="title">QCPD Evidence Desk — Internal Database</div>
   </header>
 
   <div class="wm"><img src="assets/img/qcpd_watermark.png" alt="QCPD watermark"/></div>
   <div id="radio" class="toast hidden"></div>
 
   <!-- Landing -->
-  <section id="landing" class="card two-col">
-    <div>
-      <div class="prompt">Database Login <img src="assets/gif/radio_pulse.gif" alt="loading" style="height:24px;vertical-align:middle;border-radius:6px;"> <span style="color:var(--muted);font-size:.95rem;">Radio prompts every 5 seconds.</span></div>
-      <label for="name">Enter Name</label>
-      <input id="name" type="text" />
-      <label for="idnum">Investigator ID number (Favourite number :) )</label>
-      <input id="idnum" type="text" />
-      <label for="team">Team name</label>
-      <input id="team" type="text" />
-      <label for="pass">Password <span style="color:var(--muted)">(Hint: Sweden is among the top 5 consumers of this drink in the world)</span></label>
-      <input id="pass" type="password" />
-      <div class="row"><button id="startBtn">Enter</button></div>
-      <div id="loginStatus" class="status"></div>
-    </div>
-    <div class="side"><img src="assets/img/alerts_feed.png" alt="Alerts Feed"/></div>
+  <section id="landing" class="card">
+    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Database Login</strong></div>
+    <label for="name">Enter Name</label>
+    <input id="name" type="text" />
+    <label for="idnum">Investigator ID number (Favourite number :) )</label>
+    <input id="idnum" type="text" />
+    <label for="team">Team name</label>
+    <input id="team" type="text" />
+    <label for="pass">Password <span style="color:var(--muted)">(Hint: Sweden is among the top 5 consumers of this drink in the world)</span></label>
+    <input id="pass" type="password" />
+    <div class="row"><button id="startBtn">Enter</button></div>
+    <div id="loginStatus" class="status"></div>
   </section>
 
-  <!-- Page 1: Case File -->
-  <section id="page1" class="card hidden three-col">
-    <div class="side"><img src="assets/img/evidence_folder.png" alt="Evidence folder"/></div>
-    <div>
-      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Page 1 — Case File</strong></div>
-      <div class="media"><img src="assets/img/photo_placeholder.png" alt="Photo"/></div>
-      <label for="note1">Investigator note (fill later)</label>
-      <input id="note1" type="text" />
-      <div class="row">
-        <button id="p1Reset" class="alt">Reset Page</button>
-        <button id="p1Next">Next</button>
-        <button id="resetAll1">Reset All</button>
-      </div>
+  <!-- Evidence tabs -->
+  <section id="desk" class="card hidden">
+    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Evidence Binder</strong></div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-i="0"><img src="icons/qcpd_logo_badge.png" alt="A">Evidence A · Riddle</div>
+      <div class="tab locked" data-i="1"><img src="icons/qcpd_logo_badge.png" alt="B">Evidence B · Assemble & Code</div>
+      <div class="tab locked" data-i="2"><img src="icons/qcpd_logo_badge.png" alt="C">Evidence C · Arrange Blocks</div>
+      <div class="tab locked" data-i="3"><img src="icons/qcpd_logo_badge.png" alt="D">Evidence D · Riddle + Snake</div>
+      <div class="tab locked" data-i="4"><img src="icons/qcpd_logo_badge.png" alt="E">Closure</div>
     </div>
-    <div class="side"><img src="assets/img/case_links.png" alt="Case Links"/></div>
-  </section>
 
-  <!-- Page 2: Puzzle 1 -->
-  <section id="page2" class="card hidden three-col">
-    <div class="side"><img src="assets/img/evidence_tags.png" alt="Evidence Tags"/></div>
-    <div>
-      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 1 — Riddle</strong></div>
+    <!-- Sections per evidence -->
+    <div class="section" id="ev0">
       <div class="dialogue">Detective: "I stand where directions decide, where choices turn left or right. Find me where correctness points the way and doors align only on the <em>proper side</em>." (Type your answer)</div>
       <label for="ans1">Answer</label>
       <input id="ans1" type="text" />
       <div class="row">
         <button id="check1">Check</button>
         <button id="reset1" class="alt">Reset Page</button>
-        <button id="p1Back">Back</button>
-        <button id="p2Next" disabled>Next</button>
-        <button id="resetAll2">Reset All</button>
+        <button id="resetAll1">Reset All</button>
       </div>
       <div id="status1" class="status"></div>
     </div>
-    <div class="side"><img src="assets/img/alerts_feed.png" alt="Alerts"/></div>
-  </section>
 
-  <!-- Page 3: Puzzle 2 -->
-  <section id="page3" class="card hidden three-col">
-    <div class="side"><img src="assets/img/case_links.png" alt="Case Links"/></div>
-    <div>
-      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 2 — Assemble & Code</strong></div>
+    <div class="section hidden" id="ev1">
       <div class="prompt">Assemble the tourist image (3×3). When solved, clues will appear.</div>
       <div class="grid" id="grid"></div>
       <div id="p2Clues" class="dialogue hidden">
@@ -160,20 +134,12 @@
       <div class="row">
         <button id="check314" disabled>Check</button>
         <button id="reset2" class="alt">Reset Page</button>
-        <button id="p2Back">Back</button>
-        <button id="p3Next" disabled>Next</button>
-        <button id="resetAll3">Reset All</button>
+        <button id="resetAll2">Reset All</button>
       </div>
       <div id="status2" class="status"></div>
     </div>
-    <div class="side"><img src="assets/img/fingerprint_scan.png" alt="Fingerprint"/></div>
-  </section>
 
-  <!-- Page 4: Puzzle 3 -->
-  <section id="page4" class="card hidden three-col">
-    <div class="side"><img src="assets/img/evidence_tags.png" alt="Evidence Tags"/></div>
-    <div>
-      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 3 — Arrange Blocks</strong></div>
+    <div class="section hidden" id="ev2">
       <div class="prompt">Arrange the blocks to form a clear clue.</div>
       <div class="drop-zone" id="drop"></div>
       <div class="row" id="blocks"></div>
@@ -183,29 +149,19 @@
       <div class="row">
         <button id="check3">Check</button>
         <button id="reset3" class="alt">Reset Page</button>
-        <button id="p3Back">Back</button>
-        <button id="p4Next" disabled>Next</button>
-        <button id="resetAll4">Reset All</button>
+        <button id="resetAll3">Reset All</button>
       </div>
       <div id="status3" class="status"></div>
     </div>
-    <div class="side"><img src="assets/img/case_links.png" alt="Case Links"/></div>
-  </section>
 
-  <!-- Page 5: Puzzle 4 -->
-  <section id="page5" class="card hidden three-col">
-    <div class="side"><img src="assets/img/alerts_feed.png" alt="Alerts"/></div>
-    <div>
-      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 4 — Riddle</strong></div>
+    <div class="section hidden" id="ev3">
       <div class="dialogue">"I am the absence that fills rooms and the quiet beneath every sound. I can be lost without leaving, and found without appearing. What am I?"</div>
       <label for="ans4">Answer</label>
       <input id="ans4" type="text" />
       <div class="row">
         <button id="check4">Check</button>
         <button id="reset4" class="alt">Reset Page</button>
-        <button id="p4Back">Back</button>
-        <button id="p5Next" disabled>Next</button>
-        <button id="resetAll5">Reset All</button>
+        <button id="resetAll4">Reset All</button>
       </div>
       <div id="status4" class="status"></div>
       <div id="snakeWrap" class="hidden">
@@ -213,22 +169,19 @@
         <canvas id="snake" width="400" height="300"></canvas>
       </div>
     </div>
-    <div class="side"><img src="assets/img/fingerprint_scan.png" alt="Fingerprint"/></div>
-  </section>
 
-  <!-- Page 6: Completion -->
-  <section id="page6" class="card hidden">
-    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Case Complete — QCPD Recruiting</strong></div>
-    <p>You’ve completed all puzzles. Welcome to the QCPD roster!</p>
-    <ul>
-      <li>Puzzle 1 answer: <strong>RIGHT BUILDING</strong></li>
-      <li>Puzzle 2 code: <strong>314</strong></li>
-      <li>Puzzle 3 answer: <strong>WORLD MAP</strong></li>
-      <li>Puzzle 4 answer: <strong>NOTHING</strong> (enjoy Snake)</li>
-    </ul>
-    <div class="row">
-      <button id="resetAll6" class="alt">Reset All</button>
-      <button id="p6Back">Back</button>
+    <div class="section hidden" id="ev4">
+      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Case Complete — QCPD Recruiting</strong></div>
+      <p>You’ve completed all puzzles. Welcome to the QCPD roster!</p>
+      <ul>
+        <li>Puzzle 1 answer: <strong>RIGHT BUILDING</strong></li>
+        <li>Puzzle 2 code: <strong>314</strong></li>
+        <li>Puzzle 3 answer: <strong>WORLD MAP</strong></li>
+        <li>Puzzle 4 answer: <strong>NOTHING</strong> (enjoy Snake)</li>
+      </ul>
+      <div class="row">
+        <button id="resetAll5" class="alt">Reset All</button>
+      </div>
     </div>
   </section>
 
@@ -236,51 +189,49 @@
 </div>
 
 <script>
-const pages=['landing','page1','page2','page3','page4','page5','page6'];
-function showPage(id){ pages.forEach(p=>document.getElementById(p).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+// Pages replaced by tabs
+const tabs = document.getElementById('tabs');
+const sections = [document.getElementById('ev0'), document.getElementById('ev1'), document.getElementById('ev2'), document.getElementById('ev3'), document.getElementById('ev4')];
+const tabEls = [...tabs.children];
+let unlocked = [true,false,false,false,false];
+let completed = [false,false,false,false];
 
-// Radio prompts every 5s
-const radioPrompts=[ 'Dispatch: Stand by for updates.', 'Ops: Secure perimeter and proceed.', 'Forensics: Samples logged.', 'Records: Database synced.', 'HQ: Maintain radio discipline.' ];
-let rp=0; const radio=document.getElementById('radio');
-setInterval(()=>{ radio.textContent = radioPrompts[rp%radioPrompts.length]; radio.classList.remove('hidden'); setTimeout(()=>radio.classList.add('hidden'), 2500); rp++; }, 5000);
+function showDesk(){ document.getElementById('landing').classList.add('hidden'); document.getElementById('desk').classList.remove('hidden'); }
+function setActive(i){ sections.forEach((s,idx)=> s.classList.toggle('hidden', idx!==i)); tabEls.forEach((t,idx)=>{ t.classList.toggle('active', idx===i); t.classList.toggle('locked', !unlocked[idx]); }); }
+function notify(msg){ const radio=document.getElementById('radio'); radio.textContent=msg; radio.classList.remove('hidden'); setTimeout(()=>radio.classList.add('hidden'), 2000); }
 
-// Landing -> validate password (COFFEE)
+// Landing
 const startBtn=document.getElementById('startBtn'); const loginStatus=document.getElementById('loginStatus');
-startBtn.onclick=()=>{ const pass=(document.getElementById('pass').value||'').trim().toUpperCase(); if(pass!=='COFFEE'){ loginStatus.textContent='Access denied. Hint: think of a popular hot drink.'; loginStatus.className='status err'; return; } loginStatus.textContent='Access granted.'; loginStatus.className='status ok'; showPage('page1'); };
+startBtn.onclick=()=>{ const pass=(document.getElementById('pass').value||'').trim().toUpperCase(); if(pass!=='COFFEE'){ loginStatus.textContent='Access denied. Hint: think of a popular hot drink.'; loginStatus.className='status err'; return; } loginStatus.textContent='Access granted.'; loginStatus.className='status ok'; showDesk(); setActive(0); };
 
+// Tabs click gating
+tabs.addEventListener('click', (e)=>{ const tab = e.target.closest('.tab'); if(!tab) return; const i = parseInt(tab.dataset.i,10); if(!unlocked[i]){ notify('Access restricted — solve the previous clue to unlock this evidence.'); return; } setActive(i); });
+
+// Helpers
 function norm(s){ return (s||'').trim().toUpperCase().replace(/\s+/g,''); }
+function resetAll(){ location.reload(); }
 
-// Page1
-document.getElementById('p1Reset').onclick=()=>{ document.getElementById('note1').value=''; };
-document.getElementById('p1Next').onclick=()=>showPage('page2');
-document.getElementById('resetAll1').onclick=()=>location.reload();
-
-// Page2
+// Evidence A — RIGHT BUILDING
 const status1=document.getElementById('status1');
-document.getElementById('check1').onclick=()=>{ const a=norm(document.getElementById('ans1').value); if(a==='RIGHTBUILDING'){ status1.textContent='Correct.'; status1.className='status ok'; document.getElementById('p2Next').disabled=false; } else { status1.textContent='Incorrect.'; status1.className='status err'; } };
-document.getElementById('reset1').onclick=()=>{ document.getElementById('ans1').value=''; status1.textContent=''; status1.className='status'; document.getElementById('p2Next').disabled=true; };
-document.getElementById('p1Back').onclick=()=>showPage('page1');
-document.getElementById('p2Next').onclick=()=>showPage('page3');
-document.getElementById('resetAll2').onclick=()=>location.reload();
+document.getElementById('check1').onclick=()=>{ const a=norm(document.getElementById('ans1').value); if(a==='RIGHTBUILDING'){ status1.textContent='Correct.'; status1.className='status ok'; completed[0]=true; unlocked[1]=true; tabEls[1].classList.remove('locked'); notify('Evidence B unlocked.'); } else { status1.textContent='Incorrect.'; status1.className='status err'; } };
+document.getElementById('reset1').onclick=()=>{ document.getElementById('ans1').value=''; status1.textContent=''; status1.className='status'; };
+document.getElementById('resetAll1').onclick=resetAll;
 
-// Page3
+// Evidence B — Assemble + 314
 const grid=document.getElementById('grid');
 let order=[0,1,2,3,4,5,6,7,8];
 function posOf(idx){ const x=idx%3, y=Math.floor(idx/3); return {x, y}; }
 function buildTiles(){ grid.innerHTML=''; order.forEach((o,i)=>{ const tile=document.createElement('div'); tile.className='tile'; const inner=document.createElement('div'); inner.className='tile-inner'; const p=posOf(o); inner.style.backgroundPosition=`${p.x*50}% ${p.y*50}%`; tile.appendChild(inner); tile.onclick=()=>onTileClick(i); grid.appendChild(tile); }); }
 function shuffle(){ order.sort(()=>Math.random()-0.5); buildTiles(); }
 function isSolved(){ return order.every((o,i)=>o===i); }
-function onTileClick(i){ if(i<order.length-1){ [order[i], order[i+1]]=[order[i+1], order[i]]; } else { [order[i], order[0]]=[order[0], order[i]]; } buildTiles(); if(isSolved()) { document.getElementById('p2Clues').classList.remove('hidden'); document.getElementById('check314').disabled=false; status2.textContent='Image assembled!'; status2.className='status ok'; } }
+function onTileClick(i){ if(i<order.length-1){ [order[i], order[i+1]]=[order[i+1], order[i]]; } else { [order[i], order[0]]=[order[0], order[i]]; } buildTiles(); if(isSolved()){ document.getElementById('p2Clues').classList.remove('hidden'); document.getElementById('check314').disabled=false; status2.textContent='Image assembled!'; status2.className='status ok'; } }
 shuffle();
-
 const status2=document.getElementById('status2');
-document.getElementById('check314').onclick=()=>{ const code=(document.getElementById('code314').value||'').trim(); if(code==='314'){ status2.textContent='Correct code.'; status2.className='status ok'; document.getElementById('p3Next').disabled=false; } else { status2.textContent='Incorrect code.'; status2.className='status err'; } };
-document.getElementById('reset2').onclick=()=>{ shuffle(); document.getElementById('p2Clues').classList.add('hidden'); document.getElementById('code314').value=''; status2.textContent=''; status2.className='status'; document.getElementById('p3Next').disabled=true; };
-document.getElementById('p2Back').onclick=()=>showPage('page2');
-document.getElementById('p3Next').onclick=()=>showPage('page4');
-document.getElementById('resetAll3').onclick=()=>location.reload();
+document.getElementById('check314').onclick=()=>{ const code=(document.getElementById('code314').value||'').trim(); if(code==='314'){ status2.textContent='Correct code.'; status2.className='status ok'; completed[1]=true; unlocked[2]=true; tabEls[2].classList.remove('locked'); notify('Evidence C unlocked.'); } else { status2.textContent='Incorrect code.'; status2.className='status err'; } };
+document.getElementById('reset2').onclick=()=>{ shuffle(); document.getElementById('p2Clues').classList.add('hidden'); document.getElementById('code314').value=''; status2.textContent=''; status2.className='status'; document.getElementById('check314').disabled=true; };
+document.getElementById('resetAll2').onclick=resetAll;
 
-// Page4
+// Evidence C — Blocks + WORLD MAP
 const blocksText=['Where','every','country','finds','its','place'];
 const blocks=document.getElementById('blocks'); const drop=document.getElementById('drop');
 blocksText.forEach(w=>{ const b=document.createElement('div'); b.className='block'; b.textContent=w; b.draggable=true; b.ondragstart=e=>{ e.dataTransfer.setData('text/plain', w); }; blocks.appendChild(b); });
@@ -288,13 +239,11 @@ drop.ondragover=e=>{ e.preventDefault(); };
 drop.ondrop=e=>{ e.preventDefault(); const w=e.dataTransfer.getData('text/plain'); const b=document.createElement('div'); b.className='block'; b.textContent=w; drop.appendChild(b); checkPhrase(); };
 function checkPhrase(){ const phrase=[...drop.children].map(el=>el.textContent).join(' '); if(phrase==='Where every country finds its place'){ document.getElementById('p3Riddle').classList.remove('hidden'); status3.textContent='Blocks arranged.'; status3.className='status ok'; } }
 const status3=document.getElementById('status3');
-document.getElementById('check3').onclick=()=>{ const a=norm(document.getElementById('ans3').value); if(a==='WORLDMAP'){ status3.textContent='Correct.'; status3.className='status ok'; document.getElementById('p4Next').disabled=false; } else { status3.textContent='Incorrect.'; status3.className='status err'; } };
-document.getElementById('reset3').onclick=()=>{ drop.innerHTML=''; document.getElementById('p3Riddle').classList.add('hidden'); document.getElementById('ans3').value=''; status3.textContent=''; status3.className='status'; document.getElementById('p4Next').disabled=true; };
-document.getElementById('p3Back').onclick=()=>showPage('page3');
-document.getElementById('p4Next').onclick=()=>showPage('page5');
-document.getElementById('resetAll4').onclick=()=>location.reload();
+document.getElementById('check3').onclick=()=>{ const a=norm(document.getElementById('ans3').value); if(a==='WORLDMAP'){ status3.textContent='Correct.'; status3.className='status ok'; completed[2]=true; unlocked[3]=true; tabEls[3].classList.remove('locked'); notify('Evidence D unlocked.'); } else { status3.textContent='Incorrect.'; status3.className='status err'; } };
+document.getElementById('reset3').onclick=()=>{ drop.innerHTML=''; document.getElementById('p3Riddle').classList.add('hidden'); document.getElementById('ans3').value=''; status3.textContent=''; status3.className='status'; };
+document.getElementById('resetAll3').onclick=resetAll;
 
-// Page5
+// Evidence D — NOTHING + Snake
 let snakeOn=false; let snakeTimer=null;
 function startSnake(){ if(snakeOn) return; snakeOn=true; const c=document.getElementById('snake'); const ctx=c.getContext('2d'); let dir={x:1,y:0}; let snake=[{x:5,y:5},{x:4,y:5},{x:3,y:5}]; let food={x:10,y:7}; const cols=20, rows=15, size=20; function draw(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#3fd27a'; snake.forEach(s=>ctx.fillRect(s.x*size, s.y*size, size-2, size-2)); ctx.fillStyle='#ff6b6b'; ctx.fillRect(food.x*size, food.y*size, size-2, size-2); }
   function step(){ const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y}; snake.unshift(head); if(head.x===food.x && head.y===food.y){ food={x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)}; } else { snake.pop(); }
@@ -302,18 +251,20 @@ function startSnake(){ if(snakeOn) return; snakeOn=true; const c=document.getEle
     draw(); }
   draw(); snakeTimer=setInterval(step,150); window.addEventListener('keydown',e=>{ if(['ArrowUp','KeyW'].includes(e.code)) dir={x:0,y:-1}; if(['ArrowDown','KeyS'].includes(e.code)) dir={x:0,y:1}; if(['ArrowLeft','KeyA'].includes(e.code)) dir={x:-1,y:0}; if(['ArrowRight','KeyD'].includes(e.code)) dir={x:1,y:0}; }); }
 const status4=document.getElementById('status4');
-document.getElementById('check4').onclick=()=>{ const a=norm(document.getElementById('ans4').value); if(a==='NOTHING'){ status4.textContent='Correct.'; status4.className='status ok'; document.getElementById('p5Next').disabled=false; document.getElementById('snakeWrap').classList.remove('hidden'); startSnake(); } else { status4.textContent='Incorrect.'; status4.className='status err'; } };
-document.getElementById('reset4').onclick=()=>{ document.getElementById('ans4').value=''; status4.textContent=''; status4.className='status'; document.getElementById('p5Next').disabled=true; document.getElementById('snakeWrap').classList.add('hidden'); if(snakeTimer){ clearInterval(snakeTimer); snakeTimer=null; snakeOn=false; } };
-document.getElementById('p4Back').onclick=()=>showPage('page4');
-document.getElementById('p5Next').onclick=()=>showPage('page6');
-document.getElementById('resetAll5').onclick=()=>{ if(snakeTimer){ clearInterval(snakeTimer); snakeTimer=null; snakeOn=false; } location.reload(); };
+document.getElementById('check4').onclick=()=>{ const a=norm(document.getElementById('ans4').value); if(a==='NOTHING'){ status4.textContent='Correct.'; status4.className='status ok'; completed[3]=true; unlocked[4]=true; tabEls[4].classList.remove('locked'); notify('Closure unlocked.'); document.getElementById('snakeWrap').classList.remove('hidden'); startSnake(); } else { status4.textContent='Incorrect.'; status4.className='status err'; } };
+document.getElementById('reset4').onclick=()=>{ document.getElementById('ans4').value=''; status4.textContent=''; status4.className='status'; document.getElementById('snakeWrap').classList.add('hidden'); if(snakeTimer){ clearInterval(snakeTimer); snakeTimer=null; snakeOn=false; } };
+document.getElementById('resetAll4').onclick=()=>{ if(snakeTimer){ clearInterval(snakeTimer); snakeTimer=null; snakeOn=false; } resetAll(); };
 
-// Page6
-document.getElementById('resetAll6').onclick=()=>location.reload();
-document.getElementById('p6Back').onclick=()=>showPage('page5');
+// Closure — Reset All only
+const resetAll5=document.getElementById('resetAll5'); resetAll5.onclick=resetAll;
 
-// init
-showPage('landing');
+// Init
+setActive(0);
+
+// Radio prompts every 5s (at desk)
+const radioPrompts=[ 'Dispatch: Stand by for updates.', 'Ops: Secure perimeter and proceed.', 'Forensics: Samples logged.', 'Records: Database synced.', 'HQ: Maintain radio discipline.' ];
+let rp=0; const radio=document.getElementById('radio');
+setInterval(()=>{ radio.textContent = radioPrompts[rp%radioPrompts.length]; if(!radio.classList.contains('hidden')){} else { radio.classList.remove('hidden'); setTimeout(()=>radio.classList.add('hidden'), 1800); } rp++; }, 5000);
 </script>
 </body>
 </html>

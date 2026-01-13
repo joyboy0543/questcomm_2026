@@ -8,6 +8,19 @@
   <link rel="preload" href="assets/left.png" as="image">
   <link rel="preload" href="assets/right.png" as="image">
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* page-specific helpers */
+    .grid-3x3 { display:grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap:6px }
+    .cell { width:100px; height:100px; border:1px dashed #223041; border-radius:6px; background:#0d1318 }
+    .tile { width:96px; height:96px; border-radius:6px; background:#222; border:1px solid #1f2730; cursor:grab }
+    .sidebox { display:flex; flex-wrap:wrap; gap:6px; padding:8px; border:1px solid #223041; border-radius:8px; background:#0e151b; max-width:330px }
+
+    .rb-img { max-width:100%; border:1px solid #223041; border-radius:8px }
+    .flex-row { display:flex; gap:12px; align-items:flex-start }
+    .hidden { display:none }
+
+    canvas#snake { background:#0d1318; border:1px solid #223041; border-radius:6px }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -38,13 +51,19 @@
 
       <!-- Tabs -->
       <nav class="tabs" role="tablist" aria-label="Case puzzles">
-        <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Puzzle 1</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Puzzle 2</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3">Puzzle 3</button>
+        <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Page 1</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Page 2</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3">Page 3</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-4" id="btn-tab-4">Page 4</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-5" id="btn-tab-5">Page 5</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Page 6</button>
       </nav>
       <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1"></section>
       <section id="tab-2" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-2" hidden></section>
       <section id="tab-3" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-3" hidden></section>
+      <section id="tab-4" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-4" hidden></section>
+      <section id="tab-5" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-5" hidden></section>
+      <section id="tab-6" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-6" hidden></section>
 
       <div class="resume-note">Progress auto-saves in your browser. Refreshing won’t lose your place.</div>
       <div style="margin-top:10px"><a class="btn-link" href="index.html">⟵ Back to landing</a></div>
@@ -73,5 +92,6 @@
   <script src="js/common.js"></script>
   <script src="js/game.js"></script>
   <script src="js/tabs.js"></script>
+  <script src="js/puzzles_logic.js"></script>
 </body>
 </html>

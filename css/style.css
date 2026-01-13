@@ -26,6 +26,10 @@
 .radio-time{color:var(--accent-2);font-weight:600;font-variant-numeric:tabular-nums}.radio-text{color:var(--text)}
 .radio-controls{display:flex;gap:8px;margin-top:8px}
 .radio-controls button{background:#0c1217;color:var(--text);border:1px solid #223041;border-radius:8px;padding:6px 8px}
+.tabs{display:flex;gap:8px;margin:10px 0}
+.tab{background:#0c1217;color:var(--text);border:1px solid #223041;border-radius:8px;padding:8px 10px;cursor:pointer}
+.tab.active{outline:2px solid #2db2ff}
+.tabpanel{margin-top:10px}
 @media (max-width:1024px){.layout-3col{grid-template-columns:220px minmax(0,1fr) 280px}.radio-ticker{height:220px}}
 @media (max-width:780px){.layout-3col{grid-template-columns:1fr}.mobile-toggles{display:flex}#sidebar-left,#sidebar-right{display:none}.sidebar-media img{height:110px}.radio-ticker{height:160px}}
 @media (max-width:420px){.sidebar-media img{display:none}.radio-ticker{height:140px}}

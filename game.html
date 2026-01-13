@@ -31,39 +31,20 @@
       <p class="hint">Locked cases are greyed out. New cases unlock as you progress.</p>
     </aside>
 
-    <!-- CENTER: Puzzles -->
+    <!-- CENTER: Puzzles (tabs) -->
     <section id="puzzle-area" class="content">
       <h2 class="content-title">Open Case</h2>
       <div id="current-case-title" class="current-case-title" aria-live="polite"></div>
 
-      <div class="puzzle-card" id="puzzle1">
-        <h3>Puzzle 1 — Dock Cipher</h3>
-        <p>A quick warm-up. Shift each letter by +3 (Caesar). Solve: <code>VKLIWD</code></p>
-        <input id="p1" placeholder="Your answer" />
-        <button class="btn-sm" onclick="checkP1()">Submit</button>
-        <div id="p1status" class="status"></div>
-      </div>
-
-      <div class="puzzle-card" id="puzzle2">
-        <h3>Puzzle 2 — Tag Numbers</h3>
-        <p>Which container number is odd one out? <code>AX13, AX17, AX21, AX24</code></p>
-        <input id="p2" placeholder="e.g., AX24" />
-        <button class="btn-sm" onclick="checkP2()">Submit</button>
-        <div id="p2status" class="status"></div>
-      </div>
-
-      <div class="puzzle-card" id="puzzle3">
-        <h3>Puzzle 3 — Jewel Code</h3>
-        <p>Pick the correct keyword for the Vigenère key hint: “deep-blue gemstone”.</p>
-        <select id="p3">
-          <option value="">Select…</option>
-          <option>SAPPHIRE</option>
-          <option>RUBY</option>
-          <option>EMERALD</option>
-        </select>
-        <button class="btn-sm" onclick="checkP3()">Submit</button>
-        <div id="p3status" class="status"></div>
-      </div>
+      <!-- Tabs -->
+      <nav class="tabs" role="tablist" aria-label="Case puzzles">
+        <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Puzzle 1</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Puzzle 2</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3">Puzzle 3</button>
+      </nav>
+      <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1"></section>
+      <section id="tab-2" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-2" hidden></section>
+      <section id="tab-3" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-3" hidden></section>
 
       <div class="resume-note">Progress auto-saves in your browser. Refreshing won’t lose your place.</div>
       <div style="margin-top:10px"><a class="btn-link" href="index.html">⟵ Back to landing</a></div>
@@ -91,6 +72,6 @@
 
   <script src="js/common.js"></script>
   <script src="js/game.js"></script>
-  <script src="js/puzzles.js"></script>
+  <script src="js/tabs.js"></script>
 </body>
 </html>

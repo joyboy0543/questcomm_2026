@@ -1,28 +1,17 @@
 
 (function(){
-  const qs = QC.getQS();
-  ['team','name','password','investigatorId'].forEach(k=>{
-    const el = document.getElementById(k);
-    if (qs[k]) el.value = qs[k];
-  });
-  const hasResume = localStorage.getItem('qc_open_case_title');
-  if (hasResume){
-    const link = document.getElementById('resumeLink');
-    link.style.display='inline-flex'; link.href='game.html';
-  }
-  document.getElementById('briefingForm').addEventListener('submit', (e)=>{
+  const nameField=document.getElementById('name');
+  const form=document.getElementById('briefingForm');
+  const resumeLink=document.getElementById('resumeLink');
+  const hasResume=localStorage.getItem('qc_open_case_title');
+  if(hasResume){resumeLink.style.display='inline-block';}
+  form.addEventListener('submit',(e)=>{
     e.preventDefault();
-    QC.saveProfile({
-      team: team.value.trim(),
-      name: name.value.trim(),
-      password: password.value.trim(),
-      investigatorId: investigatorId.value.trim()
-    });
-    const url = new URL('game.html', location.href);
-    ['team','name','password','investigatorId'].forEach(k=>{
-      const v = document.getElementById(k).value.trim();
-      url.searchParams.set(k, v);
-    });
-    location.href = url.toString();
+    if(!nameField.value.trim()){alert('Agent Name is required');return;}
+    localStorage.setItem('qc_name',nameField.value.trim());
+    localStorage.setItem('qc_team',document.getElementById('team').value.trim());
+    localStorage.setItem('qc_investigator_id',document.getElementById('investigatorId').value.trim());
+    localStorage.setItem('qc_password',document.getElementById('password').value.trim());
+    window.location.href='game.html';
   });
 })();

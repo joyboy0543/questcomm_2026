@@ -4,51 +4,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QCPD — Agent Briefing</title>
+  <title>QCPD — Agent Portal</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="landing-body">
-  <header class="landing-header">
-    <img src="assets/landing_banner.png" alt="QCPD Banner" class="landing-banner" />
-  </header>
-  <main class="landing-shell">
-    <section class="landing-card" aria-label="Agent login">
-      <div class="landing-card-head">
-        <img src="assets/qcpd_logo.png" alt="QCPD Logo" class="logo" />
-        <div>
-          <h1 class="agency">QCPD — QuestComm Investigations</h1>
-          <p class="subtitle">Agent Access • Level III</p>
-        </div>
-      </div>
-      <form id="briefingForm" class="landing-form" autocomplete="on">
+  <main class="landing-container">
+    <section class="landing-card">
+      <h1 class="landing-title">QCPD Agent Access</h1>
+      <p class="landing-subtitle">Enter the case room to begin your mission</p>
+      <form id="briefingForm" class="landing-form">
         <div class="field">
-          <label for="name">Agent Name</label>
-          <input id="name" name="name" placeholder="e.g., Jay Bhatt" required>
+          <label for="name">Agent Name <span class="required">*</span></label>
+          <input id="name" name="name" placeholder="e.g., Jay" required>
         </div>
         <div class="field">
           <label for="investigatorId">Investigator ID</label>
-          <input id="investigatorId" name="investigatorId" type="number" inputmode="numeric" placeholder="e.g., 12043" required>
+          <input id="investigatorId" name="investigatorId" type="number" inputmode="numeric" placeholder="Optional">
         </div>
         <div class="field">
           <label for="team">Team Name</label>
-          <input id="team" name="team" placeholder="e.g., Alpha" required>
+          <input id="team" name="team" placeholder="Optional">
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="••••••" required>
+          <input id="password" name="password" type="password" placeholder="Optional">
           <div class="hint">Hint: Sweden is among the top 5 consumers of this drink in the world.</div>
         </div>
-        <div class="actions">
-          <button class="btn-primary" type="submit">Enter Case Room</button>
-          <a id="resumeLink" class="btn-secondary" href="game.html" style="display:none">Resume</a>
-        </div>
+        <button class="btn-primary" type="submit">Enter Room</button>
+        <a id="resumeLink" class="btn-secondary" href="game.html" style="display:none">Resume</a>
       </form>
-      <p class="fineprint">Accessing: Active Case — The Sapphire Heist • Unauthorized entry is logged.</p>
     </section>
   </main>
-  <footer class="landing-footer">
-    <small>© 2026 QCPD</small>
-  </footer>
+  <footer class="landing-footer">© 2026 QCPD</footer>
   <script src="js/common.js"></script>
   <script src="js/landing.js"></script>
 </body>

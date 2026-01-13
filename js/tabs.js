@@ -23,36 +23,31 @@
   tabs.forEach((t,idx)=> t.addEventListener('click',()=>{ if (!t.disabled) activate(idx); }) );
   activate(0);
 
-  // Restore gating from localStorage
-  const ok1 = localStorage.getItem('qc_p1_ok')==='1';
+  // Gating: Page 2 always enabled; 3..6 gated as before
   const ok2 = localStorage.getItem('qc_p2_ok')==='1';
   const ok3 = localStorage.getItem('qc_p3_ok')==='1';
   const ok4 = localStorage.getItem('qc_p4_ok')==='1';
   const ok5 = localStorage.getItem('qc_p5_ok')==='1';
   const ge2 = localStorage.getItem('qc_snake_ge2')==='1';
-  setDisabled(1, !ok1);
-  setDisabled(2, !(ok1 && ok2));
-  setDisabled(3, !(ok1 && ok2 && ok3));
-  setDisabled(4, !(ok1 && ok2 && ok3 && ok4));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5)); // ensure
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  // Page 6 unlock
-  setDisabled(5, !(ok1 && ok2 && ok3 && ok4 && ok5));
-  tabs[5].disabled = notUnlocked();
-  function notUnlocked(){
-    const all = ok1 && ok2 && ok3 && ok4 && ok5;
+
+  // Enable Page 2 from start
+  setDisabled(1, false);
+  // Gate 3..5 based on previous puzzles
+  setDisabled(2, !ok2);
+  setDisabled(3, !(ok2 && ok3));
+  setDisabled(4, !(ok2 && ok3 && ok4));
+  setDisabled(5, !(ok2 && ok3 && ok4 && ok5));
+
+  // Final unlock condition
+  function finalLocked(){
+    const all = ok2 && ok3 && ok4 && ok5;
     return !(all || ge2 || localStorage.getItem('qc_p6_unlocked')==='1');
   }
+  tabs[5].disabled = finalLocked();
 
-  // Expose unlock helper for puzzles_logic
+  // Expose helpers
   window.QCPDUnlockNext = function(current){
-    const i = current - 1; // tab index
+    const i = current - 1;
     if (tabs[i+1]) { tabs[i+1].disabled = false; }
   };
   window.QCPDUnlockFinal = function(){ tabs[5].disabled = false; };

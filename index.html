@@ -7,29 +7,21 @@
   <title>QCPD — Investigator Portal</title>
   <link rel="icon" type="image/png" href="icons/qcpd_logo_badge.png" />
   <style>
-    :root {
-      --bg:#0b0f1e; --panel:#12172b; --text:#e8ecf8; --muted:#9aa6c7; --accent:#5cc8ff; --accent2:#ffd700;
-      --ok:#3fd27a; --err:#ff6b6b; --tap:48px;
-    }
+    :root { --bg:#0b0f1e; --panel:#12172b; --text:#e8ecf8; --muted:#9aa6c7; --accent:#5cc8ff; --accent2:#ffd700; --ok:#3fd27a; --err:#ff6b6b; --tap:48px; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
-    .wrap { max-width: 980px; margin: 4vh auto; padding: 0; }
+    .wrap { max-width: 1100px; margin: 4vh auto; padding: 0; }
     header { display:flex; align-items:center; gap:14px; padding:16px; background: linear-gradient(180deg, #10162d, #0b0f1e); position:relative; overflow:hidden; }
     header .title { font-size:1.25rem; margin:0; }
     header img.logo { width:64px; height:64px; border-radius: 12px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
     .wm { position: fixed; right: 8px; bottom: 8px; opacity:.06; pointer-events:none; }
     .wm img { width: 160px; }
-
-    /* scanlines (subtle animation) */
     .scanlines::before { content:""; position:absolute; inset:0; background: repeating-linear-gradient( to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 2px, transparent 3px, transparent 6px ); animation: sl 6s linear infinite; mix-blend-mode: overlay; }
     @keyframes sl { 0%{ transform: translateY(0);} 100%{ transform: translateY(-6px);} }
-
     .grid-bg { background-image: url('assets/img/database_bg.png'); background-size: cover; background-position:center; }
-
     .card { padding:16px; border-radius:12px; background:#111632; margin:14px 0; border: 1px solid #2b3559; position:relative; }
-    .card .badge { display:flex; align-items:center; gap:10px; }
-    .card .badge img { width: 36px; height:36px; border-radius:8px; }
-
+    .badge { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .badge img { width: 36px; height:36px; border-radius:8px; }
     label { display:block; margin: 10px 0 6px; color: var(--muted); }
     input[type="text"], input[type="password"] { width: 100%; padding: 12px 14px; min-height: var(--tap); border-radius: 10px; border: 1px solid #2a3357; background: #0e1230; color: var(--text); font-size: 1rem; }
     input:focus, button:focus { outline: 3px solid #5cc8ff55; outline-offset: 2px; }
@@ -38,30 +30,21 @@
     button[disabled] { opacity:.5; cursor:not-allowed; }
     .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
     .two-col { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
-
+    .three-col { display:grid; grid-template-columns: 1fr 1.2fr 1fr; gap:16px; }
+    .side img { max-width:100%; border-radius:12px; border:1px solid #2a3357; }
     .media img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #2a3357; }
-
     .dialogue, .prompt { font-size:1.05rem; margin: 12px 0; line-height:1.6; }
     .status { margin-top:10px; font-weight:600; }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
     .hidden { display:none !important; }
-
     .toast { position: fixed; left: 16px; bottom: 16px; background:#0e1230; border:1px solid #2a3357; border-radius:10px; padding:10px 12px; color:var(--text); box-shadow:0 6px 14px rgba(0,0,0,.4); }
-    .sidebar { padding:12px; border-radius:12px; background:#0e1230; border:1px solid #2a3357; }
-    .sidebar h3 { margin:0 0 8px; font-size:1rem; color:var(--accent); }
-    .sidebar ul { list-style:none; padding:0; margin:0; }
-    .sidebar li { margin:6px 0; color:var(--muted); }
-
     .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
     .tile { width: 100%; padding-top: 100%; position: relative; border-radius: 6px; border:1px solid #2a3357; overflow:hidden; cursor:pointer; }
     .tile-inner { position:absolute; inset:0; background-image:url('assets/img/tourist.png'); background-size: 300% 300%; filter: contrast(1.05) saturate(1.05); }
-
     .drop-zone { min-height: 80px; background:#0e1230; border:1px dashed #2a3357; border-radius:8px; padding:8px; display:flex; gap:8px; flex-wrap:wrap; }
     .block { background:#28335f; color:#f5f7ff; padding:8px 10px; border-radius:8px; cursor:grab; }
-
     canvas { background:#0b0e1c; border:1px solid #2a3357; border-radius:8px; }
-
     footer { margin:20px 0; text-align:center; color:var(--muted); font-size:.9rem; }
   </style>
 </head>
@@ -90,133 +73,122 @@
       <div class="row"><button id="startBtn">Enter</button></div>
       <div id="loginStatus" class="status"></div>
     </div>
-    <aside class="sidebar">
-      <h3>Recent Alerts</h3>
-      <ul>
-        <li>CASE-8291 · Alert on warehouse break-in</li>
-        <li>CASE-7712 · Patrol request near station</li>
-        <li>CASE-4480 · Evidence locker audit</li>
-      </ul>
-      <h3>Related Cases</h3>
-      <ul>
-        <li>CASE-1102 · Waterfront lead</li>
-        <li>CASE-9923 · Transit camera pull</li>
-        <li>CASE-6407 · ID theft cross-check</li>
-      </ul>
-    </aside>
+    <div class="side"><img src="assets/img/alerts_feed.png" alt="Alerts Feed"/></div>
   </section>
 
   <!-- Page 1: Case File -->
-  <section id="page1" class="card hidden">
-    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Page 1 — Case File</strong></div>
-    <div class="two-col">
+  <section id="page1" class="card hidden three-col">
+    <div class="side"><img src="assets/img/evidence_folder.png" alt="Evidence folder"/></div>
+    <div>
+      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Page 1 — Case File</strong></div>
       <div class="media"><img src="assets/img/photo_placeholder.png" alt="Photo"/></div>
-      <aside class="sidebar">
-        <h3>Case Folder</h3>
-        <ul>
-          <li>Summary · updated</li>
-          <li>Leads · 3 items</li>
-          <li>Evidence · pending</li>
-        </ul>
-      </aside>
+      <label for="note1">Investigator note (fill later)</label>
+      <input id="note1" type="text" />
+      <div class="row">
+        <button id="p1Reset" class="alt">Reset Page</button>
+        <button id="p1Next">Next</button>
+        <button id="resetAll1">Reset All</button>
+      </div>
     </div>
-    <label for="note1">Investigator note (fill later)</label>
-    <input id="note1" type="text" />
-    <div class="row">
-      <button id="p1Reset" class="alt">Reset Page</button>
-      <button id="p1Next">Next</button>
-      <button id="resetAll1">Reset All</button>
-    </div>
+    <div class="side"><img src="assets/img/case_links.png" alt="Case Links"/></div>
   </section>
 
   <!-- Page 2: Puzzle 1 -->
-  <section id="page2" class="card hidden">
-    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 1 — Riddle</strong></div>
-    <div class="two-col">
-      <div>
-        <div class="dialogue">Detective: "I stand where directions decide, where choices turn left or right. Find me where correctness points the way and doors align only on the <em>proper side</em>." (Type your answer)</div>
-        <label for="ans1">Answer</label>
-        <input id="ans1" type="text" />
-        <div class="row">
-          <button id="check1">Check</button>
-          <button id="reset1" class="alt">Reset Page</button>
-          <button id="p1Back">Back</button>
-          <button id="p2Next" disabled>Next</button>
-          <button id="resetAll2">Reset All</button>
-        </div>
-        <div id="status1" class="status"></div>
+  <section id="page2" class="card hidden three-col">
+    <div class="side"><img src="assets/img/evidence_tags.png" alt="Evidence Tags"/></div>
+    <div>
+      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 1 — Riddle</strong></div>
+      <div class="dialogue">Detective: "I stand where directions decide, where choices turn left or right. Find me where correctness points the way and doors align only on the <em>proper side</em>." (Type your answer)</div>
+      <label for="ans1">Answer</label>
+      <input id="ans1" type="text" />
+      <div class="row">
+        <button id="check1">Check</button>
+        <button id="reset1" class="alt">Reset Page</button>
+        <button id="p1Back">Back</button>
+        <button id="p2Next" disabled>Next</button>
+        <button id="resetAll2">Reset All</button>
       </div>
-      <aside class="sidebar">
-        <h3>Routing Panel</h3>
-        <ul><li>Street schema loaded</li><li>Entry points aligned</li><li>Doors status: secured</li></ul>
-      </aside>
+      <div id="status1" class="status"></div>
     </div>
+    <div class="side"><img src="assets/img/alerts_feed.png" alt="Alerts"/></div>
   </section>
 
   <!-- Page 3: Puzzle 2 -->
-  <section id="page3" class="card hidden">
-    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 2 — Assemble & Code</strong></div>
-    <div class="prompt">Assemble the tourist image (3×3). When solved, clues will appear.</div>
-    <div class="grid" id="grid"></div>
-    <div id="p2Clues" class="dialogue hidden">
-      <p><strong>Sentence 1:</strong> Prime prints mark the path — three in a row.</p>
-      <p><strong>Sentence 2:</strong> The nearest line is the first station.</p>
-      <p><strong>Sentence 3:</strong> The circle’s whisper begins three-one-four.</p>
-      <p><strong>Sentence 4:</strong> Three words for your trail: "Steps One Quarter".</p>
-      <p>Enter the <strong>3-digit code</strong> (digits from sentences 1–3):</p>
-      <label for="code314">Code</label>
-      <input id="code314" type="text" maxlength="3" />
+  <section id="page3" class="card hidden three-col">
+    <div class="side"><img src="assets/img/case_links.png" alt="Case Links"/></div>
+    <div>
+      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 2 — Assemble & Code</strong></div>
+      <div class="prompt">Assemble the tourist image (3×3). When solved, clues will appear.</div>
+      <div class="grid" id="grid"></div>
+      <div id="p2Clues" class="dialogue hidden">
+        <p><strong>Sentence 1:</strong> Prime prints mark the path — three in a row.</p>
+        <p><strong>Sentence 2:</strong> The nearest line is the first station.</p>
+        <p><strong>Sentence 3:</strong> The circle’s whisper begins three-one-four.</p>
+        <p><strong>Sentence 4:</strong> Three words for your trail: "Steps One Quarter".</p>
+        <p>Enter the <strong>3-digit code</strong> (digits from sentences 1–3):</p>
+        <label for="code314">Code</label>
+        <input id="code314" type="text" maxlength="3" />
+      </div>
+      <div class="row">
+        <button id="check314" disabled>Check</button>
+        <button id="reset2" class="alt">Reset Page</button>
+        <button id="p2Back">Back</button>
+        <button id="p3Next" disabled>Next</button>
+        <button id="resetAll3">Reset All</button>
+      </div>
+      <div id="status2" class="status"></div>
     </div>
-    <div class="row">
-      <button id="check314" disabled>Check</button>
-      <button id="reset2" class="alt">Reset Page</button>
-      <button id="p2Back">Back</button>
-      <button id="p3Next" disabled>Next</button>
-      <button id="resetAll3">Reset All</button>
-    </div>
-    <div id="status2" class="status"></div>
+    <div class="side"><img src="assets/img/fingerprint_scan.png" alt="Fingerprint"/></div>
   </section>
 
   <!-- Page 4: Puzzle 3 -->
-  <section id="page4" class="card hidden">
-    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 3 — Arrange Blocks</strong></div>
-    <div class="prompt">Arrange the blocks to form a clear clue.</div>
-    <div class="drop-zone" id="drop"></div>
-    <div class="row" id="blocks"></div>
-    <div id="p3Riddle" class="dialogue hidden">Riddle: "Where every country finds its place." Type the answer.</div>
-    <label for="ans3">Answer</label>
-    <input id="ans3" type="text" />
-    <div class="row">
-      <button id="check3">Check</button>
-      <button id="reset3" class="alt">Reset Page</button>
-      <button id="p3Back">Back</button>
-      <button id="p4Next" disabled>Next</button>
-      <button id="resetAll4">Reset All</button>
+  <section id="page4" class="card hidden three-col">
+    <div class="side"><img src="assets/img/evidence_tags.png" alt="Evidence Tags"/></div>
+    <div>
+      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 3 — Arrange Blocks</strong></div>
+      <div class="prompt">Arrange the blocks to form a clear clue.</div>
+      <div class="drop-zone" id="drop"></div>
+      <div class="row" id="blocks"></div>
+      <div id="p3Riddle" class="dialogue hidden">Riddle: "Where every country finds its place." Type the answer.</div>
+      <label for="ans3">Answer</label>
+      <input id="ans3" type="text" />
+      <div class="row">
+        <button id="check3">Check</button>
+        <button id="reset3" class="alt">Reset Page</button>
+        <button id="p3Back">Back</button>
+        <button id="p4Next" disabled>Next</button>
+        <button id="resetAll4">Reset All</button>
+      </div>
+      <div id="status3" class="status"></div>
     </div>
-    <div id="status3" class="status"></div>
+    <div class="side"><img src="assets/img/case_links.png" alt="Case Links"/></div>
   </section>
 
   <!-- Page 5: Puzzle 4 -->
-  <section id="page5" class="card hidden">
-    <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 4 — Riddle</strong></div>
-    <div class="dialogue">"I am the absence that fills rooms and the quiet beneath every sound. I can be lost without leaving, and found without appearing. What am I?"</div>
-    <label for="ans4">Answer</label>
-    <input id="ans4" type="text" />
-    <div class="row">
-      <button id="check4">Check</button>
-      <button id="reset4" class="alt">Reset Page</button>
-      <button id="p4Back">Back</button>
-      <button id="p5Next" disabled>Next</button>
-      <button id="resetAll5">Reset All</button>
+  <section id="page5" class="card hidden three-col">
+    <div class="side"><img src="assets/img/alerts_feed.png" alt="Alerts"/></div>
+    <div>
+      <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Puzzle 4 — Riddle</strong></div>
+      <div class="dialogue">"I am the absence that fills rooms and the quiet beneath every sound. I can be lost without leaving, and found without appearing. What am I?"</div>
+      <label for="ans4">Answer</label>
+      <input id="ans4" type="text" />
+      <div class="row">
+        <button id="check4">Check</button>
+        <button id="reset4" class="alt">Reset Page</button>
+        <button id="p4Back">Back</button>
+        <button id="p5Next" disabled>Next</button>
+        <button id="resetAll5">Reset All</button>
+      </div>
+      <div id="status4" class="status"></div>
+      <div id="snakeWrap" class="hidden">
+        <p class="prompt">Vintage Snake — arrow keys / WASD.</p>
+        <canvas id="snake" width="400" height="300"></canvas>
+      </div>
     </div>
-    <div id="status4" class="status"></div>
-    <div id="snakeWrap" class="hidden">
-      <p class="prompt">Vintage Snake — arrow keys / WASD.</p>
-      <canvas id="snake" width="400" height="300"></canvas>
-    </div>
+    <div class="side"><img src="assets/img/fingerprint_scan.png" alt="Fingerprint"/></div>
   </section>
 
-  <!-- Page 6: Completion -->
+  <!-- Page 6: Completion (no Make QR button) -->
   <section id="page6" class="card hidden">
     <div class="badge"><img src="icons/qcpd_logo_badge.png" alt="QCPD"><strong>Case Complete — QCPD Recruiting</strong></div>
     <p>You’ve completed all puzzles. Welcome to the QCPD roster!</p>
@@ -227,7 +199,6 @@
       <li>Puzzle 4 answer: <strong>NOTHING</strong> (enjoy Snake)</li>
     </ul>
     <div class="row">
-      <a href="qr.html" target="_blank"><button>Make QR</button></a>
       <button id="resetAll6" class="alt">Reset All</button>
       <button id="p6Back">Back</button>
     </div>
@@ -237,89 +208,57 @@
 </div>
 
 <script>
-// Simple router
 const pages=['landing','page1','page2','page3','page4','page5','page6'];
 function showPage(id){ pages.forEach(p=>document.getElementById(p).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
 
 // Radio prompts every 5s
-const radioPrompts=[
-  'Dispatch: Stand by for updates.',
-  'Ops: Secure perimeter and proceed.',
-  'Forensics: Samples logged.',
-  'Records: Database synced.',
-  'HQ: Maintain radio discipline.'
-];
+const radioPrompts=[ 'Dispatch: Stand by for updates.', 'Ops: Secure perimeter and proceed.', 'Forensics: Samples logged.', 'Records: Database synced.', 'HQ: Maintain radio discipline.' ];
 let rp=0; const radio=document.getElementById('radio');
 setInterval(()=>{ radio.textContent = radioPrompts[rp%radioPrompts.length]; radio.classList.remove('hidden'); setTimeout(()=>radio.classList.add('hidden'), 2500); rp++; }, 5000);
 
 // Landing -> validate password (COFFEE)
 const startBtn=document.getElementById('startBtn'); const loginStatus=document.getElementById('loginStatus');
-startBtn.onclick=()=>{
-  const pass=(document.getElementById('pass').value||'').trim().toUpperCase();
-  if(pass!=='COFFEE'){ loginStatus.textContent='Access denied. Hint: think of a popular hot drink.'; loginStatus.className='status err'; return; }
-  loginStatus.textContent='Access granted.'; loginStatus.className='status ok'; showPage('page1');
-};
+startBtn.onclick=()=>{ const pass=(document.getElementById('pass').value||'').trim().toUpperCase(); if(pass!=='COFFEE'){ loginStatus.textContent='Access denied. Hint: think of a popular hot drink.'; loginStatus.className='status err'; return; } loginStatus.textContent='Access granted.'; loginStatus.className='status ok'; showPage('page1'); };
 
-// Helpers
 function norm(s){ return (s||'').trim().toUpperCase().replace(/\s+/g,''); }
 
-// Page 1 — reset only this page
-const p1Reset=document.getElementById('p1Reset');
-p1Reset.onclick=()=>{ document.getElementById('note1').value=''; };
+// Page1
+document.getElementById('p1Reset').onclick=()=>{ document.getElementById('note1').value=''; };
 document.getElementById('p1Next').onclick=()=>showPage('page2');
 document.getElementById('resetAll1').onclick=()=>location.reload();
 
-// Page2 — answer RIGHT BUILDING
+// Page2
 const status1=document.getElementById('status1');
-document.getElementById('check1').onclick=()=>{
-  const a=norm(document.getElementById('ans1').value);
-  if(a==='RIGHTBUILDING'){ status1.textContent='Correct.'; status1.className='status ok'; document.getElementById('p2Next').disabled=false; }
-  else { status1.textContent='Incorrect.'; status1.className='status err'; }
-};
+document.getElementById('check1').onclick=()=>{ const a=norm(document.getElementById('ans1').value); if(a==='RIGHTBUILDING'){ status1.textContent='Correct.'; status1.className='status ok'; document.getElementById('p2Next').disabled=false; } else { status1.textContent='Incorrect.'; status1.className='status err'; } };
 document.getElementById('reset1').onclick=()=>{ document.getElementById('ans1').value=''; status1.textContent=''; status1.className='status'; document.getElementById('p2Next').disabled=true; };
 document.getElementById('p1Back').onclick=()=>showPage('page1');
 document.getElementById('p2Next').onclick=()=>showPage('page3');
 document.getElementById('resetAll2').onclick=()=>location.reload();
 
-// Page3 — sliding puzzle (3x3)
+// Page3
 const grid=document.getElementById('grid');
 let order=[0,1,2,3,4,5,6,7,8];
 function posOf(idx){ const x=idx%3, y=Math.floor(idx/3); return {x, y}; }
-function buildTiles(){ grid.innerHTML=''; order.forEach((o,i)=>{
-  const tile=document.createElement('div'); tile.className='tile'; tile.dataset.index=i; tile.dataset.slice=o;
-  const inner=document.createElement('div'); inner.className='tile-inner';
-  const p=posOf(o); inner.style.backgroundPosition=`${p.x*50}% ${p.y*50}%`;
-  tile.appendChild(inner); tile.onclick=()=>onTileClick(i); grid.appendChild(tile);
-}); }
+function buildTiles(){ grid.innerHTML=''; order.forEach((o,i)=>{ const tile=document.createElement('div'); tile.className='tile'; const inner=document.createElement('div'); inner.className='tile-inner'; const p=posOf(o); inner.style.backgroundPosition=`${p.x*50}% ${p.y*50}%`; tile.appendChild(inner); tile.onclick=()=>onTileClick(i); grid.appendChild(tile); }); }
 function shuffle(){ order.sort(()=>Math.random()-0.5); buildTiles(); }
 function isSolved(){ return order.every((o,i)=>o===i); }
-function onTileClick(i){
-  // simple adjacent swap emulation
-  if(i<order.length-1){ [order[i], order[i+1]]=[order[i+1], order[i]]; } else { [order[i], order[0]]=[order[0], order[i]]; }
-  buildTiles(); if(isSolved()) { document.getElementById('p2Clues').classList.remove('hidden'); document.getElementById('check314').disabled=false; status2.textContent='Image assembled!'; status2.className='status ok'; }
-}
+function onTileClick(i){ if(i<order.length-1){ [order[i], order[i+1]]=[order[i+1], order[i]]; } else { [order[i], order[0]]=[order[0], order[i]]; } buildTiles(); if(isSolved()) { document.getElementById('p2Clues').classList.remove('hidden'); document.getElementById('check314').disabled=false; status2.textContent='Image assembled!'; status2.className='status ok'; } }
 shuffle();
 
 const status2=document.getElementById('status2');
-document.getElementById('check314').onclick=()=>{
-  const code=(document.getElementById('code314').value||'').trim();
-  if(code==='314'){ status2.textContent='Correct code.'; status2.className='status ok'; document.getElementById('p3Next').disabled=false; }
-  else { status2.textContent='Incorrect code.'; status2.className='status err'; }
-};
+document.getElementById('check314').onclick=()=>{ const code=(document.getElementById('code314').value||'').trim(); if(code==='314'){ status2.textContent='Correct code.'; status2.className='status ok'; document.getElementById('p3Next').disabled=false; } else { status2.textContent='Incorrect code.'; status2.className='status err'; } };
 document.getElementById('reset2').onclick=()=>{ shuffle(); document.getElementById('p2Clues').classList.add('hidden'); document.getElementById('code314').value=''; status2.textContent=''; status2.className='status'; document.getElementById('p3Next').disabled=true; };
 document.getElementById('p2Back').onclick=()=>showPage('page2');
 document.getElementById('p3Next').onclick=()=>showPage('page4');
 document.getElementById('resetAll3').onclick=()=>location.reload();
 
-// Page4 — block arranging
+// Page4
 const blocksText=['Where','every','country','finds','its','place'];
 const blocks=document.getElementById('blocks'); const drop=document.getElementById('drop');
 blocksText.forEach(w=>{ const b=document.createElement('div'); b.className='block'; b.textContent=w; b.draggable=true; b.ondragstart=e=>{ e.dataTransfer.setData('text/plain', w); }; blocks.appendChild(b); });
 drop.ondragover=e=>{ e.preventDefault(); };
 drop.ondrop=e=>{ e.preventDefault(); const w=e.dataTransfer.getData('text/plain'); const b=document.createElement('div'); b.className='block'; b.textContent=w; drop.appendChild(b); checkPhrase(); };
-function checkPhrase(){ const phrase=[...drop.children].map(el=>el.textContent).join(' ');
-  if(phrase==='Where every country finds its place'){ document.getElementById('p3Riddle').classList.remove('hidden'); status3.textContent='Blocks arranged.'; status3.className='status ok'; }
-}
+function checkPhrase(){ const phrase=[...drop.children].map(el=>el.textContent).join(' '); if(phrase==='Where every country finds its place'){ document.getElementById('p3Riddle').classList.remove('hidden'); status3.textContent='Blocks arranged.'; status3.className='status ok'; } }
 const status3=document.getElementById('status3');
 document.getElementById('check3').onclick=()=>{ const a=norm(document.getElementById('ans3').value); if(a==='WORLDMAP'){ status3.textContent='Correct.'; status3.className='status ok'; document.getElementById('p4Next').disabled=false; } else { status3.textContent='Incorrect.'; status3.className='status err'; } };
 document.getElementById('reset3').onclick=()=>{ drop.innerHTML=''; document.getElementById('p3Riddle').classList.add('hidden'); document.getElementById('ans3').value=''; status3.textContent=''; status3.className='status'; document.getElementById('p4Next').disabled=true; };
@@ -327,7 +266,7 @@ document.getElementById('p3Back').onclick=()=>showPage('page3');
 document.getElementById('p4Next').onclick=()=>showPage('page5');
 document.getElementById('resetAll4').onclick=()=>location.reload();
 
-// Page5 — riddle NOTHING + Snake
+// Page5
 let snakeOn=false; let snakeTimer=null;
 function startSnake(){ if(snakeOn) return; snakeOn=true; const c=document.getElementById('snake'); const ctx=c.getContext('2d'); let dir={x:1,y:0}; let snake=[{x:5,y:5},{x:4,y:5},{x:3,y:5}]; let food={x:10,y:7}; const cols=20, rows=15, size=20; function draw(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#3fd27a'; snake.forEach(s=>ctx.fillRect(s.x*size, s.y*size, size-2, size-2)); ctx.fillStyle='#ff6b6b'; ctx.fillRect(food.x*size, food.y*size, size-2, size-2); }
   function step(){ const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y}; snake.unshift(head); if(head.x===food.x && head.y===food.y){ food={x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)}; } else { snake.pop(); }
@@ -341,7 +280,7 @@ document.getElementById('p4Back').onclick=()=>showPage('page4');
 document.getElementById('p5Next').onclick=()=>showPage('page6');
 document.getElementById('resetAll5').onclick=()=>{ if(snakeTimer){ clearInterval(snakeTimer); snakeTimer=null; snakeOn=false; } location.reload(); };
 
-// Page6 restart/back
+// Page6
 document.getElementById('resetAll6').onclick=()=>location.reload();
 document.getElementById('p6Back').onclick=()=>showPage('page5');
 

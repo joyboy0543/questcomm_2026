@@ -1,30 +1,36 @@
 
-<!-- Page 1: Photo + Note -->
+<!-- Page 1 — Evidence Intake (requires note >= 20 chars + select a seal) -->
 <div id="p1" class="puzzle-card">
-  <h3>Page 1 — Case Photo & Investigator Note</h3>
-  <p>Upload a photo (optional) and write a note. Saved locally.</p>
+  <h3>Page 1 — Evidence Intake</h3>
+  <p>Agents must file an initial note and seal the evidence.</p>
   <div class="flex-row">
     <div>
-      <img id="p1preview" src="assets/photo_placeholder.png" alt="Photo placeholder" style="max-width:220px; border:1px solid #223041; border-radius:8px" />
+      <img id="p1preview" src="assets/photo_placeholder.png" alt="Evidence photo" style="max-width:220px; border:1px solid #223041; border-radius:8px" />
       <div style="margin-top:6px">
         <input id="p1file" type="file" accept="image/*" />
       </div>
     </div>
     <div style="flex:1">
-      <label for="p1note"><strong>Investigator Note</strong></label>
-      <textarea id="p1note" rows="6" style="width:100%; background:#0d1318; color:#e6edf3; border:1px solid #223041; border-radius:8px" placeholder="Write your note here..."></textarea>
+      <label for="p1note"><strong>Investigator Note (min 20 characters)</strong></label>
+      <textarea id="p1note" rows="6" style="width:100%; background:#0d1318; color:#e6edf3; border:1px solid #223041; border-radius:8px" placeholder="Describe what you see, suspect, or plan..."></textarea>
       <div style="margin-top:8px">
-        <button id="p1save" class="btn-sm">Save</button>
+        <span>Select Seal:</span>
+        <label class="chip"><input type="radio" name="seal" value="alpha"> Alpha</label>
+        <label class="chip"><input type="radio" name="seal" value="bravo"> Bravo</label>
+        <label class="chip"><input type="radio" name="seal" value="charlie"> Charlie</label>
+      </div>
+      <div style="margin-top:8px">
+        <button id="p1submit" class="btn-sm">File Evidence</button>
         <span id="p1status" class="status"></span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Page 2: Puzzle 1 (Right Building / rb) -->
+<!-- Page 2 — Puzzle 1: Right Building -->
 <div id="p2" class="puzzle-card">
   <h3>Page 2 — Puzzle 1: The Building Riddle</h3>
-  <p>Riddle: <em>Two guardians stand tall; one faces dawn, one faces dusk. Choose wisely, the clue hides with the side that’s never left.</em></p>
+  <p>Two guardians stand tall; one faces dawn, one faces dusk. Choose wisely, the clue hides with the side that’s never left.</p>
   <img class="rb-img" src="assets/right_building.png" alt="Two buildings" />
   <div style="margin-top:8px">
     <input id="p2answer" placeholder="Type answer (e.g., rb)" />
@@ -33,30 +39,33 @@
   </div>
 </div>
 
-<!-- Page 3: Puzzle 2 (Jigsaw / drag-and-drop from side box) -->
+<!-- Page 3 — Puzzle 2: Tourist Tile Jigsaw (3-digit code) -->
 <div id="p3" class="puzzle-card">
   <h3>Page 3 — Puzzle 2: Tourist Tile Jigsaw</h3>
-  <p>Drag tiles from the side box into the grid. No rotation needed. When correct, clues will appear.</p>
+  <p>Drag tiles from the side box into the grid. When complete, a 3-digit code is revealed.</p>
   <div class="flex-row">
     <div class="sidebox" id="p3side"></div>
     <div class="grid-3x3" id="p3grid"></div>
   </div>
   <div id="p3clues" class="hidden" style="margin-top:12px">
-    <p>✔️ Jigsaw solved! Clues:</p>
+    <p>✔️ Jigsaw solved! Use these clues to find the 3-digit code:</p>
     <ol>
-      <li>Count the letters in <code>sun</code> → <strong>First digit</strong></li>
-      <li>How many moons does Earth have? → <strong>Second digit</strong></li>
-      <li>Sides of a square → <strong>Third digit</strong></li>
-      <li>Word lengths match the digits: <strong>sky</strong>, <strong>I</strong>, <strong>maps</strong></li>
+      <li>Letters in <strong>sun</strong> → first digit</li>
+      <li>Moons of Earth → second digit</li>
+      <li>Sides of a square → third digit</li>
     </ol>
+    <div style="margin-top:8px">
+      <input id="p3code" placeholder="Enter 3-digit code" />
+      <button id="p3submit" class="btn-sm">Verify</button>
+      <span id="p3status" class="status"></span>
+    </div>
   </div>
-  <span id="p3status" class="status"></span>
 </div>
 
-<!-- Page 4: Puzzle 3 (Block arranging + riddle → world map) -->
+<!-- Page 4 — Puzzle 3: Arrange 1→9 then riddle (world map) -->
 <div id="p4" class="puzzle-card">
-  <h3>Page 4 — Puzzle 3: Arrange the Blocks</h3>
-  <p>Drag the numbered blocks into ascending order (1→9). Then solve the riddle.</p>
+  <h3>Page 4 — Puzzle 3: Block Order & Riddle</h3>
+  <p>Place blocks in ascending order 1→9, then answer the riddle.</p>
   <div class="flex-row">
     <div class="sidebox" id="p4box"></div>
     <div class="grid-3x3" id="p4grid"></div>
@@ -68,11 +77,11 @@
     <div id="p4reveal" class="hidden" style="margin-top:8px">
       <img src="assets/worldmap.png" alt="World map" style="max-width:280px; border:1px solid #223041; border-radius:8px" />
     </div>
+    <span id="p4status" class="status"></span>
   </div>
-  <span id="p4status" class="status"></span>
 </div>
 
-<!-- Page 5: Puzzle 4 (Riddle → snake game; show message every 2 points) -->
+<!-- Page 5 — Puzzle 4: Riddle → Snake game (score ≥2) -->
 <div id="p5" class="puzzle-card">
   <h3>Page 5 — Puzzle 4: The Empty Answer</h3>
   <p>Riddle: <em>What is the absence of everything?</em></p>
@@ -84,26 +93,25 @@
   <div id="snakeWrap" class="hidden" style="margin-top:12px">
     <canvas id="snake" width="300" height="300"></canvas>
     <div style="margin-top:6px">Score: <span id="snakeScore">0</span></div>
-    <div id="snakeMsg" class="hidden" style="margin-top:6px; color:#ffcc00">⚠️ This is misleading from the original case.</div>
+    <div id="snakeMsg" class="hidden" style="margin-top:6px; color:#ffcc00">⚠️ Misleading from the original case.</div>
   </div>
 </div>
 
-<!-- Page 6: Unlocks on completion or ≥2 snake points -->
+<!-- Page 6 — Final unlock -->
 <div id="p6" class="puzzle-card">
   <h3>Page 6 — Final: QCPD Recruitment</h3>
   <div id="p6locked">
-    <p>🔒 Locked. Complete all puzzles or reach at least 2 points in the snake game.</p>
+    <p>🔒 Locked. Solve all previous pages or reach ≥2 in snake.</p>
   </div>
   <div id="p6open" class="hidden">
-    <p>🎉 Congratulations! You’ve completed the investigation.</p>
-    <p>You are now officially recruited to <strong>QCPD</strong>.</p>
+    <p>🎉 Congratulations, Agent! You’re now recruited to <strong>QCPD</strong>.</p>
     <details style="margin-top:8px">
       <summary>Reveal all answers</summary>
       <ul>
         <li>Page 2 — Puzzle 1: <code>right building</code> (accepts <code>rb</code>)</li>
-        <li>Page 3 — Puzzle 2 digits: <code>3, 1, 4</code></li>
+        <li>Page 3 — Puzzle 2 code: <code>314</code></li>
         <li>Page 4 — Puzzle 3: <code>world map</code></li>
-        <li>Page 5 — Puzzle 4: <code>nothing</code> (snake score ≥2 triggers unlock)</li>
+        <li>Page 5 — Puzzle 4: <code>nothing</code> (snake score ≥2)</li>
       </ul>
     </details>
   </div>

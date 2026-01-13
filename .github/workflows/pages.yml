@@ -22,11 +22,12 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      # Simple build step: copy all files to ./dist
+      # Corrected build step: exclude dist folder from copy
       - name: Build site
         run: |
           mkdir -p dist
-          cp -r * dist
+          shopt -s extglob
+          cp -r !(dist) dist/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

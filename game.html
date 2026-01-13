@@ -1,0 +1,96 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuestComm 2026 — Case Room</title>
+  <link rel="preload" href="assets/left.png" as="image">
+  <link rel="preload" href="assets/right.png" as="image">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>QuestComm 2026</h1>
+    <p class="tagline">Police Investigation — Solve clues to find the hidden object</p>
+    <div class="mobile-toggles">
+      <button id="toggle-left" aria-controls="sidebar-left" aria-expanded="false">Cases</button>
+      <button id="toggle-right" aria-controls="sidebar-right" aria-expanded="false">Radio</button>
+    </div>
+    <div id="badge" style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap"></div>
+  </header>
+
+  <main class="layout-3col">
+    <!-- LEFT: Cases -->
+    <aside id="sidebar-left" class="sidebar left" aria-label="Case list">
+      <div class="sidebar-media">
+        <img src="assets/left.png" alt="Case board" onerror="this.style.display='none'">
+      </div>
+      <h2 class="sidebar-title">Cases</h2>
+      <ul id="case-list" class="case-list" aria-live="polite"></ul>
+      <p class="hint">Locked cases are greyed out. New cases unlock as you progress.</p>
+    </aside>
+
+    <!-- CENTER: Puzzles -->
+    <section id="puzzle-area" class="content">
+      <h2 class="content-title">Open Case</h2>
+      <div id="current-case-title" class="current-case-title" aria-live="polite"></div>
+
+      <div class="puzzle-card" id="puzzle1">
+        <h3>Puzzle 1 — Dock Cipher</h3>
+        <p>A quick warm-up. Shift each letter by +3 (Caesar). Solve: <code>VKLIWD</code></p>
+        <input id="p1" placeholder="Your answer" />
+        <button class="btn-sm" onclick="checkP1()">Submit</button>
+        <div id="p1status" class="status"></div>
+      </div>
+
+      <div class="puzzle-card" id="puzzle2">
+        <h3>Puzzle 2 — Tag Numbers</h3>
+        <p>Which container number is odd one out? <code>AX13, AX17, AX21, AX24</code></p>
+        <input id="p2" placeholder="e.g., AX24" />
+        <button class="btn-sm" onclick="checkP2()">Submit</button>
+        <div id="p2status" class="status"></div>
+      </div>
+
+      <div class="puzzle-card" id="puzzle3">
+        <h3>Puzzle 3 — Jewel Code</h3>
+        <p>Pick the correct keyword for the Vigenère key hint: “deep-blue gemstone”.</p>
+        <select id="p3">
+          <option value="">Select…</option>
+          <option>SAPPHIRE</option>
+          <option>RUBY</option>
+          <option>EMERALD</option>
+        </select>
+        <button class="btn-sm" onclick="checkP3()">Submit</button>
+        <div id="p3status" class="status"></div>
+      </div>
+
+      <div class="resume-note">Progress auto-saves in your browser. Refreshing won’t lose your place.</div>
+      <div style="margin-top:10px"><a class="btn-link" href="index.html">⟵ Back to landing</a></div>
+    </section>
+
+    <!-- RIGHT: Radio feed -->
+    <aside id="sidebar-right" class="sidebar right" aria-label="Radio messages">
+      <div class="sidebar-media">
+        <img src="assets/right.png" alt="Police radio room" onerror="this.style.display='none'">
+      </div>
+      <h2 class="sidebar-title">Radio Room</h2>
+      <div id="radio-ticker" class="radio-ticker" role="log" aria-live="polite" aria-relevant="additions">
+        <ul id="radio-feed"></ul>
+      </div>
+      <div class="radio-controls">
+        <button id="pause-scroll" aria-pressed="false">Pause</button>
+        <button id="push-message">Push test message</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <small>© 2026 QuestComm</small>
+  </footer>
+
+  <script src="js/common.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/puzzles.js"></script>
+</body>
+</html>

@@ -4,61 +4,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QuestComm 2026 — Police Case</title>
-  <link rel="preload" href="assets/left.png" as="image">
-  <link rel="preload" href="assets/right.png" as="image">
+  <title>QuestComm 2026 — Briefing</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .landing { max-width: 760px; margin: 6vh auto; background:#141a20; border:1px solid #1f2730; border-radius:12px; padding:20px }
+    .landing h1 { margin: 0 0 8px 0; font-size: 1.6rem }
+    .landing p { color: var(--muted) }
+    form.grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top: 12px }
+    .grid label { display:block; font-weight:600; margin-bottom:4px }
+    .grid input { width:100%; padding:10px; border-radius:8px; border:1px solid #223041; background:#0d1318; color:var(--text) }
+    .actions { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap }
+    .btn { background:#0c1217; color:var(--text); border:1px solid #223041; border-radius:8px; padding:10px 14px; cursor:pointer }
+    .note { color:var(--muted); font-size:.9rem; margin-top:10px }
+    .chip { display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; background:#10161c; border:1px solid #1f2730 }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <h1>QuestComm 2026</h1>
-    <p class="tagline">Police Investigation — Solve clues to find the hidden object</p>
-    <div class="mobile-toggles">
-      <button id="toggle-left" aria-controls="sidebar-left" aria-expanded="false">Cases</button>
-      <button id="toggle-right" aria-controls="sidebar-right" aria-expanded="false">Radio</button>
+  <main class="landing">
+    <h1>QuestComm 2026 — Team Briefing</h1>
+    <p>Enter your details to begin. Your progress will be stored on this device.</p>
+
+    <div id="resumeBox" style="display:none; margin:10px 0 4px">
+      <span class="chip">⏱️ Resume available</span>
     </div>
-  </header>
 
-  <main class="layout-3col">
-    <aside id="sidebar-left" class="sidebar left" aria-label="Case list">
-      <div class="sidebar-media">
-        <img src="assets/left.png" alt="Case board" onerror="this.style.display='none'">
+    <form id="briefingForm" class="grid" autocomplete="on">
+      <div>
+        <label for="team">Team</label>
+        <input id="team" name="team" placeholder="e.g., Alpha" required>
       </div>
-      <h2 class="sidebar-title">Cases</h2>
-      <ul id="case-list" class="case-list" aria-live="polite"></ul>
-      <p class="hint">Locked cases are greyed out. New cases unlock as you progress.</p>
-    </aside>
+      <div>
+        <label for="name">Name</label>
+        <input id="name" name="name" placeholder="Your name" required>
+      </div>
+      <div style="grid-column:1/-1" class="actions">
+        <button class="btn" type="submit">Start Investigation</button>
+        <a id="resumeLink" class="btn" href="game.html" style="display:none">Resume</a>
+      </div>
+    </form>
 
-    <section id="puzzle-area" class="content">
-      <h2 class="content-title">Open Case</h2>
-      <div id="current-case-title" class="current-case-title" aria-live="polite"></div>
-      <div class="puzzle-card">
-        <h3>Puzzle 1: The First Clue</h3>
-        <p>Decode the cipher to reveal a location. (Replace with your real puzzle UI.)</p>
-        <button id="solve-sample">Mark puzzle as solved (demo)</button>
-      </div>
-      <div class="resume-note">Progress auto-saves in your browser. Refreshing won’t lose your place.</div>
-    </section>
-
-    <aside id="sidebar-right" class="sidebar right" aria-label="Radio messages">
-      <div class="sidebar-media">
-        <img src="assets/right.png" alt="Police radio room" onerror="this.style.display='none'">
-      </div>
-      <h2 class="sidebar-title">Radio Room</h2>
-      <div id="radio-ticker" class="radio-ticker" role="log" aria-live="polite" aria-relevant="additions">
-        <ul id="radio-feed"></ul>
-      </div>
-      <div class="radio-controls">
-        <button id="pause-scroll" aria-pressed="false">Pause</button>
-        <button id="push-message">Push test message</button>
-      </div>
-    </aside>
+    <p class="note">Tip: You can also prefill using QR parameters like <code>?team=Alpha&name=Jay</code>.</p>
   </main>
-
-  <footer class="site-footer">
-    <small>© 2026 QuestComm</small>
-  </footer>
-
-  <script src="js/app.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>

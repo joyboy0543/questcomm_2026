@@ -1,52 +1,27 @@
-
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QCPD Agent Access</title>
-  <link rel="stylesheet" href="css/style.css" />
-</head>
-<body class="landing-body">
-  <main class="landing-container">
-    <section class="landing-card">
-      <div class="brand-row">
-        <img src="assets/qcpd_logo.png" alt="QCPD" class="brand-logo" />
-        <div class="brand-text">
-          <h1 class="landing-title">QCPD</h1>
-          <p class="landing-subtitle">Agent Access</p>
-        </div>
-      </div>
-      <form id="briefingForm" class="landing-form" aria-label="Agent access form">
-        <div class="field">
-          <label for="name">Name<span class="required">*</span></label>
-          <input id="name" name="name" placeholder="Your name" required>
-        </div>
-        <div class="field">
-          <label for="dept">Department</label>
-          <select id="dept" name="dept">
-            <option value="Forensic">Forensic</option>
-            <option value="Field Operative">Field Operative</option>
-            <option value="Undercover Agent">Undercover Agent</option>
-            <option value="Cyber Intelligence">Cyber Intelligence</option>
-            <option value="Surveillance">Surveillance</option>
-            <option value="Negotiations">Negotiations</option>
-            <option value="Counterintelligence">Counterintelligence</option>
-            <option value="Evidence Analysis">Evidence Analysis</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="password">Personal Password</label>
-          <input id="password" name="password" type="password" placeholder="••••••••">
-        </div>
-        <button class="btn-primary" type="submit" aria-label="Enter Case Room">Enter Case Room</button>
-      </form>
-    </section>
-  </main>
-  <footer class="site-footer confidential">
-    <small>CONFIDENTIAL — INTERNAL USE ONLY</small>
-  </footer>
-  <script src="js/common.js"></script>
-  <script src="js/landing.js"></script>
-</body>
-</html>
+<html lang="en"><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>QCPD Agent Access</title>
+<link rel="stylesheet" href="css/style.css" />
+</head><body class="landing-body">
+<main class="landing-container"><section class="landing-card">
+  <div class="brand-row"><div class="brand-logo"></div><div class="brand-text">
+    <h1 class="landing-title">QCPD</h1><p class="landing-subtitle">Agent Access</p>
+  </div></div>
+  <form id="briefingForm" class="landing-form" aria-label="Agent access form">
+    <div class="field"><label for="name">Name<span class="required">*</span></label>
+      <input id="name" name="name" placeholder="Your name" required></div>
+    <div class="field"><label for="dept">Department</label>
+      <select id="dept" name="dept">
+        <option>Forensic</option><option>Field Operative</option><option>Undercover Agent</option>
+        <option>Cyber Intelligence</option><option>Surveillance</option><option>Negotiations</option>
+        <option>Counterintelligence</option><option>Evidence Analysis</option>
+      </select></div>
+    <div class="field"><label for="password">Personal Password</label>
+      <input id="password" name="password" type="password" placeholder="********"></div>
+    <button class="btn-primary" type="submit" aria-label="Enter Case Room">Enter Case Room</button>
+  </form>
+</section></main>
+<footer class="site-footer confidential"><small>CLASSIFIED — AUTHORIZED AGENTS ONLY</small></footer>
+<script src="js/common.js"></script><script src="js/landing.js"></script>
+</body></html>

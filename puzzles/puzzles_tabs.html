@@ -1,17 +1,16 @@
-
 <!-- Briefing (no gate) -->
 <div id="p1" class="puzzle-card">
   <h3>Briefing — Agent Profile</h3>
-  <p>Welcome, Agent. Proceed to the Cipher Desk when ready.</p>
+  <p>Proceed to the Cipher Desk when ready.</p>
 </div>
 
-<!-- Cipher Desk — Caesar slider decode -->
+<!-- Cipher Desk -->
 <div id="p2" class="puzzle-card">
   <h3>Cipher Desk — Decode</h3>
-  <p>Use the shift slider to decode the message into a clear word. Then confirm.</p>
+  <p>Use the shift slider to decode the message and confirm.</p>
   <div class="flex-row">
     <div>
-      <img src="assets/cipher_wheel.png" alt="Cipher wheel" style="width:120px"/>
+      <div class="brand-logo" style="width:120px;height:120px"></div>
       <div style="margin-top:8px">
         <label for="shift">Shift</label>
         <input id="shift" type="range" min="0" max="25" value="0"/>
@@ -21,7 +20,7 @@
       <div><strong>Encoded:</strong> UFTU</div>
       <div style="margin-top:6px"><strong>Decoded:</strong> <span id="decoded">UFTU</span></div>
       <div style="margin-top:8px">
-        <input id="cipherConfirm" placeholder="Type the decoded word" aria-label="Type decoded word"/>
+        <input id="cipherConfirm" placeholder="Type decoded word" aria-label="Type decoded word"/>
         <button id="cipherSubmit" class="btn-sm">Confirm</button>
         <span id="cipherStatus" class="status" aria-live="polite"></span>
       </div>
@@ -29,10 +28,10 @@
   </div>
 </div>
 
-<!-- Logic Board — Multiple-choice deduction -->
+<!-- Logic Board -->
 <div id="p3" class="puzzle-card">
   <h3>Logic Board — Deduce</h3>
-  <p>Three suspects: A, B, C. Only one tells the truth. Statement: “B is lying.” Who is the thief?</p>
+  <p>Three suspects: A, B, C. Only one tells the truth. Statement: "B is lying." Who is the thief?</p>
   <div style="margin-top:8px">
     <select id="logicAnswer" aria-label="Choose suspect">
       <option value="">Select</option>
@@ -45,10 +44,10 @@
   </div>
 </div>
 
-<!-- Field Network — Route selection -->
+<!-- Field Network -->
 <div id="p4" class="puzzle-card">
   <h3>Field Network — Route</h3>
-  <p>Visit all four nodes without revisiting any node. Choose the order.</p>
+  <p>Select nodes in order (Alpha -> Bravo -> Charlie -> Delta).</p>
   <div style="margin-top:8px">
     <select id="route" multiple size="4" aria-label="Select route">
       <option>Alpha</option>
@@ -59,10 +58,9 @@
     <button id="routeSubmit" class="btn-sm">Submit Route</button>
     <span id="routeStatus" class="status" aria-live="polite"></span>
   </div>
-  <p style="margin-top:6px;color:#8a98a8">Tip: The valid Hamiltonian path is Alpha → Bravo → Charlie → Delta.</p>
 </div>
 
-<!-- Pattern Lab — Memory sequence -->
+<!-- Pattern Lab -->
 <div id="p5" class="puzzle-card">
   <h3>Pattern Lab — Memory</h3>
   <p>Repeat the flashing sequence. Reach length 4.</p>
@@ -78,11 +76,9 @@
   </div>
 </div>
 
-<!-- Clearance — Final -->
+<!-- Clearance -->
 <div id="p6" class="puzzle-card">
   <h3>Clearance — Final</h3>
-  <div id="p6locked"><p>🔒 Locked. Solve previous puzzles.</p></div>
-  <div id="p6open" class="hidden">
-    <p>🎉 Clearance granted. Welcome to QCPD Elite.</p>
-  </div>
+  <div id="p6locked"><p>Locked. Solve previous puzzles.</p></div>
+  <div id="p6open" class="hidden"><p>Clearance granted.</p></div>
 </div>

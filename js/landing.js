@@ -1,13 +1,12 @@
-
 (function(){
-  const form=document.getElementById('briefingForm');
-  form.addEventListener('submit',(e)=>{
+  var form=document.getElementById('briefingForm');
+  form.addEventListener('submit',function(e){
     e.preventDefault();
-    const name=document.getElementById('name').value.trim();
+    var name=document.getElementById('name').value.trim();
     if(!name){ alert('Name is required'); return; }
-    const dept=document.getElementById('dept').value;
-    const pwd=document.getElementById('password').value.trim();
-    QC.saveProfile({department:dept,name,pwd});
+    var dept=document.getElementById('dept').value;
+    var pwd=document.getElementById('password').value.trim();
+    QC.saveProfile({department:dept,name:name,password:pwd});
     location.href='game.html';
   });
 })();

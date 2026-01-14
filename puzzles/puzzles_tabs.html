@@ -1,12 +1,11 @@
 
-<!-- Page 1 — Agent Details (no puzzle) -->
+<!-- Page 1 — Agent Details -->
 <div id="p1" class="puzzle-card">
   <h3>Page 1 — Agent Details</h3>
-  <p>Optionally take a photo or upload one; add a motivational note. You can also skip photos entirely.</p>
-
+  <p>Add a motivational note; optionally take or upload a photo. You can skip the photo entirely.</p>
   <div class="flex-row">
-    <div style="min-width:240px">
-      <img id="p1preview" src="assets/photo_placeholder.png" alt="Agent photo" style="max-width:220px; border:1px solid #223041; border-radius:8px" />
+    <div style="min-width:220px">
+      <img id="p1preview" src="assets/photo_placeholder.png" alt="Agent photo" style="max-width:200px; border:1px solid #223041; border-radius:8px" />
       <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap">
         <button id="p1camera" class="btn-sm" type="button">Use Camera</button>
         <input id="p1file" type="file" accept="image/*" style="display:none" />
@@ -14,22 +13,109 @@
         <button id="p1clear" class="btn-sm" type="button">Clear Photo</button>
       </div>
     </div>
-
     <div style="flex:1">
       <label for="p1note"><strong>Motivational Note (free text)</strong></label>
       <textarea id="p1note" rows="6" style="width:100%; background:#0d1318; color:#e6edf3; border:1px solid #223041; border-radius:8px" placeholder="e.g., 'Stay curious. Every clue counts.'"></textarea>
-
       <div style="margin-top:8px">
         <span>Select Seal (optional):</span>
         <label class="chip"><input type="radio" name="seal" value="alpha"> Alpha</label>
         <label class="chip"><input type="radio" name="seal" value="bravo"> Bravo</label>
         <label class="chip"><input type="radio" name="seal" value="charlie"> Charlie</label>
       </div>
-
       <div style="margin-top:8px">
         <button id="p1submit" class="btn-sm" type="button">Agent Details updated</button>
         <span id="p1status" class="status"></span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Page 2 — Puzzle 1: Right Building -->
+<div id="p2" class="puzzle-card">
+  <h3>Page 2 — Puzzle 1: The Building Riddle</h3>
+  <p>Two guardians stand tall; one faces dawn, one faces dusk. Choose wisely—the clue hides with the side that’s never left.</p>
+  <img class="rb-img" src="assets/right_building.png" alt="Two buildings" style="max-width:100%; border-radius:8px; border:1px solid #223041" />
+  <div style="margin-top:8px">
+    <input id="p2answer" placeholder="Type answer (e.g., rb)" />
+    <button id="p2submit" class="btn-sm">Submit</button>
+    <span id="p2status" class="status"></span>
+  </div>
+</div>
+
+<!-- Page 3 — Puzzle 2: Jigsaw + code -->
+<div id="p3" class="puzzle-card">
+  <h3>Page 3 — Puzzle 2: Tourist Tile Jigsaw</h3>
+  <p>Drag tiles from the side box into the grid. When complete, enter the 3-digit code.</p>
+  <div class="flex-row">
+    <div class="sidebox" id="p3side"></div>
+    <div class="grid-3x3" id="p3grid"></div>
+  </div>
+  <div id="p3clues" class="hidden" style="margin-top:12px">
+    <p>✔️ Jigsaw solved! Clues:</p>
+    <ol>
+      <li>Letters in <strong>sun</strong> → first digit</li>
+      <li>Moons of Earth → second digit</li>
+      <li>Sides of a square → third digit</li>
+    </ol>
+    <div style="margin-top:8px">
+      <input id="p3code" placeholder="Enter 3-digit code" />
+      <button id="p3submit" class="btn-sm">Verify</button>
+      <span id="p3status" class="status"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Page 4 — Puzzle 3: Blocks + riddle (world map) -->
+<div id="p4" class="puzzle-card">
+  <h3>Page 4 — Puzzle 3: Block Order & Riddle</h3>
+  <p>Place blocks in ascending order 1→9, then answer the riddle.</p>
+  <div class="flex-row">
+    <div class="sidebox" id="p4box"></div>
+    <div class="grid-3x3" id="p4grid"></div>
+  </div>
+  <div id="p4riddle" class="hidden" style="margin-top:12px">
+    <p><em>I hold all lands yet I’m not a king. Lines divide me yet I am whole. What am I?</em></p>
+    <input id="p4answer" placeholder="Type answer (e.g., world map)" />
+    <button id="p4submit" class="btn-sm">Submit</button>
+    <div id="p4reveal" class="hidden" style="margin-top:8px">
+      <img src="assets/worldmap.png" alt="World map" style="max-width:280px; border:1px solid #223041; border-radius:8px" />
+    </div>
+    <span id="p4status" class="status"></span>
+  </div>
+</div>
+
+<!-- Page 5 — Puzzle 4: Nothing → snake (score ≥2) -->
+<div id="p5" class="puzzle-card">
+  <h3>Page 5 — Puzzle 4: The Empty Answer</h3>
+  <p>Riddle: <em>What is the absence of everything?</em></p>
+  <div style="margin-top:8px">
+    <input id="p5answer" placeholder="Type answer (e.g., nothing)" />
+    <button id="p5submit" class="btn-sm">Submit</button>
+    <span id="p5status" class="status"></span>
+  </div>
+  <div id="snakeWrap" class="hidden" style="margin-top:12px">
+    <canvas id="snake" width="300" height="300"></canvas>
+    <div style="margin-top:6px">Score: <span id="snakeScore">0</span></div>
+    <div id="snakeMsg" class="hidden" style="margin-top:6px; color:#ffcc00">⚠️ Misleading from the original case.</div>
+  </div>
+</div>
+
+<!-- Page 6 — Final -->
+<div id="p6" class="puzzle-card">
+  <h3>Page 6 — Final: QCPD Recruitment</h3>
+  <div id="p6locked">
+    <p>🔒 Locked. Solve all previous pages or reach ≥2 in snake.</p>
+  </div>
+  <div id="p6open" class="hidden">
+    <p>🎉 Congratulations, Agent! You’re now recruited to <strong>QCPD</strong>.</p>
+    <details style="margin-top:8px">
+      <summary>Reveal all answers</summary>
+      <ul>
+        <li>Page 2 — Puzzle 1: <code>right building</code> (accepts <code>rb</code>)</li>
+        <li>Page 3 — Puzzle 2 code: <code>314</code></li>
+        <li>Page 4 — Puzzle 3: <code>world map</code></li>
+        <li>Page 5 — Puzzle 4: <code>nothing</code> (snake score ≥2)</li>
+      </ul>
+    </details>
   </div>
 </div>

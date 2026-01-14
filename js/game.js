@@ -44,8 +44,8 @@ ticker.addEventListener('mouseenter',()=>scrollPaused=true); ticker.addEventList
 // Mobile toggles
 const leftPanel=document.getElementById('sidebar-left'); const rightPanel=document.getElementById('sidebar-right'); const tLeft=document.getElementById('toggle-left'); const tRight=document.getElementById('toggle-right');
 function togglePanel(panel,btn){ const v=panel.style.display!=='none'; panel.style.display=v?'none':'block'; btn.setAttribute('aria-expanded',String(!v)); }
-tLeft.addEventListener('click',()=>togglePanel(leftPanel,tLeft)); tRight.addEventListener('click',()=>togglePanel(rightPanel,tRight));
-function ensureDesktop(){ const isMobile=matchMedia('(max-width: 780px)').matches; leftPanel.style.display=isMobile?'none':'block'; rightPanel.style.display=isMobile?'none':'block'; tLeft.setAttribute('aria-expanded','false'); tRight.setAttribute('aria-expanded','false'); }
+tLeft?.addEventListener('click',()=>togglePanel(leftPanel,tLeft)); tRight?.addEventListener('click',()=>togglePanel(rightPanel,tRight));
+function ensureDesktop(){ const isMobile=matchMedia('(max-width: 780px)').matches; leftPanel.style.display=isMobile?'none':'block'; rightPanel.style.display=isMobile?'none':'block'; tLeft?.setAttribute('aria-expanded','false'); tRight?.setAttribute('aria-expanded','false'); }
 addEventListener('resize', ensureDesktop); ensureDesktop();
 
 // Init

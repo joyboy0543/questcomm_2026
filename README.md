@@ -1,3 +1,3 @@
-# QuestComm 2026 — Full Reset
+# QuestComm 2026 — Pages Ready
 
-This is a clean rebuild of the case room with puzzles, accessibility, and GitHub Pages workflow.
+Clean, inline-puzzles build with GitHub Pages workflow.

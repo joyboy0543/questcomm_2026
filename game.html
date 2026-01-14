@@ -36,18 +36,89 @@
         <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Pattern Lab</button>
       </nav>
 
-      <!-- Mobile toggles for sidebars -->
       <div class="mobile-panel-toggles" aria-label="Mobile panel toggles">
         <button id="toggle-cases" class="btn-sm" aria-controls="sidebar-left" aria-expanded="false">Show Cases</button>
         <button id="toggle-radio" class="btn-sm" aria-controls="sidebar-right" aria-expanded="false">Show Radio</button>
       </div>
 
-      <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1"></section>
-      <section id="tab-2" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-2" hidden></section>
-      <section id="tab-3" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-3" hidden></section>
-      <section id="tab-4" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-4" hidden></section>
-      <section id="tab-5" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-5" hidden></section>
-      <section id="tab-6" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-6" hidden></section>
+      <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1">
+        <h3>Briefing — Agent Profile</h3>
+        <p>Proceed when ready. Admin tip: append <code>?admin=1</code> to this URL to unlock everything.</p>
+      </section>
+
+      <section id="tab-2" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-2" hidden>
+        <h3>Clearance — Final</h3>
+        <div id="p6locked"><p>🔒 Locked. Solve all puzzles.</p></div>
+        <div id="p6open" class="hidden"><p>🎉 Clearance granted. Welcome to QCPD Elite.</p></div>
+      </section>
+
+      <section id="tab-3" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-3" hidden>
+        <h3>Cipher Desk — Decode</h3>
+        <p>Use the shift slider to decode the message and confirm.</p>
+        <div class="flex-row">
+          <div>
+            <div class="brand-logo" style="width:120px;height:120px" aria-hidden="true"></div>
+            <div style="margin-top:8px">
+              <label for="shift">Shift</label>
+              <input id="shift" type="range" min="0" max="25" value="0"/>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div><strong>Encoded:</strong> UFTU</div>
+            <div style="margin-top:6px"><strong>Decoded:</strong> <span id="decoded">UFTU</span></div>
+            <div style="margin-top:8px">
+              <input id="cipherConfirm" placeholder="Type decoded word" aria-label="Type decoded word"/>
+              <button id="cipherSubmit" class="btn-sm">Confirm</button>
+              <span id="cipherStatus" class="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-4" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-4" hidden>
+        <h3>Logic Board — Deduce</h3>
+        <p>Three suspects: A, B, C. Only one tells the truth. Statement: “B is lying.” Who is the thief?</p>
+        <div style="margin-top:8px">
+          <select id="logicAnswer" aria-label="Choose suspect">
+            <option value="">Select</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <button id="logicSubmit" class="btn-sm">Verify</button>
+          <span id="logicStatus" class="status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section id="tab-5" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-5" hidden>
+        <h3>Field Network — Route</h3>
+        <p>Select nodes in order (Alpha → Bravo → Charlie → Delta).</p>
+        <div style="margin-top:8px">
+          <select id="route" multiple size="4" aria-label="Select route">
+            <option>Alpha</option>
+            <option>Bravo</option>
+            <option>Charlie</option>
+            <option>Delta</option>
+          </select>
+          <button id="routeSubmit" class="btn-sm">Submit Route</button>
+          <span id="routeStatus" class="status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section id="tab-6" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-6" hidden>
+        <h3>Pattern Lab — Memory</h3>
+        <p>Repeat the flashing sequence. Reach length 4.</p>
+        <div class="flex-row" style="gap:10px">
+          <button class="btn-sm" id="pbtn1">Blue</button>
+          <button class="btn-sm" id="pbtn2">Gold</button>
+          <button class="btn-sm" id="pbtn3">Teal</button>
+          <button class="btn-sm" id="pbtn4">White</button>
+        </div>
+        <div style="margin-top:8px">
+          <button id="patternStart" class="btn-sm">Start</button>
+          <span id="patternStatus" class="status" aria-live="polite"></span>
+        </div>
+      </section>
 
       <div id="ariaStatus" class="sr-only" role="status" aria-live="polite"></div>
     </section>
@@ -68,9 +139,9 @@
     <small>CLASSIFIED — AUTHORIZED AGENTS ONLY</small>
   </footer>
 
-  <script src="js/common.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/tabs.js"></script>
-  <script src="js/puzzles_logic.js"></script>
+  <script src="js/common.js" defer></script>
+  <script src="js/game.js" defer></script>
+  <script src="js/tabs.js" defer></script>
+  <script src="js/puzzles_logic.js" defer></script>
 </body>
 </html>

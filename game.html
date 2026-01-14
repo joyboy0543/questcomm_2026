@@ -3,15 +3,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>QCPD — Case Room</title>
-  <link rel="preload" href="assets/qcpd_logo_small.png" as="image">
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header class="site-header minimal">
     <div class="brand">
-      <img src="assets/qcpd_logo_small.png" alt="QCPD" class="brand-logo" />
+      <img src="assets/qcpd_logo.png" alt="QCPD" class="brand-logo" />
       <strong>QuestComm Case Room</strong>
     </div>
     <div id="badge" class="badge"></div>
@@ -32,14 +31,13 @@
       <h2 class="content-title">Open Case</h2>
       <div id="current-case-title" class="current-case-title" aria-live="polite"></div>
 
-      <!-- Themed Tabs -->
       <nav class="tabs" role="tablist" aria-label="Case puzzles">
         <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Briefing</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Site Recon</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3" disabled>Clue Assembly</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-4" id="btn-tab-4" disabled>World Ledger</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-5" id="btn-tab-5" disabled>Countermeasure Drill</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Clearance Granted</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Cipher Desk</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3" disabled>Logic Board</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-4" id="btn-tab-4" disabled>Field Network</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-5" id="btn-tab-5" disabled>Pattern Lab</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Clearance</button>
       </nav>
 
       <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1"></section>

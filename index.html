@@ -3,40 +3,43 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QCPD — Agent Portal</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QCPD Agent Access</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="landing-body">
   <main class="landing-container">
     <section class="landing-card">
       <div class="brand-row">
-        <img src="assets/qcpd_logo_small.png" alt="QCPD" class="brand-logo" />
-        <div>
-          <h1 class="landing-title">QCPD Agent Access</h1>
-          <p class="landing-subtitle">Enter the case room to begin your mission</p>
+        <img src="assets/qcpd_logo.png" alt="QCPD" class="brand-logo" />
+        <div class="brand-text">
+          <h1 class="landing-title">QCPD</h1>
+          <p class="landing-subtitle">Agent Access</p>
         </div>
       </div>
-      <form id="briefingForm" class="landing-form">
+      <form id="briefingForm" class="landing-form" aria-label="Agent access form">
         <div class="field">
-          <label for="name">Agent Name <span class="required">*</span></label>
-          <input id="name" name="name" placeholder="e.g., Jay" required>
+          <label for="name">Name<span class="required">*</span></label>
+          <input id="name" name="name" placeholder="Your name" required>
         </div>
         <div class="field">
-          <label for="investigatorId">Investigator ID</label>
-          <input id="investigatorId" name="investigatorId" type="number" inputmode="numeric" placeholder="Optional">
+          <label for="dept">Department</label>
+          <select id="dept" name="dept">
+            <option value="Forensic">Forensic</option>
+            <option value="Field Operative">Field Operative</option>
+            <option value="Undercover Agent">Undercover Agent</option>
+            <option value="Cyber Intelligence">Cyber Intelligence</option>
+            <option value="Surveillance">Surveillance</option>
+            <option value="Negotiations">Negotiations</option>
+            <option value="Counterintelligence">Counterintelligence</option>
+            <option value="Evidence Analysis">Evidence Analysis</option>
+          </select>
         </div>
         <div class="field">
-          <label for="team">Team Name</label>
-          <input id="team" name="team" placeholder="Optional">
+          <label for="password">Personal Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••">
         </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="Optional">
-          <div class="hint">Hint: Sweden is among the top 5 consumers of this drink in the world.</div>
-        </div>
-        <button class="btn-primary" type="submit">Enter Room</button>
-        <a id="resumeLink" class="btn-secondary" href="game.html" style="display:none">Resume</a>
+        <button class="btn-primary" type="submit" aria-label="Enter Case Room">Enter Case Room</button>
       </form>
     </section>
   </main>

@@ -1,121 +1,88 @@
 
-<!-- Page 1 — Agent Details (Briefing) -->
+<!-- Briefing (no gate) -->
 <div id="p1" class="puzzle-card">
-  <h3>Briefing — Agent Details</h3>
-  <p>Add a motivational note; optionally take or upload a photo. You can skip the photo entirely.</p>
+  <h3>Briefing — Agent Profile</h3>
+  <p>Welcome, Agent. Proceed to the Cipher Desk when ready.</p>
+</div>
+
+<!-- Cipher Desk — Caesar slider decode -->
+<div id="p2" class="puzzle-card">
+  <h3>Cipher Desk — Decode</h3>
+  <p>Use the shift slider to decode the message into a clear word. Then confirm.</p>
   <div class="flex-row">
-    <div style="min-width:220px">
-      <img id="p1preview" src="assets/photo_placeholder.png" alt="Agent photo" style="max-width:200px; border:1px solid #223041; border-radius:8px" />
-      <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap">
-        <button id="p1camera" class="btn-sm" type="button">Use Camera</button>
-        <input id="p1file" type="file" accept="image/*" style="display:none" />
-        <button id="p1upload" class="btn-sm" type="button">Upload Photo</button>
-        <button id="p1clear" class="btn-sm" type="button">Clear Photo</button>
+    <div>
+      <img src="assets/cipher_wheel.png" alt="Cipher wheel" style="width:120px"/>
+      <div style="margin-top:8px">
+        <label for="shift">Shift</label>
+        <input id="shift" type="range" min="0" max="25" value="0"/>
       </div>
     </div>
     <div style="flex:1">
-      <label for="p1note"><strong>Motivational Note (free text)</strong></label>
-      <textarea id="p1note" rows="6" style="width:100%; background:#0d1318; color:#e6edf3; border:1px solid #223041; border-radius:8px" placeholder="e.g., 'Stay curious. Every clue counts.'"></textarea>
+      <div><strong>Encoded:</strong> UFTU</div>
+      <div style="margin-top:6px"><strong>Decoded:</strong> <span id="decoded">UFTU</span></div>
       <div style="margin-top:8px">
-        <span>Select Seal (optional):</span>
-        <label class="chip"><input type="radio" name="seal" value="alpha"> Alpha</label>
-        <label class="chip"><input type="radio" name="seal" value="bravo"> Bravo</label>
-        <label class="chip"><input type="radio" name="seal" value="charlie"> Charlie</label>
-      </div>
-      <div style="margin-top:8px">
-        <button id="p1submit" class="btn-sm" type="button">Agent Details updated</button>
-        <span id="p1status" class="status" aria-live="polite"></span>
+        <input id="cipherConfirm" placeholder="Type the decoded word" aria-label="Type decoded word"/>
+        <button id="cipherSubmit" class="btn-sm">Confirm</button>
+        <span id="cipherStatus" class="status" aria-live="polite"></span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Page 2 — Site Recon: Right Building -->
-<div id="p2" class="puzzle-card">
-  <h3>Site Recon — Building Riddle</h3>
-  <p>Two guardians stand tall; one faces dawn, one faces dusk. Choose wisely—the clue hides with the side that’s never left.</p>
-  <img class="rb-img" src="assets/right_building.png" alt="Two buildings" style="max-width:100%; border-radius:8px; border:1px solid #223041" />
-  <div style="margin-top:8px">
-    <input id="p2answer" placeholder="Type answer (e.g., rb)" aria-label="Type your answer" />
-    <button id="p2submit" class="btn-sm">Submit</button>
-    <span id="p2status" class="status" aria-live="polite"></span>
-  </div>
-</div>
-
-<!-- Page 3 — Clue Assembly: Jigsaw + code -->
+<!-- Logic Board — Multiple-choice deduction -->
 <div id="p3" class="puzzle-card">
-  <h3>Clue Assembly — Tourist Tile Jigsaw</h3>
-  <p>Drag or select tiles from the side box into the grid. When complete, enter the 3-digit code.</p>
-  <div class="flex-row">
-    <div class="sidebox" id="p3side" aria-label="Tile bank"></div>
-    <div class="grid-3x3" id="p3grid" aria-label="Jigsaw grid"></div>
-  </div>
-  <div id="p3clues" class="hidden" style="margin-top:12px">
-    <p>✔️ Jigsaw solved! Clues:</p>
-    <ol>
-      <li>Letters in <strong>sun</strong> → first digit</li>
-      <li>Moons of Earth → second digit</li>
-      <li>Sides of a square → third digit</li>
-    </ol>
-    <div style="margin-top:8px">
-      <input id="p3code" placeholder="Enter 3-digit code" aria-label="Enter 3 digit code" />
-      <button id="p3submit" class="btn-sm">Verify</button>
-      <span id="p3status" class="status" aria-live="polite"></span>
-    </div>
-  </div>
-</div>
-
-<!-- Page 4 — World Ledger: Blocks + riddle (world map) -->
-<div id="p4" class="puzzle-card">
-  <h3>World Ledger — Order & Riddle</h3>
-  <p>Place blocks in ascending order 1→9, then answer the riddle.</p>
-  <div class="flex-row">
-    <div class="sidebox" id="p4box" aria-label="Blocks bank"></div>
-    <div class="grid-3x3" id="p4grid" aria-label="Blocks grid"></div>
-  </div>
-  <div id="p4riddle" class="hidden" style="margin-top:12px">
-    <p><em>I hold all lands yet I’m not a king. Lines divide me yet I am whole. What am I?</em></p>
-    <input id="p4answer" placeholder="Type answer (e.g., world map)" aria-label="Type riddle answer" />
-    <button id="p4submit" class="btn-sm">Submit</button>
-    <div id="p4reveal" class="hidden" style="margin-top:8px">
-      <img src="assets/worldmap.png" alt="World map" style="max-width:280px; border:1px solid #223041; border-radius:8px" />
-    </div>
-    <span id="p4status" class="status" aria-live="polite"></span>
-  </div>
-</div>
-
-<!-- Page 5 — Countermeasure Drill: Nothing → snake (score ≥2) -->
-<div id="p5" class="puzzle-card">
-  <h3>Countermeasure Drill — Riddle & Reflex</h3>
-  <p>Riddle: <em>What is the absence of everything?</em></p>
+  <h3>Logic Board — Deduce</h3>
+  <p>Three suspects: A, B, C. Only one tells the truth. Statement: “B is lying.” Who is the thief?</p>
   <div style="margin-top:8px">
-    <input id="p5answer" placeholder="Type answer (e.g., nothing)" aria-label="Type riddle answer" />
-    <button id="p5submit" class="btn-sm">Submit</button>
-    <span id="p5status" class="status" aria-live="polite"></span>
-  </div>
-  <div id="snakeWrap" class="hidden" style="margin-top:12px">
-    <canvas id="snake" width="300" height="300" aria-label="Snake game"></canvas>
-    <div style="margin-top:6px">Score: <span id="snakeScore">0</span></div>
-    <div id="snakeMsg" class="hidden" style="margin-top:6px; color:#ffcc00">⚠️ Misleading from the original case.</div>
+    <select id="logicAnswer" aria-label="Choose suspect">
+      <option value="">Select</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+    </select>
+    <button id="logicSubmit" class="btn-sm">Verify</button>
+    <span id="logicStatus" class="status" aria-live="polite"></span>
   </div>
 </div>
 
-<!-- Page 6 — Clearance Granted -->
-<div id="p6" class="puzzle-card">
-  <h3>Clearance Granted — Final</h3>
-  <div id="p6locked">
-    <p>🔒 Locked. Solve previous puzzles or reach ≥2 in snake.</p>
+<!-- Field Network — Route selection -->
+<div id="p4" class="puzzle-card">
+  <h3>Field Network — Route</h3>
+  <p>Visit all four nodes without revisiting any node. Choose the order.</p>
+  <div style="margin-top:8px">
+    <select id="route" multiple size="4" aria-label="Select route">
+      <option>Alpha</option>
+      <option>Bravo</option>
+      <option>Charlie</option>
+      <option>Delta</option>
+    </select>
+    <button id="routeSubmit" class="btn-sm">Submit Route</button>
+    <span id="routeStatus" class="status" aria-live="polite"></span>
   </div>
+  <p style="margin-top:6px;color:#8a98a8">Tip: The valid Hamiltonian path is Alpha → Bravo → Charlie → Delta.</p>
+</div>
+
+<!-- Pattern Lab — Memory sequence -->
+<div id="p5" class="puzzle-card">
+  <h3>Pattern Lab — Memory</h3>
+  <p>Repeat the flashing sequence. Reach length 4.</p>
+  <div class="flex-row" style="gap:10px">
+    <button class="btn-sm" id="pbtn1">Blue</button>
+    <button class="btn-sm" id="pbtn2">Gold</button>
+    <button class="btn-sm" id="pbtn3">Teal</button>
+    <button class="btn-sm" id="pbtn4">White</button>
+  </div>
+  <div style="margin-top:8px">
+    <button id="patternStart" class="btn-sm">Start</button>
+    <span id="patternStatus" class="status" aria-live="polite"></span>
+  </div>
+</div>
+
+<!-- Clearance — Final -->
+<div id="p6" class="puzzle-card">
+  <h3>Clearance — Final</h3>
+  <div id="p6locked"><p>🔒 Locked. Solve previous puzzles.</p></div>
   <div id="p6open" class="hidden">
-    <p>🎉 Congratulations, Agent! Authorization level raised.</p>
-    <details style="margin-top:8px">
-      <summary>Reveal all answers</summary>
-      <ul>
-        <li>Site Recon (Building): <code>right building</code> / <code>rb</code></li>
-        <li>Clue Assembly (Code): <code>314</code></li>
-        <li>World Ledger (Riddle): <code>world map</code></li>
-        <li>Countermeasure Drill (Riddle): <code>nothing</code> (snake ≥2)</li>
-      </ul>
-    </details>
+    <p>🎉 Clearance granted. Welcome to QCPD Elite.</p>
   </div>
 </div>

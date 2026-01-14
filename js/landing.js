@@ -1,3 +1,4 @@
+
 (function(){
   var form=document.getElementById('briefingForm');
   form.addEventListener('submit',function(e){
@@ -7,6 +8,6 @@
     var dept=document.getElementById('dept').value;
     var pwd=document.getElementById('password').value.trim();
     QC.saveProfile({department:dept,name:name,password:pwd});
-    location.href='game.html';
+    location.href='game.html' + (localStorage.getItem('qc_admin')==='1' ? '?admin=1' : '');
   });
 })();

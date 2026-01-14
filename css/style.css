@@ -1,13 +1,16 @@
-/* Elite Fix CSS */
-:root { --bg:#0b0f12; --panel:#141a20; --accent:#2db2ff; --accent-2:#ffcc00; --text:#e6edf3; --muted:#8a98a8; --locked:#6f7a86; --gap:14px; }
-*{box-sizing:border-box} html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica Neue,Arial}
 
-body.landing-body{background:linear-gradient(135deg,#0b0f12,#10161c);display:flex;align-items:center;justify-content:center;min-height:100vh}
-.landing-container{width:100%;max-width:520px;padding:20px}
+:root { --bg:#0b0f12; --panel:#141a20; --accent:#2db2ff; --accent-2:#ffcc00; --text:#e6edf3; --muted:#8a98a8; --locked:#6f7a86; --gap:14px; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{min-height:100vh;display:flex;flex-direction:column;margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans","Helvetica Neue",Arial}
+main{flex:1}
+
+/* Landing */
+body.landing-body{background:linear-gradient(135deg,#0b0f12,#10161c)}
+.landing-container{width:100%;max-width:560px;padding:20px;margin:0 auto}
 .landing-card{background:#141a20;border-radius:16px;padding:24px;box-shadow:0 10px 24px rgba(0,0,0,.5)}
 .brand-row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
-.brand-logo{width:48px;height:48px;background:#1b2a36;border-radius:8px}
+.brand-logo{width:48px;height:48px;border-radius:8px;background:#1b2a36 url('../assets/qcpd_logo.png') center/60% no-repeat}
 .brand-text{line-height:1}
 .landing-title{margin:0;font-size:1.6rem;color:var(--accent)}
 .landing-subtitle{margin:2px 0 0;color:#9bb6c9;font-weight:600;letter-spacing:.04em}
@@ -17,9 +20,10 @@ body.landing-body{background:linear-gradient(135deg,#0b0f12,#10161c);display:fle
 .required{color:var(--accent-2);margin-left:6px}
 .btn-primary{background:var(--accent);color:#000;border:none;border-radius:10px;padding:12px;font-weight:700;cursor:pointer}
 
+/* Case room */
 .site-header{padding:10px 16px;background:#0e1216;border-bottom:1px solid #0a0d10;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .site-header .brand{display:flex;gap:10px;align-items:center;font-weight:600}
-.site-header .brand-logo{width:28px;height:28px;background:#1b2a36;border-radius:6px}
+.site-header .brand-logo{width:28px;height:28px;border-radius:6px;background:#1b2a36 url('../assets/qcpd_logo.png') center/60% no-repeat}
 .badge .chip{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid #223041;border-radius:999px;background:#10161c}
 .progress-chips{display:flex;gap:8px;flex-wrap:wrap}
 .progress-chip{display:inline-flex;align-items:center;gap:6px;background:#10161c;border:1px solid #1f2730;color:#e6edf3;border-radius:999px;padding:4px 10px}
@@ -32,6 +36,8 @@ body.landing-body{background:linear-gradient(135deg,#0b0f12,#10161c);display:fle
 .sidebar-title{margin:6px 0 10px;font-size:1.05rem;color:var(--text)}
 .case-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
 .case{display:flex;align-items:center;gap:8px;padding:8px;border:1px dashed #263040;border-radius:8px}
+.case.locked{color:var(--locked);background:#10161c}
+.case.open{background:#101a24;border-color:#1d3a56}
 .content{background:var(--panel);border:1px solid #1f2730;border-radius:12px;padding:12px}
 .content-title{margin:6px 0 4px}.current-case-title{color:var(--accent);font-weight:600;margin-bottom:8px}
 .tabs{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
@@ -41,16 +47,22 @@ body.landing-body{background:linear-gradient(135deg,#0b0f12,#10161c);display:fle
 .tab.unlocked{animation:gentleGlow 900ms ease-out}
 @keyframes gentleGlow{0%{box-shadow:0 0 0 rgba(45,178,255,0)}50%{box-shadow:0 0 12px rgba(45,178,255,.6)}100%{box-shadow:0 0 0 rgba(45,178,255,0)}}
 .tabpanel{margin-top:10px}
+.mobile-panel-toggles{display:none;gap:8px;margin:8px 0}
+.mobile-panel-toggles .btn-sm{background:#0c1217;color:var(--text);border:1px solid #223041;border-radius:8px;padding:6px 10px}
+.btn-sm{background:#0c1217;color:var(--text);border:1px solid #223041;border-radius:8px;padding:6px 10px;cursor:pointer}
+.status{margin-top:8px}
 .radio-ticker{height:260px;overflow:auto;border:1px solid #223041;border-radius:8px;background:#0e151b;padding:8px}
 #radio-feed{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .radio-msg{display:grid;grid-template-columns:76px 1fr;align-items:start;gap:8px;padding:8px;background:#0d1318;border:1px solid #1f2a37;border-radius:8px}
-.radio-time{color:var(--accent-2);font-weight:600}
-.radio-text{color:var(--text)}
+.radio-time{color:var(--accent-2);font-weight:600;font-variant-numeric:tabular-nums}.radio-text{color:var(--text)}
 .radio-controls{display:flex;gap:8px;margin-top:8px}
 .radio-controls button{background:#0c1217;color:var(--text);border:1px solid #223041;border-radius:8px;padding:6px 8px}
 
-.cell{width:100px;height:100px;border:1px dashed #223041;border-radius:6px;background:#0d1318}
-.tile{width:96px;height:96px;border-radius:6px;background:#222;border:1px solid #1f2730;cursor:grab;color:#e6edf3;display:flex;align-items:center;justify-content:center;font-weight:600}
-.sidebox{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid #223041;border-radius:8px;background:#0e151b;max-width:330px}
-.sr-only{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
-.site-footer.confidential{padding:10px 16px;background:#0e1216;border-top:1px solid #0a0d10;text-align:center;color:#8aa1b3}
+.site-footer.classified{padding:10px 16px;background:#0e1216;border-top:1px solid #0a0d10;text-align:center;color:#8aa1b3}
+
+/* Responsive */
+@media (max-width:780px){
+  .layout-3col{grid-template-columns:1fr}
+  #sidebar-left,#sidebar-right{display:none}
+  .mobile-panel-toggles{display:flex}
+}

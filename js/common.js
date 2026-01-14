@@ -12,11 +12,7 @@ window.QC = {
     name: localStorage.getItem('qc_name')||'',
     investigatorId: localStorage.getItem('qc_investigator_id')||''
   }; },
-  badge(el){
-    const {team,name,investigatorId}=this.loadProfile();
-    const div=document.getElementById(el); if(!div) return; div.innerHTML='';
-    const chip=document.createElement('div'); chip.className='chip';
-    chip.innerHTML = `👮 <strong>${name||'Agent'}</strong> • Team ${team||'—'} • ID ${investigatorId||'—'}`;
-    div.appendChild(chip);
-  }
+  badge(el){ const {team,name,investigatorId}=this.loadProfile(); const div=document.getElementById(el); if(!div) return; div.innerHTML=''; const chip=document.createElement('div'); chip.className='chip'; chip.innerHTML = `👮 <strong>${name||'Agent'}</strong> • Team ${team||'—'} • ID ${investigatorId||'—'}`; div.appendChild(chip); },
+  chips(){ const el=document.getElementById('progress'); if(!el) return; el.innerHTML=''; const defs=[['Briefing','qc_p1_ok'],['Site Recon','qc_p2_ok'],['Clue Assembly','qc_p3_ok'],['World Ledger','qc_p4_ok'],['Countermeasure','qc_p5_ok'],['Clearance','qc_p6_unlocked']]; defs.forEach(([label,key])=>{ const chip=document.createElement('div'); chip.className='progress-chip'; const dot=document.createElement('span'); dot.className='dot'; chip.appendChild(dot); const txt=document.createElement('span'); txt.textContent=label; chip.appendChild(txt); if(localStorage.getItem(key)==='1'){ chip.classList.add('solved'); } el.appendChild(chip); }); },
+  async chime(){ try{ const AudioCtx = window.AudioContext || window.webkitAudioContext; const ctx = new AudioCtx(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(660, ctx.currentTime); g.gain.setValueAtTime(0.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.40); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.42); }catch(e){} }
 };

@@ -15,6 +15,7 @@
       <strong>QuestComm Case Room</strong>
     </div>
     <div id="badge" class="badge"></div>
+    <div id="progress" class="progress-chips" aria-label="Puzzle progress"></div>
     <div class="mobile-toggles">
       <button id="toggle-left" aria-controls="sidebar-left" aria-expanded="false">Cases</button>
       <button id="toggle-right" aria-controls="sidebar-right" aria-expanded="false">Radio</button>
@@ -25,21 +26,22 @@
     <aside id="sidebar-left" class="sidebar left" aria-label="Case list">
       <h2 class="sidebar-title">Cases</h2>
       <ul id="case-list" class="case-list" aria-live="polite"></ul>
-      <p class="hint">Locked cases are greyed out. New cases unlock as you progress.</p>
     </aside>
 
     <section id="puzzle-area" class="content">
       <h2 class="content-title">Open Case</h2>
       <div id="current-case-title" class="current-case-title" aria-live="polite"></div>
 
+      <!-- Themed Tabs -->
       <nav class="tabs" role="tablist" aria-label="Case puzzles">
-        <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Page 1</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Page 2</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3" disabled>Page 3</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-4" id="btn-tab-4" disabled>Page 4</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-5" id="btn-tab-5" disabled>Page 5</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Page 6</button>
+        <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Briefing</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Site Recon</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3" disabled>Clue Assembly</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-4" id="btn-tab-4" disabled>World Ledger</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-5" id="btn-tab-5" disabled>Countermeasure Drill</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Clearance Granted</button>
       </nav>
+
       <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1"></section>
       <section id="tab-2" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-2" hidden></section>
       <section id="tab-3" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-3" hidden></section>
@@ -47,8 +49,7 @@
       <section id="tab-5" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-5" hidden></section>
       <section id="tab-6" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-6" hidden></section>
 
-      <div class="resume-note">Progress auto-saves on this device.</div>
-      <div style="margin-top:10px"><a class="btn-link" href="index.html">⟵ Back to landing</a></div>
+      <div id="ariaStatus" class="sr-only" role="status" aria-live="polite"></div>
     </section>
 
     <aside id="sidebar-right" class="sidebar right" aria-label="Radio messages">
@@ -63,8 +64,8 @@
     </aside>
   </main>
 
-  <footer class="site-footer">
-    <small>© 2026 QCPD</small>
+  <footer class="site-footer confidential">
+    <small>CONFIDENTIAL — INTERNAL USE ONLY</small>
   </footer>
 
   <script src="js/common.js"></script>

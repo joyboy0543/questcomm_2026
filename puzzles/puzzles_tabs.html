@@ -1,7 +1,7 @@
 
-<!-- Page 1 — Agent Details -->
+<!-- Page 1 — Agent Details (Briefing) -->
 <div id="p1" class="puzzle-card">
-  <h3>Page 1 — Agent Details</h3>
+  <h3>Briefing — Agent Details</h3>
   <p>Add a motivational note; optionally take or upload a photo. You can skip the photo entirely.</p>
   <div class="flex-row">
     <div style="min-width:220px">
@@ -24,31 +24,31 @@
       </div>
       <div style="margin-top:8px">
         <button id="p1submit" class="btn-sm" type="button">Agent Details updated</button>
-        <span id="p1status" class="status"></span>
+        <span id="p1status" class="status" aria-live="polite"></span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Page 2 — Puzzle 1: Right Building -->
+<!-- Page 2 — Site Recon: Right Building -->
 <div id="p2" class="puzzle-card">
-  <h3>Page 2 — Puzzle 1: The Building Riddle</h3>
+  <h3>Site Recon — Building Riddle</h3>
   <p>Two guardians stand tall; one faces dawn, one faces dusk. Choose wisely—the clue hides with the side that’s never left.</p>
   <img class="rb-img" src="assets/right_building.png" alt="Two buildings" style="max-width:100%; border-radius:8px; border:1px solid #223041" />
   <div style="margin-top:8px">
-    <input id="p2answer" placeholder="Type answer (e.g., rb)" />
+    <input id="p2answer" placeholder="Type answer (e.g., rb)" aria-label="Type your answer" />
     <button id="p2submit" class="btn-sm">Submit</button>
-    <span id="p2status" class="status"></span>
+    <span id="p2status" class="status" aria-live="polite"></span>
   </div>
 </div>
 
-<!-- Page 3 — Puzzle 2: Jigsaw + code -->
+<!-- Page 3 — Clue Assembly: Jigsaw + code -->
 <div id="p3" class="puzzle-card">
-  <h3>Page 3 — Puzzle 2: Tourist Tile Jigsaw</h3>
-  <p>Drag tiles from the side box into the grid. When complete, enter the 3-digit code.</p>
+  <h3>Clue Assembly — Tourist Tile Jigsaw</h3>
+  <p>Drag or select tiles from the side box into the grid. When complete, enter the 3-digit code.</p>
   <div class="flex-row">
-    <div class="sidebox" id="p3side"></div>
-    <div class="grid-3x3" id="p3grid"></div>
+    <div class="sidebox" id="p3side" aria-label="Tile bank"></div>
+    <div class="grid-3x3" id="p3grid" aria-label="Jigsaw grid"></div>
   </div>
   <div id="p3clues" class="hidden" style="margin-top:12px">
     <p>✔️ Jigsaw solved! Clues:</p>
@@ -58,63 +58,63 @@
       <li>Sides of a square → third digit</li>
     </ol>
     <div style="margin-top:8px">
-      <input id="p3code" placeholder="Enter 3-digit code" />
+      <input id="p3code" placeholder="Enter 3-digit code" aria-label="Enter 3 digit code" />
       <button id="p3submit" class="btn-sm">Verify</button>
-      <span id="p3status" class="status"></span>
+      <span id="p3status" class="status" aria-live="polite"></span>
     </div>
   </div>
 </div>
 
-<!-- Page 4 — Puzzle 3: Blocks + riddle (world map) -->
+<!-- Page 4 — World Ledger: Blocks + riddle (world map) -->
 <div id="p4" class="puzzle-card">
-  <h3>Page 4 — Puzzle 3: Block Order & Riddle</h3>
+  <h3>World Ledger — Order & Riddle</h3>
   <p>Place blocks in ascending order 1→9, then answer the riddle.</p>
   <div class="flex-row">
-    <div class="sidebox" id="p4box"></div>
-    <div class="grid-3x3" id="p4grid"></div>
+    <div class="sidebox" id="p4box" aria-label="Blocks bank"></div>
+    <div class="grid-3x3" id="p4grid" aria-label="Blocks grid"></div>
   </div>
   <div id="p4riddle" class="hidden" style="margin-top:12px">
     <p><em>I hold all lands yet I’m not a king. Lines divide me yet I am whole. What am I?</em></p>
-    <input id="p4answer" placeholder="Type answer (e.g., world map)" />
+    <input id="p4answer" placeholder="Type answer (e.g., world map)" aria-label="Type riddle answer" />
     <button id="p4submit" class="btn-sm">Submit</button>
     <div id="p4reveal" class="hidden" style="margin-top:8px">
       <img src="assets/worldmap.png" alt="World map" style="max-width:280px; border:1px solid #223041; border-radius:8px" />
     </div>
-    <span id="p4status" class="status"></span>
+    <span id="p4status" class="status" aria-live="polite"></span>
   </div>
 </div>
 
-<!-- Page 5 — Puzzle 4: Nothing → snake (score ≥2) -->
+<!-- Page 5 — Countermeasure Drill: Nothing → snake (score ≥2) -->
 <div id="p5" class="puzzle-card">
-  <h3>Page 5 — Puzzle 4: The Empty Answer</h3>
+  <h3>Countermeasure Drill — Riddle & Reflex</h3>
   <p>Riddle: <em>What is the absence of everything?</em></p>
   <div style="margin-top:8px">
-    <input id="p5answer" placeholder="Type answer (e.g., nothing)" />
+    <input id="p5answer" placeholder="Type answer (e.g., nothing)" aria-label="Type riddle answer" />
     <button id="p5submit" class="btn-sm">Submit</button>
-    <span id="p5status" class="status"></span>
+    <span id="p5status" class="status" aria-live="polite"></span>
   </div>
   <div id="snakeWrap" class="hidden" style="margin-top:12px">
-    <canvas id="snake" width="300" height="300"></canvas>
+    <canvas id="snake" width="300" height="300" aria-label="Snake game"></canvas>
     <div style="margin-top:6px">Score: <span id="snakeScore">0</span></div>
     <div id="snakeMsg" class="hidden" style="margin-top:6px; color:#ffcc00">⚠️ Misleading from the original case.</div>
   </div>
 </div>
 
-<!-- Page 6 — Final -->
+<!-- Page 6 — Clearance Granted -->
 <div id="p6" class="puzzle-card">
-  <h3>Page 6 — Final: QCPD Recruitment</h3>
+  <h3>Clearance Granted — Final</h3>
   <div id="p6locked">
-    <p>🔒 Locked. Solve all previous pages or reach ≥2 in snake.</p>
+    <p>🔒 Locked. Solve previous puzzles or reach ≥2 in snake.</p>
   </div>
   <div id="p6open" class="hidden">
-    <p>🎉 Congratulations, Agent! You’re now recruited to <strong>QCPD</strong>.</p>
+    <p>🎉 Congratulations, Agent! Authorization level raised.</p>
     <details style="margin-top:8px">
       <summary>Reveal all answers</summary>
       <ul>
-        <li>Page 2 — Puzzle 1: <code>right building</code> (accepts <code>rb</code>)</li>
-        <li>Page 3 — Puzzle 2 code: <code>314</code></li>
-        <li>Page 4 — Puzzle 3: <code>world map</code></li>
-        <li>Page 5 — Puzzle 4: <code>nothing</code> (snake score ≥2)</li>
+        <li>Site Recon (Building): <code>right building</code> / <code>rb</code></li>
+        <li>Clue Assembly (Code): <code>314</code></li>
+        <li>World Ledger (Riddle): <code>world map</code></li>
+        <li>Countermeasure Drill (Riddle): <code>nothing</code> (snake ≥2)</li>
       </ul>
     </details>
   </div>

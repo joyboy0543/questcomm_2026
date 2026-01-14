@@ -1,25 +1,12 @@
 
-// Cases
 const casesData = [
+  { id: 'sapphire', title: 'Case: The Sapphire Heist', status: 'open' },
   { id: 'orion',  title: 'Case: Operation Orion',    status: 'locked' },
   { id: 'harbor', title: 'Case: Harbor Ghost',       status: 'locked' },
-  { id: 'sapphire', title: 'Case: The Sapphire Heist', status: 'open' },
   { id: 'museum', title: 'Case: Museum Mirage',      status: 'locked' },
   { id: 'night',  title: 'Case: Night Parade',       status: 'locked' }
 ];
-function renderCases(){
-  const ul=document.getElementById('case-list'); ul.innerHTML='';
-  casesData.forEach(c=>{
-    const li=document.createElement('li'); li.className=`case ${c.status}`;
-    if (c.status==='locked') {
-      li.innerHTML=`<span>${c.title}</span><span class="lock" aria-label="Locked" title="Locked">🔒</span>`;
-    } else {
-      const btn=document.createElement('button'); btn.textContent=`Open: ${c.title}`; btn.addEventListener('click',()=>openCase(c));
-      li.appendChild(btn);
-    }
-    ul.appendChild(li);
-  });
-}
+function renderCases(){ const ul=document.getElementById('case-list'); ul.innerHTML=''; casesData.forEach(c=>{ const li=document.createElement('li'); li.className=`case ${c.status}`; if (c.status==='locked') { li.innerHTML=`<span>${c.title}</span>`; } else { const btn=document.createElement('button'); btn.textContent=`Open: ${c.title}`; btn.addEventListener('click',()=>openCase(c)); li.appendChild(btn); } ul.appendChild(li); }); }
 function openCase(c){ localStorage.setItem('qc_open_case_id',c.id); localStorage.setItem('qc_open_case_title',c.title); document.getElementById('current-case-title').textContent=c.title; }
 function restoreOpenCase(){ const s=localStorage.getItem('qc_open_case_title'); if (s) document.getElementById('current-case-title').textContent=s; else { const o=casesData.find(x=>x.status==='open'); if (o) openCase(o); } }
 
@@ -49,4 +36,4 @@ function ensureDesktop(){ const isMobile=matchMedia('(max-width: 780px)').matche
 addEventListener('resize', ensureDesktop); ensureDesktop();
 
 // Init
-renderCases(); restoreOpenCase(); QC.badge('badge');
+renderCases(); restoreOpenCase(); QC.badge('badge'); QC.chips();

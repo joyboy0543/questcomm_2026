@@ -1,52 +1,110 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QCPD Agent Access</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Case — The Sapphire Heist</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="landing-body">
-  <main class="landing-container">
-    <section class="landing-card">
-      <div class="brand-row">
-        <div class="brand-logo" aria-hidden="true"></div>
-        <div class="brand-text">
-          <h1 class="landing-title">QCPD</h1>
-          <p class="landing-subtitle">Agent Access</p>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <h2>Cases</h2>
+      <ul>
+        <li class="active">The Sapphire Heist</li>
+        <li class="locked">[Locked]</li>
+        <li class="locked">[Locked]</li>
+      </ul>
+    </aside>
+
+    <main>
+      <header class="tabs">
+        <button data-tab="briefing" class="tab">Briefing</button>
+        <button data-tab="clearance" class="tab">Clearance</button>
+        <button data-tab="cipher" class="tab active">Cipher Desk</button>
+        <button data-tab="logic" class="tab">Logic Board</button>
+        <button data-tab="network" class="tab">Field Network</button>
+        <button data-tab="pattern" class="tab">Pattern Lab</button>
+      </header>
+
+      <section id="briefing" class="panel" hidden>
+        <h1>Briefing</h1>
+        <p>Welcome, Detective. Each station below contains a puzzle. Clear all four to complete the case.</p>
+      </section>
+
+      <section id="clearance" class="panel" hidden>
+        <h1>Clearance</h1>
+        <p>Use your standard credentials on the login page (unchanged). This page is a placeholder in this standalone demo.</p>
+      </section>
+
+      <section id="cipher" class="panel">
+        <h1>Cipher Desk — Decode & Unscramble</h1>
+        <p>Use the shift slider to decode the message. When the decoded word is correct, the scrambled jewel image will auto-sort into place.</p>
+
+        <div class="cipher-grid">
+          <div>
+            <div id="jewel-board" class="jewel-board" aria-label="Scrambled jewel image" role="img"></div>
+          </div>
+          <div>
+            <label for="shift">Shift</label>
+            <input id="shift" type="range" min="0" max="25" value="0" />
+            <div class="kv"><span>Encoded:</span><code id="encoded">UFTU</code></div>
+            <div class="kv"><span>Decoded:</span><code id="decoded">TEST</code></div>
+
+            <div class="confirm-row">
+              <input id="decodedInput" type="text" placeholder="Type decoded word" autocomplete="off" />
+              <button id="confirmBtn">Confirm</button>
+            </div>
+            <p id="cipherStatus" class="status"></p>
+          </div>
         </div>
-      </div>
-      <form id="briefingForm" class="landing-form" aria-label="Agent access form">
-        <div class="field">
-          <label for="name">Name<span class="required">*</span></label>
-          <input id="name" name="name" placeholder="Your name" required>
+      </section>
+
+      <section id="logic" class="panel" hidden>
+        <h1>Logic Board — Mastermind</h1>
+        <p>Crack the 4-symbol code in 8 tries. Circles to the right show feedback: 
+           <span class="peg peg-hit"></span> = correct symbol in the correct place; 
+           <span class="peg peg-near"></span> = correct symbol, wrong place.</p>
+        <div id="mastermind" class="mastermind"></div>
+        <p id="mmStatus" class="status"></p>
+      </section>
+
+      <section id="network" class="panel" hidden>
+        <h1>Field Network — Untangle (Planarity)</h1>
+        <p>Drag nodes to remove all edge crossings. When no lines cross, the network is secure.</p>
+        <canvas id="planarity" width="640" height="420" class="canvas"></canvas>
+        <div class="row">
+          <button id="pnShuffle">Shuffle</button>
+          <span id="pnStats" class="status"></span>
         </div>
-        <div class="field">
-          <label for="dept">Department</label>
-          <select id="dept" name="dept">
-            <option>Forensic</option>
-            <option>Field Operative</option>
-            <option>Undercover Agent</option>
-            <option>Cyber Intelligence</option>
-            <option>Surveillance</option>
-            <option>Negotiations</option>
-            <option>Counterintelligence</option>
-            <option>Evidence Analysis</option>
-          </select>
+      </section>
+
+      <section id="pattern" class="panel" hidden>
+        <h1>Pattern Lab — Simon Memory</h1>
+        <p>Repeat the growing sequence. Reach level 8 to clear.</p>
+        <div id="simon" class="simon">
+          <button data-pad="0" class="pad pad0"></button>
+          <button data-pad="1" class="pad pad1"></button>
+          <button data-pad="2" class="pad pad2"></button>
+          <button data-pad="3" class="pad pad3"></button>
         </div>
-        <div class="field">
-          <label for="password">Personal Password</label>
-          <input id="password" name="password" type="password" placeholder="********">
+        <div class="row">
+          <button id="smStart">Start</button>
+          <span id="smStatus" class="status"></span>
         </div>
-        <button class="btn-primary" type="submit" aria-label="Enter Case Room">Enter Case Room</button>
-      </form>
-    </section>
-  </main>
-  <footer class="site-footer classified">
-    <small>CLASSIFIED — AUTHORIZED AGENTS ONLY</small>
-  </footer>
-  <script src="js/common.js" defer></script>
-  <script src="js/landing.js" defer></script>
+      </section>
+    </main>
+
+    <aside class="feed">
+      <h2>Radio</h2>
+      <div id="feedScroll" class="feed-scroll"></div>
+    </aside>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="modules/cipher.js"></script>
+  <script src="modules/mastermind.js"></script>
+  <script src="modules/planarity.js"></script>
+  <script src="modules/simon.js"></script>
 </body>
 </html>

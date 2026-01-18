@@ -22,7 +22,7 @@
     const order=[...tiles].map((_,i)=>i).sort(()=>Math.random()-0.5);
     tiles.forEach((tile,i)=>{const j=order[i]; tile.style.left=(j%4)*25+'%'; tile.style.top=Math.floor(j/4)*25+'%'; board.appendChild(tile);});
   }
-  function scramble(board){ if(solved) return; [...board.children].forEach(()=>{ const j=Math.floor(Math.random()*16); const x=(j%4)*25, y=Math.floor(j/4)*25; this }); [...board.children].forEach((tile)=>{ const j=Math.floor(Math.random()*16); tile.style.left=(j%4)*25+'%'; tile.style.top=Math.floor(j/4)*25+'%'; }); board.classList.remove('solved'); }
+  function scramble(board){ if(solved) return; [...board.children].forEach(tile=>{ const j=Math.floor(Math.random()*16); tile.style.left=(j%4)*25+'%'; tile.style.top=Math.floor(j/4)*25+'%'; }); board.classList.remove('solved'); }
   function solve(board){ board.classList.add('solved'); [...board.children].forEach(tile=>{ tile.style.left=tile.dataset.cx; tile.style.top=tile.dataset.cy; }); }
 
   window.addEventListener('DOMContentLoaded', ()=>{
@@ -43,7 +43,7 @@
       if(ok){ solved=true; solve(board); status.textContent='Correct. Evidence image restored.'; status.style.color='var(--ok)';
         const st = JSON.parse(localStorage.getItem('qcpd.case1')||'{}'); st.cipher=true; localStorage.setItem('qcpd.case1', JSON.stringify(st));
         document.querySelector('.tab[data-tab="zipgrid"]').classList.remove('disabled');
-        radioHint('Cipher solved. Zip Grid unlocked.');
+        radioHint('Cipher solved. Path Grid unlocked.');
       } else { status.textContent=''; }
     }
     confirm.addEventListener('click', check);

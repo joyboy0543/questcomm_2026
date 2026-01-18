@@ -27,7 +27,6 @@
       c.classList.add('active');
       return;
     }
-    // Active case
     caseMsg.style.display='none';
     document.getElementById('tabs').style.display='flex';
     document.querySelector('.section.active')?.classList.remove('active');
@@ -55,20 +54,17 @@
     if(t.classList.contains('disabled')) return; activate(t.dataset.tab);
   }));
 
-  // Gate logic: briefing must be acknowledged
   document.getElementById('agreeBtn').addEventListener('click', ()=>{
     state.briefing=true; localStorage.setItem('qcpd.case1', JSON.stringify(state));
     setEnabled('cipher', true); activate('cipher');
     radioHint('Agreement logged. Cipher Terminal unlocked.');
   });
 
-  // Reflect stored progress on load
   if(state.briefing) setEnabled('cipher', true);
   if(state.cipher) setEnabled('zipgrid', true);
   if(state.zipgrid) setEnabled('colorcode', true);
   if(state.colorcode) setEnabled('findings', true);
 
-  // Auto-activate deepest reached
   if(state.colorcode) activate('findings');
   else if(state.zipgrid) activate('colorcode');
   else if(state.cipher) activate('zipgrid');
@@ -103,9 +99,9 @@ function radioHint(msg){
     if(activeTab==='cipher'){
       radioHint('Hint: Adjust the shift, identify the image, and type its name.');
     } else if(activeTab==='zipgrid'){
-      radioHint('Hint: Start at 1 and tap each number once. When done, note the middle column digits.');
+      radioHint('Hint: In Hidato, numbers must be adjacent (including diagonals). Corners matter.');
     } else if(activeTab==='colorcode'){
-      radioHint('Hint: Think in terms of geography: pick words that make a common item used to navigate.');
+      radioHint('Hint: Rotate each ring until the phrase reads like a common navigational item.');
     } else {
       radioHint('No puzzle open. Go to a tab to request a contextual hint.');
     }

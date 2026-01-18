@@ -9,11 +9,9 @@
 (function(){
   const cases = document.querySelectorAll('.case');
   const caseMsg = document.getElementById('caseMsg');
-  const evidencePanel = document.getElementById('evidencePanel');
 
   cases.forEach(c => c.addEventListener('click', () => {
     if(c.classList.contains('locked')){
-      // Show info message in center panel
       const type = c.dataset.case;
       caseMsg.style.display='block';
       document.getElementById('tabs').style.display='none';
@@ -22,6 +20,8 @@
         caseMsg.textContent = 'This case has been solved and the evidence has been moved to the evidence handling department, for further access please contact the corresponding incharge person.';
       } else if(type==='ongoing'){
         caseMsg.textContent = 'This case is ongoing and a different team is working on it. To work on this case, obtain access by contacting corresponding incharge person.';
+      } else {
+        caseMsg.textContent = 'This case is locked.';
       }
       cases.forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
@@ -92,4 +92,22 @@ function radioHint(msg){
   let i=0; setInterval(()=>{
     const d=document.createElement('div'); d.className='msg'; d.textContent=new Date().toLocaleTimeString()+ ' — '+lines[i++%lines.length]; radioChatterEl.prepend(d);
   }, 7000);
+})();
+
+// Hint button for current puzzle
+(function(){
+  const btn = document.getElementById('hintBtn');
+  if(!btn) return;
+  btn.addEventListener('click', ()=>{
+    const activeTab = document.querySelector('.tab.active')?.dataset.tab;
+    if(activeTab==='cipher'){
+      radioHint('Hint: Adjust the shift, identify the image, and type its name.');
+    } else if(activeTab==='zipgrid'){
+      radioHint('Hint: Start at 1 and tap each number once. When done, note the middle column digits.');
+    } else if(activeTab==='colorcode'){
+      radioHint('Hint: Think in terms of geography: pick words that make a common item used to navigate.');
+    } else {
+      radioHint('No puzzle open. Go to a tab to request a contextual hint.');
+    }
+  });
 })();

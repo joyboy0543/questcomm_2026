@@ -1,7 +1,6 @@
 (function(){
   const encodedWord = 'UFTU';
-  const targetDecoded = 'TEST'; // Answer text; you can set to any phrase (e.g., 'A VIEW OF BUILDING FROM THE OFFICE')
-
+  const targetDecoded = 'TEST';
   let solved = false;
 
   function caesarDecode(s, shift){
@@ -13,7 +12,6 @@
       return ch;
     }).join('');
   }
-
   function buildBoard(board){
     board.innerHTML=''; const N=4; const tiles=[];
     for(let y=0;y<N;y++) for(let x=0;x<N;x++){
@@ -24,7 +22,7 @@
     const order=[...tiles].map((_,i)=>i).sort(()=>Math.random()-0.5);
     tiles.forEach((tile,i)=>{const j=order[i]; tile.style.left=(j%4)*25+'%'; tile.style.top=Math.floor(j/4)*25+'%'; board.appendChild(tile);});
   }
-  function scramble(board){ if(solved) return; [...board.children].forEach((tile,i)=>{ const j=Math.floor(Math.random()*16); tile.style.left=(j%4)*25+'%'; tile.style.top=Math.floor(j/4)*25+'%'; }); board.classList.remove('solved'); }
+  function scramble(board){ if(solved) return; [...board.children].forEach(()=>{ const j=Math.floor(Math.random()*16); const x=(j%4)*25, y=Math.floor(j/4)*25; this }); [...board.children].forEach((tile)=>{ const j=Math.floor(Math.random()*16); tile.style.left=(j%4)*25+'%'; tile.style.top=Math.floor(j/4)*25+'%'; }); board.classList.remove('solved'); }
   function solve(board){ board.classList.add('solved'); [...board.children].forEach(tile=>{ tile.style.left=tile.dataset.cx; tile.style.top=tile.dataset.cy; }); }
 
   window.addEventListener('DOMContentLoaded', ()=>{

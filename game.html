@@ -15,6 +15,10 @@
         <li class="case active" data-case="heist">Case: The Sapphire Heist</li>
         <li class="case locked" data-case="solved">Case: Old Town Robbery</li>
         <li class="case locked" data-case="ongoing">Case: Harbor Break-in</li>
+        <li class="case locked">Case: Metro Vault Incident</li>
+        <li class="case locked">Case: Night Market Sting</li>
+        <li class="case locked">Case: Museum Archives Breach</li>
+        <li class="case locked">Case: Rail Yard Smuggling</li>
       </ul>
     </aside>
 
@@ -40,6 +44,7 @@
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal — Decode & Unscramble</h3>
+        <p class="status">Hint: <em>Decode the image and enter what it is to reveal the clue.</em></p>
         <div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:start">
           <div>
             <div id="jewel-board" class="jewel-board" aria-label="Scrambled letter J"></div>
@@ -60,9 +65,10 @@
 
       <section id="zipgrid" class="section">
         <h3>Zip Grid — Connect the Numbers</h3>
-        <p>Draw a continuous path from 1 → 9 by tapping each number **once** in order. After completion, note the highlighted digits and answer the note.</p>
-        <canvas id="zipCanvas" width="640" height="420" class="canvas"></canvas>
-        <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+        <p>Draw a continuous path from 1 → 9 by tapping each number once in order. When complete, a note appears.</p>
+        <div class="canvas-wrap"><canvas id="zipCanvas" class="resp" width="720" height="480"></canvas></div>
+        <div class="toolrow">
+          <button id="zipReset">Reset</button>
           <span id="zipStatus" class="status"></span>
           <input id="zipAnswer" placeholder="Enter note answer (e.g., 627)" style="display:none" />
           <button id="zipConfirm" style="display:none">Submit</button>
@@ -70,14 +76,32 @@
       </section>
 
       <section id="colorcode" class="section">
-        <h3>Color Code — Decode the Message</h3>
-        <p>Each color represents a word. Decode the sequence and enter the phrase.</p>
-        <div id="colorRow" style="display:flex;gap:10px;margin:10px 0"></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="colorInput" placeholder="Type decoded phrase" />
-          <button id="colorConfirm">Confirm</button>
+        <h3>Atlas Cards — Phrase Assembly</h3>
+        <p>Select the correct word on each card to form the hidden phrase related to geography.</p>
+        <div class="color-cards">
+          <div class="card" data-slot="0">
+            <h4><span class="token" style="background:#7b8794"></span> Card A</h4>
+            <div class="choice"><label><input type="radio" name="c0" value="A"> A</label></div>
+            <div class="choice"><label><input type="radio" name="c0" value="THE"> THE</label></div>
+            <div class="choice"><label><input type="radio" name="c0" value="ON"> ON</label></div>
+          </div>
+          <div class="card" data-slot="1">
+            <h4><span class="token" style="background:#2ea8ff"></span> Card B</h4>
+            <div class="choice"><label><input type="radio" name="c1" value="WORLD"> WORLD</label></div>
+            <div class="choice"><label><input type="radio" name="c1" value="SEA"> SEA</label></div>
+            <div class="choice"><label><input type="radio" name="c1" value="RIVER"> RIVER</label></div>
+          </div>
+          <div class="card" data-slot="2">
+            <h4><span class="token" style="background:#06D6A0"></span> Card C</h4>
+            <div class="choice"><label><input type="radio" name="c2" value="ROAD"> ROAD</label></div>
+            <div class="choice"><label><input type="radio" name="c2" value="MAP"> MAP</label></div>
+            <div class="choice"><label><input type="radio" name="c2" value="LAKE"> LAKE</label></div>
+          </div>
         </div>
-        <p id="colorStatus" class="status"></p>
+        <div class="toolrow">
+          <button id="colorCheck">Confirm</button>
+          <span id="colorStatus" class="status"></span>
+        </div>
       </section>
 
       <section id="findings" class="section">
@@ -93,20 +117,28 @@
 
     <aside class="panel" id="radioPanel">
       <h2 class="title">Radio</h2>
-      <div class="radio-section" id="rSec1">
-        <h3>Section 1 — Case Hints</h3>
-        <div id="radioHints"></div>
-      </div>
-      <div class="radio-section" id="rSec2">
-        <h3>Section 2 — Department Chatter</h3>
-        <div id="radioChatter"></div>
-      </div>
-      <div class="radio-section" id="rSec3">
-        <h3>Section 3 — Contacts</h3>
-        <div class="msg">Evidence Handling: ext. 2214 — Sgt. R. Patel</div>
-        <div class="msg">Forensics Lab: ext. 3391 — Dr. L. Chen</div>
-        <div class="msg">Surveillance: ext. 7749 — Ops Desk</div>
-      </div>
+
+      <details open>
+        <summary>Case Hints</summary>
+        <div class="group">
+          <button id="hintBtn">Get hint for current puzzle</button>
+          <div id="radioHints" style="margin-top:8px"></div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Ops Chatter</summary>
+        <div class="group" id="radioChatter"></div>
+      </details>
+
+      <details>
+        <summary>Team Contacts</summary>
+        <div class="group">
+          <div class="msg">Evidence Handling: ext. 2214 — Sgt. R. Patel</div>
+          <div class="msg">Forensics Lab: ext. 3391 — Dr. L. Chen</div>
+          <div class="msg">Surveillance: ext. 7749 — Ops Desk</div>
+        </div>
+      </details>
     </aside>
   </div>
 

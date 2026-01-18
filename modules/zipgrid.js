@@ -20,20 +20,20 @@
     const answer = document.getElementById('zipAnswer');
     const confirm = document.getElementById('zipConfirm');
 
-    // Build 3x3 nodes 1..9
-    const nodes=[]; const W=cv.width, H=cv.height; const offx=120, offy=60, step=200;
+    // Build 3x3 nodes 1..9 (fit within 640x420)
+    const nodes=[]; const offx=120, offy=70, step=170; // y: 70, 240, 410 (fits)
     for(let y=0;y<3;y++) for(let x=0;x<3;x++){ const id = y*3+x+1; nodes.push({id, px: offx+x*step, py: offy+y*step}); }
 
     let path=[]; let next=1; draw(ctx,nodes,path);
 
-    function pick(mx,my){ for(const n of nodes){ if(dist2({x:mx,y:my},{x:n.px,y:n.py})<22*22) return n; } return null; }
+    function dist2p(mx,my,n){ const dx=n.px-mx, dy=n.py-my; return dx*dx+dy*dy; }
+    function pick(mx,my){ for(const n of nodes){ if(dist2p(mx,my,n)<22*22) return n; } return null; }
 
     cv.addEventListener('pointerdown', (e)=>{
       const r=cv.getBoundingClientRect(); const n=pick(e.clientX-r.left, e.clientY-r.top); if(!n) return;
       if(n.id!==next){ statusEl.textContent = `Touch ${next} next`; statusEl.style.color='var(--warn)'; return; }
       path.push(n.id); next++; draw(ctx,nodes,path);
       if(path.length===9){ statusEl.textContent='Path complete. Highlight: 2 6 7'; statusEl.style.color='var(--ok)';
-        // Show note for 627
         answer.style.display='inline-block'; confirm.style.display='inline-block'; answer.placeholder='Reorder the digits to open the vault'; answer.focus();
       }
     });

@@ -1,147 +1,118 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QCPD — Case Room</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Evidence — QCPD</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="site-header minimal">
-    <div class="brand">
-      <div class="brand-logo" aria-hidden="true"></div>
-      <strong>QuestComm Case Room</strong>
-    </div>
-    <div id="badge" class="badge"></div>
-    <div id="progress" class="progress-chips" aria-label="Puzzle progress"></div>
-  </header>
-
-  <main class="layout-3col">
-    <aside id="sidebar-left" class="sidebar left" aria-label="Case list">
-      <h2 class="sidebar-title">Cases</h2>
-      <ul id="case-list" class="case-list" aria-live="polite"></ul>
+  <div class="app">
+    <aside class="panel" id="dbPanel">
+      <h2 class="title">Database</h2>
+      <p id="hello" style="color:var(--muted);margin-bottom:8px"></p>
+      <ul class="case-list">
+        <li class="case active" data-case="heist">Case: The Sapphire Heist</li>
+        <li class="case locked" data-case="solved">Case: Old Town Robbery</li>
+        <li class="case locked" data-case="ongoing">Case: Harbor Break-in</li>
+      </ul>
     </aside>
 
-    <section id="puzzle-area" class="content">
-      <h2 class="content-title">Open Case</h2>
-      <div id="current-case-title" class="current-case-title" aria-live="polite"></div>
+    <main class="panel" id="evidencePanel">
+      <h2 class="title">Evidence</h2>
 
-      <nav class="tabs" role="tablist" aria-label="Case puzzles">
-        <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-1" id="btn-tab-1">Briefing</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-2" id="btn-tab-2">Clearance</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-3" id="btn-tab-3" disabled>Cipher Desk</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-4" id="btn-tab-4" disabled>Logic Board</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-5" id="btn-tab-5" disabled>Field Network</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tab-6" id="btn-tab-6" disabled>Pattern Lab</button>
-      </nav>
+      <div id="caseMsg" class="msg" style="display:none"></div>
 
-      <div class="mobile-panel-toggles" aria-label="Mobile panel toggles">
-        <button id="toggle-cases" class="btn-sm" aria-controls="sidebar-left" aria-expanded="false">Show Cases</button>
-        <button id="toggle-radio" class="btn-sm" aria-controls="sidebar-right" aria-expanded="false">Show Radio</button>
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="briefing">Briefing</button>
+        <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
+        <button class="tab disabled" data-tab="zipgrid">Zip Grid</button>
+        <button class="tab disabled" data-tab="colorcode">Color Code</button>
+        <button class="tab disabled" data-tab="findings">Findings</button>
       </div>
 
-      <section id="tab-1" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-1">
-        <h3>Briefing — Agent Profile</h3>
-        <p>Proceed when ready. Admin tip: append <code>?admin=1</code> to this URL to unlock everything.</p>
+      <section id="briefing" class="section active">
+        <h3>Case: The Sapphire Heist</h3>
+        <p>Welcome, Detective. Each station below contains a puzzle. Clear all three to extract the key findings.</p>
+        <p class="status">Press the agreement below to begin.</p>
+        <button id="agreeBtn">I agree to solve the clues and handle the evidence as per the QCPD regulations.</button>
       </section>
 
-      <section id="tab-2" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-2" hidden>
-        <h3>Clearance — Final</h3>
-        <div id="p6locked"><p>🔒 Locked. Solve all puzzles.</p></div>
-        <div id="p6open" class="hidden"><p>🎉 Clearance granted. Welcome to QCPD Elite.</p></div>
-      </section>
-
-      <section id="tab-3" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-3" hidden>
-        <h3>Cipher Desk — Decode</h3>
-        <p>Use the shift slider to decode the message and confirm.</p>
-        <div class="flex-row">
+      <section id="cipher" class="section">
+        <h3>Cipher Terminal — Decode & Unscramble</h3>
+        <div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:start">
           <div>
-            <div class="brand-logo" style="width:120px;height:120px" aria-hidden="true"></div>
-            <div style="margin-top:8px">
-              <label for="shift">Shift</label>
-              <input id="shift" type="range" min="0" max="25" value="0"/>
-            </div>
+            <div id="jewel-board" class="jewel-board" aria-label="Scrambled letter J"></div>
           </div>
-          <div style="flex:1">
-            <div><strong>Encoded:</strong> UFTU</div>
-            <div style="margin-top:6px"><strong>Decoded:</strong> <span id="decoded">UFTU</span></div>
-            <div style="margin-top:8px">
-              <input id="cipherConfirm" placeholder="Type decoded word" aria-label="Type decoded word"/>
-              <button id="cipherSubmit" class="btn-sm">Confirm</button>
-              <span id="cipherStatus" class="status" aria-live="polite"></span>
+          <div>
+            <label for="shift">Shift</label>
+            <input id="shift" type="range" min="0" max="25" value="0" />
+            <div class="status"><span>Encoded:</span> <code id="encoded">UFTU</code></div>
+            <div class="status"><span>Decoded:</span> <code id="decoded">TEST</code></div>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <input id="decodedInput" placeholder="Enter solution" />
+              <button id="cipherConfirm">Confirm</button>
             </div>
+            <p id="cipherStatus" class="status"></p>
           </div>
         </div>
       </section>
 
-      <section id="tab-4" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-4" hidden>
-        <h3>Logic Board — Deduce</h3>
-        <p>Three suspects: A, B, C. Only one tells the truth. Statement: “B is lying.” Who is the thief?</p>
-        <div style="margin-top:8px">
-          <select id="logicAnswer" aria-label="Choose suspect">
-            <option value="">Select</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
-          <button id="logicSubmit" class="btn-sm">Verify</button>
-          <span id="logicStatus" class="status" aria-live="polite"></span>
+      <section id="zipgrid" class="section">
+        <h3>Zip Grid — Connect the Numbers</h3>
+        <p>Draw a continuous path from 1 → 9 by tapping each number **once** in order. After completion, note the highlighted digits and answer the note.</p>
+        <canvas id="zipCanvas" width="640" height="420" class="canvas"></canvas>
+        <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+          <span id="zipStatus" class="status"></span>
+          <input id="zipAnswer" placeholder="Enter note answer (e.g., 627)" style="display:none" />
+          <button id="zipConfirm" style="display:none">Submit</button>
         </div>
       </section>
 
-      <section id="tab-5" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-5" hidden>
-        <h3>Field Network — Route</h3>
-        <p>Select nodes in order (Alpha → Bravo → Charlie → Delta).</p>
-        <div style="margin-top:8px">
-          <select id="route" multiple size="4" aria-label="Select route">
-            <option>Alpha</option>
-            <option>Bravo</option>
-            <option>Charlie</option>
-            <option>Delta</option>
-          </select>
-          <button id="routeSubmit" class="btn-sm">Submit Route</button>
-          <span id="routeStatus" class="status" aria-live="polite"></span>
+      <section id="colorcode" class="section">
+        <h3>Color Code — Decode the Message</h3>
+        <p>Each color represents a word. Decode the sequence and enter the phrase.</p>
+        <div id="colorRow" style="display:flex;gap:10px;margin:10px 0"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="colorInput" placeholder="Type decoded phrase" />
+          <button id="colorConfirm">Confirm</button>
         </div>
+        <p id="colorStatus" class="status"></p>
       </section>
 
-      <section id="tab-6" class="tabpanel" role="tabpanel" aria-labelledby="btn-tab-6" hidden>
-        <h3>Pattern Lab — Memory</h3>
-        <p>Repeat the flashing sequence. Reach length 4.</p>
-        <div class="flex-row" style="gap:10px">
-          <button class="btn-sm" id="pbtn1">Blue</button>
-          <button class="btn-sm" id="pbtn2">Gold</button>
-          <button class="btn-sm" id="pbtn3">Teal</button>
-          <button class="btn-sm" id="pbtn4">White</button>
-        </div>
-        <div style="margin-top:8px">
-          <button id="patternStart" class="btn-sm">Start</button>
-          <span id="patternStatus" class="status" aria-live="polite"></span>
-        </div>
+      <section id="findings" class="section">
+        <h3>Findings</h3>
+        <ol>
+          <li>A view of building from the office</li>
+          <li>627</li>
+          <li>The world map</li>
+        </ol>
+        <p class="status">Good work, Detective.</p>
       </section>
+    </main>
 
-      <div id="ariaStatus" class="sr-only" role="status" aria-live="polite"></div>
-    </section>
-
-    <aside id="sidebar-right" class="sidebar right" aria-label="Radio messages">
-      <h2 class="sidebar-title">Radio Room</h2>
-      <div id="radio-ticker" class="radio-ticker" role="log" aria-live="polite" aria-relevant="additions">
-        <ul id="radio-feed"></ul>
+    <aside class="panel" id="radioPanel">
+      <h2 class="title">Radio</h2>
+      <div class="radio-section" id="rSec1">
+        <h3>Section 1 — Case Hints</h3>
+        <div id="radioHints"></div>
       </div>
-      <div class="radio-controls">
-        <button id="pause-scroll" aria-pressed="false">Pause</button>
-        <button id="push-message">Push test message</button>
+      <div class="radio-section" id="rSec2">
+        <h3>Section 2 — Department Chatter</h3>
+        <div id="radioChatter"></div>
+      </div>
+      <div class="radio-section" id="rSec3">
+        <h3>Section 3 — Contacts</h3>
+        <div class="msg">Evidence Handling: ext. 2214 — Sgt. R. Patel</div>
+        <div class="msg">Forensics Lab: ext. 3391 — Dr. L. Chen</div>
+        <div class="msg">Surveillance: ext. 7749 — Ops Desk</div>
       </div>
     </aside>
-  </main>
+  </div>
 
-  <footer class="site-footer classified">
-    <small>CLASSIFIED — AUTHORIZED AGENTS ONLY</small>
-  </footer>
-
-  <script src="js/common.js" defer></script>
-  <script src="js/game.js" defer></script>
-  <script src="js/tabs.js" defer></script>
-  <script src="js/puzzles_logic.js" defer></script>
+  <script src="app.js"></script>
+  <script src="modules/cipher.js"></script>
+  <script src="modules/zipgrid.js"></script>
+  <script src="modules/colorcode.js"></script>
 </body>
 </html>

@@ -11,3 +11,24 @@
 .digit-row input{width:70px;padding:8px;border-radius:8px;border:1px solid #243546;background:#0d1a24;color:#fff;text-align:center}
 .digit-row button{padding:8px 10px;border-radius:8px;border:1px solid #243546;background:#102536;color:#fff;cursor:pointer}
 .record-pill{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(41,212,154,.12);border:1px solid var(--ok);color:var(--ok);font-size:.8rem}
+
+/* Minesweeper */
+.msw-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.msw-board{display:grid;gap:6px}
+.msw-cell{width:34px;height:34px;display:grid;place-items:center;border:1px solid #243546;border-radius:6px;background:#091219;color:#cfe6f7;cursor:pointer}
+.msw-cell.revealed{background:#0e1b25}
+.msw-cell.boom{background:#3b0f0f;border-color:#6f1a1a}
+.msw-status{min-height:1.2rem}
+
+/* Composite */
+.comp-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.comp-grid{display:grid;grid-template-columns:repeat(3,64px);gap:8px}
+.comp-tile{width:64px;height:64px;border:1px solid #243546;border-radius:10px;background:#0d1a24;display:grid;place-items:center;color:#cfe6f7;cursor:pointer}
+.comp-tile.on{outline:2px solid var(--primary)}
+
+/* Path-7 */
+.path-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.path-grid{display:grid;grid-template-columns:repeat(4,54px);gap:6px}
+.path-cell{width:54px;height:54px;border:1px solid #243546;border-radius:8px;background:#0d1a24;color:#cfe6f7;display:grid;place-items:center}
+.path-cell.exit{background:#12312a;border-color:#2e7b64}
+.path-status{min-height:1.2rem}

@@ -44,7 +44,6 @@
         else if(key==='two') window.initDoorComposite?.(host,  ()=>{ showInput(); });
         else if(key==='three')window.initDoorPath7?.(host,      ()=>{ showInput(); });
 
-        // Visible warning if a module is missing
         if(host.children.length===0){
           const warn=document.createElement('div');
           warn.style.color='var(--warn)';

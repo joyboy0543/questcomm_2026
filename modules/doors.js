@@ -2,25 +2,36 @@
   const state = JSON.parse(localStorage.getItem('qcpd.doors')||'{}');
   function save(){ localStorage.setItem('qcpd.doors', JSON.stringify(state)); }
   function radio(msg){ if(typeof window.radioHint==='function') radioHint(msg); }
-  function build(container){ container.innerHTML = `
-    <div class="doors-hall">
-      ${['one','two','three'].map((k,i)=>`
-        <div class="door-card ${state[k]?.open? 'open':''}" data-door="${k}">
-          <div class="door-top">
-            <div class="door-face" role="button" aria-label="Open mini-game"><img src="assets/door_white.svg" alt="door"/></div>
-            <div class="door-label">${['Door 1','Door 2','Door 3'][i]}</div>
-          </div>
-          <div class="door-game">
-            <div class="game-host" id="host-${k}"></div>
-            <div class="digit-row" style="display:none">
-              <label>Enter digit:</label>
-              <input maxlength="1" inputmode="numeric" pattern="[0-9]" />
-              <button>Lock</button>
-              <span class="lock-pill" style="display:none"><span class="locked-pill">✔ Locked</span></span>
+
+  function missing(host, name){
+    const warn = document.createElement('div');
+    warn.style.color = 'var(--warn)';
+    warn.style.marginTop = '6px';
+    warn.textContent = `Game module not loaded: ${name}. Check <script> includes.`;
+    host.innerHTML=''; host.appendChild(warn);
+    console.warn('[Doorway Sequence] Missing game init function:', name);
+  }
+
+  function build(container){
+    container.innerHTML = `
+      <div class="doors-hall">
+        ${['one','two','three'].map((k,i)=>`
+          <div class="door-card ${state[k]?.open? 'open':''}" data-door="${k}">
+            <div class="door-top">
+              <div class="door-face" role="button" aria-label="Open mini-game"><img src="assets/door_white.svg" alt="door"/></div>
+              <div class="door-label">${['Door 1','Door 2','Door 3'][i]}</div>
             </div>
-          </div>
-        </div>`).join('')}
-    </div>`;
+            <div class="door-game">
+              <div class="game-host" id="host-${k}"></div>
+              <div class="digit-row" style="display:none">
+                <label>Enter digit:</label>
+                <input maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                <button>Lock</button>
+                <span class="lock-pill" style="display:none"><span class="locked-pill">✔ Locked</span></span>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`;
 
     [...container.querySelectorAll('.door-card')].forEach((card, idx)=>{
       const key = card.dataset.door; const host = card.querySelector('.game-host');
@@ -38,9 +49,18 @@
       btn.addEventListener('click', lockIfCorrect);
 
       function mountGame(){ card.classList.add('open'); state[key] = state[key]||{open:true}; save();
-        if(key==='one') window.initDoorMinesweep4?.(host, ()=>{ showInput(); });
-        if(key==='two') window.initDoorComposite?.(host, ()=>{ showInput(); });
-        if(key==='three') window.initDoorPath7?.(host, ()=>{ showInput(); });
+        if(key==='one'){
+          if(typeof window.initDoorMinesweep4==='function') window.initDoorMinesweep4(host, ()=>{ showInput(); });
+          else missing(host,'modules/door_minesweep4.js');
+        }
+        if(key==='two'){
+          if(typeof window.initDoorComposite==='function') window.initDoorComposite(host, ()=>{ showInput(); });
+          else missing(host,'modules/door_composite.js');
+        }
+        if(key==='three'){
+          if(typeof window.initDoorPath7==='function') window.initDoorPath7(host, ()=>{ showInput(); });
+          else missing(host,'modules/door_path7.js');
+        }
       }
 
       face.addEventListener('click', ()=>{ mountGame(); });

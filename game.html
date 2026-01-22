@@ -46,7 +46,7 @@
       </section>
 
       <section id="cipher" class="section">
-        <h3>Cipher Terminal — Decode & Unscramble</h3>
+        <h3>Cipher Terminal — Decode &amp; Unscramble</h3>
         <p class="status">Hint: <em>Decode the image and enter what it is to reveal the clue.</em></p>
         <div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:start">
           <div>
@@ -68,8 +68,7 @@
 
       <section id="doors" class="section">
         <h3>Doorway Sequence</h3>
-        <p class="status">Open each door and complete the mini‑game. Enter the digit to lock it. All three digits reveal
-          the code.</p>
+        <p class="status">Open each door and complete the mini‑game. <strong>Record</strong> the digit you find. When all three are recorded, the <strong>door number</strong> is revealed.</p>
         <div id="doorsHost"></div>
       </section>
 
@@ -138,10 +137,14 @@
 
   <script src="app.js"></script>
   <script src="modules/cipher.js"></script>
-  <script src="modules/doors.js"></script>
-  <script src="modules/door_minesweep.js"></script>
-  <script src="modules/door_lockpick.js"></script>
-  <script src="modules/door_snake.js"></script>
+
+  <!-- Doorway Sequence Orchestrator -->
+  <script src="modules/doors.js?v=20260116"></script>
+  <!-- Doorway Sequence Mini‑games (REQUIRED) -->
+  <script src="modules/door_minesweep4.js?v=20260116"></script>
+  <script src="modules/door_composite.js?v=20260116"></script>
+  <script src="modules/door_path7.js?v=20260116"></script>
+
   <script src="modules/colorcode.js"></script>
 </body>
 

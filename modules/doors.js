@@ -3,6 +3,27 @@
   function save(){ localStorage.setItem('qcpd.doors', JSON.stringify(state)); }
   function radio(msg){ if(typeof window.radioHint==='function') radioHint(msg); }
 
+  // --- Autoloader: dynamically inject missing game scripts ---
+  const v = '20260116'; // cache-bust version
+  const pending = {};
+  function need(fn){ return typeof window[fn] !== 'function'; }
+  function loadScriptOnce(src){
+    if(pending[src]) return pending[src];
+    pending[src] = new Promise((resolve,reject)=>{
+      const s=document.createElement('script'); s.src=src+(src.includes('?')?'':'?v='+v);
+      s.onload=()=>resolve(); s.onerror=()=>reject(new Error('Failed to load '+src));
+      document.head.appendChild(s);
+    });
+    return pending[src];
+  }
+  async function ensureModules(keys){
+    const tasks=[];
+    if(keys.includes('one')   && need('initDoorMinesweep4'))  tasks.push(loadScriptOnce('modules/door_minesweep4.js'));
+    if(keys.includes('two')   && need('initDoorLatinLock'))   tasks.push(loadScriptOnce('modules/door_latin_lock.js'));
+    if(keys.includes('three') && need('initDoorLights7'))     tasks.push(loadScriptOnce('modules/door_lights7.js'));
+    if(tasks.length) await Promise.all(tasks);
+  }
+
   function build(container){
     container.innerHTML = `
       <div class="doors-hall">
@@ -39,15 +60,14 @@
       function recordIfCorrect(){ if(input.value===correct){ input.readOnly=true; pill.style.display='inline-block'; state[key]={open:true, recorded:true, digit:correct}; save(); radio('A door puzzle was completed. Digit noted.'); checkAll(); } else { input.classList.add('shake'); setTimeout(()=>input.classList.remove('shake'),200); } }
       btn.addEventListener('click', recordIfCorrect);
 
-      function mountGame(){ card.classList.add('open'); state[key] = state[key]||{open:true}; save();
-        if(key==='one')      window.initDoorMinesweep4?.(host, ()=>{ showInput(); });
-        else if(key==='two') window.initDoorLatinLock?.(host,  ()=>{ showInput(); });
-        else if(key==='three')window.initDoorLights7?.(host,    ()=>{ showInput(); });
-
-        if(host.children.length===0){
-          const warn=document.createElement('div'); warn.style.color='var(--warn)';
-          warn.textContent='Puzzle module not loaded. Check <script> includes for door_minesweep4.js, door_latin_lock.js, door_lights7.js';
-          host.appendChild(warn); console.warn('[Doorway] missing module for', key);
+      async function mountGame(){ card.classList.add('open'); state[key] = state[key]||{open:true}; save();
+        try{
+          await ensureModules([key]);
+          if(key==='one')      window.initDoorMinesweep4?.(host, ()=>{ showInput(); });
+          else if(key==='two') window.initDoorLatinLock?.(host,  ()=>{ showInput(); });
+          else if(key==='three')window.initDoorLights7?.(host,    ()=>{ showInput(); });
+        }catch(e){
+          host.innerHTML = `<div style="color:var(--warn)">${e.message}</div>`;
         }
       }
 

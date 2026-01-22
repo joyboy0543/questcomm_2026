@@ -1,34 +1,59 @@
-# QuestComm — Case Stations Update
+# QCPD Doors Mini-Game (367)
 
-This drop-in mini-project shows the four updated stations you asked for:
+This drop-in station adds a **hallway of 3 doors** with inline mini-games that reveal the access code **367**.
 
-- **Cipher Desk**: Caesar-shift decoder tied to a **scrambled jewel image** that auto-sorts when the decoded word matches.
-- **Logic Board**: Replaced with a clean **Mastermind** code-breaking game.
-- **Field Network**: New **Planarity** (untangle) puzzle. Drag nodes until no edges cross.
-- **Pattern Lab**: **Simon** memory game; reach level 8 to clear.
+- Door α — **Safe Sweep** (Minesweeper-lite). Win → enter **3** to lock.
+- Door β — **Six at Shear** (Lockpick pins). Win → enter **6** to lock.
+- Door γ — **Sevens Only** (Snake variant). After 3 decoys **b** pass uneaten → enter **7** to lock.
 
-## How to run
-Open `index.html` directly in a browser. No build tools or servers are required.
+When all three digits are locked, a banner shows **Access Code: 3 6 7** and you can unlock the next tab.
 
-## Swap in your case data
-Edit `modules/cipher.js`:
+## Files
+- `doors.css` — additive styles (merge into your main stylesheet or link separately)
+- `modules/doors.js` — orchestrator & persistence
+- `modules/door_minesweep.js` — Door α
+- `modules/door_lockpick.js` — Door β
+- `modules/door_snake.js` — Door γ
+- `assets/door.svg` — door icon
 
-```js
-const encodedWord = 'UFTU';      // the ciphertext shown to players
-const targetDecoded = 'TEST';    // the plaintext that solves the station
-```
+## How to integrate
+1. **Copy files** into your repo:
+   ```
+   /assets/door.svg
+   /modules/doors.js
+   /modules/door_minesweep.js
+   /modules/door_lockpick.js
+   /modules/door_snake.js
+   /doors.css (optional; or paste into your existing style.css)
+   ```
+2. **Include scripts** near the bottom of your `game.html` (after the core app scripts):
+   ```html
+   <script src="modules/doors.js"></script>
+   <script src="modules/door_minesweep.js"></script>
+   <script src="modules/door_lockpick.js"></script>
+   <script src="modules/door_snake.js"></script>
+   ```
+3. **Add the Doors section** to your Evidence panel where you want the games:
+   ```html
+   <section id="doors" class="section">
+     <h3>Doorway Sequence</h3>
+     <div id="doorsHost"></div>
+   </section>
+   ```
+4. **Boot the Doors hall** after DOM ready (e.g., inside your `app.js` DOMContentLoaded):
+   ```js
+   window.initDoorsHall?.(document.getElementById('doorsHost'));
+   ```
+5. **(Optional) Styles**: either link `doors.css` or copy its content into your stylesheet.
+   ```html
+   <link rel="stylesheet" href="doors.css"/>
+   ```
 
-> When `targetDecoded` equals the live decoded value produced by the slider, the jewel grid animates into the correct order.
-
-To replace the placeholder jewel artwork, drop a file at `assets/jewel.jpg` or edit `style.css` to point to a different path. The tiles use `background-image:url('assets/jewel.svg')` by default.
-
-## Integrating into your existing repo
-- Copy `modules/*.js`, `style.css`, and the updated markup inside the **Cipher Desk**, **Logic Board**, **Field Network**, and **Pattern Lab** sections into your existing pages.
-- Keep the element IDs the same or update the `init*` functions if you change them.
-- If you already have a router/tab system, only move the corresponding section HTML and call the initializers after DOM load.
-
-## Mobile
-Layout collapses the sidebars under 1100px width and stacks the Cipher grid.
+## Notes
+- Progress persists in `localStorage.qcpd.doors`.
+- If you have a Radio feed helper `radioHint(msg)`, the station will post progress messages.
+- The section uses **inline expansion** under each door (no modal windows).
+- Keyboard support for Snake: arrow keys / WASD.
 
 ## License
-All code in this drop is MIT; the placeholder SVG is included and can be replaced with your own asset.
+MIT for code; SVG icon included.

@@ -9,7 +9,9 @@
     const wrap=document.createElement('div'); wrap.className='msw-wrap';
     const header=document.createElement('div'); header.innerHTML='<strong>Safe Sweep</strong> — Do not press the incorrect fields.';
     const hint=document.createElement('div'); hint.style.color='#9fb1c1'; hint.style.fontSize='0.9rem'; hint.textContent='Tip: numbers show bombs adjacent. Clear all safe cells.';
-    const board=document.createElement('div'); board.className='msw-board'; board.style.gridTemplateColumns='repeat(4,34px)';
+    const board=document.createElement('div'); board.className='msw-board';
+    /* enforce grid explicitly in case CSS is missing */
+    board.style.display='grid'; board.style.gridTemplateColumns='repeat(4,34px)';
     const status=document.createElement('div'); status.className='msw-status';
     wrap.append(header,hint,board,status); host.appendChild(wrap);
 

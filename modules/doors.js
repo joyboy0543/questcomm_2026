@@ -41,15 +41,13 @@
 
       function mountGame(){ card.classList.add('open'); state[key] = state[key]||{open:true}; save();
         if(key==='one')      window.initDoorMinesweep4?.(host, ()=>{ showInput(); });
-        else if(key==='two') window.initDoorComposite?.(host,  ()=>{ showInput(); });
-        else if(key==='three')window.initDoorPath7?.(host,      ()=>{ showInput(); });
+        else if(key==='two') window.initDoorLatinLock?.(host,  ()=>{ showInput(); });
+        else if(key==='three')window.initDoorLights7?.(host,    ()=>{ showInput(); });
 
         if(host.children.length===0){
-          const warn=document.createElement('div');
-          warn.style.color='var(--warn)';
-          warn.textContent='Puzzle module not loaded. Check <script> includes for door_minesweep4.js, door_composite.js, door_path7.js';
-          host.appendChild(warn);
-          console.warn('[Doorway] missing module for', key);
+          const warn=document.createElement('div'); warn.style.color='var(--warn)';
+          warn.textContent='Puzzle module not loaded. Check <script> includes for door_minesweep4.js, door_latin_lock.js, door_lights7.js';
+          host.appendChild(warn); console.warn('[Doorway] missing module for', key);
         }
       }
 

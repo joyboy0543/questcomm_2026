@@ -51,23 +51,11 @@
     const form = document.getElementById('clearanceForm');
     const btn = document.getElementById('enterBtn');
     const nameField = document.getElementById('fName');
-
-    function updateLock(){
-      const ok = nameField.value.trim().length>0;
-      btn.disabled = !ok;
-      btn.style.color = ok ? 'var(--ok)' : '#8aa0b3';
-    }
-    nameField.addEventListener('input', updateLock);
-    updateLock();
-
+    function updateLock(){ const ok = nameField.value.trim().length>0; btn.disabled = !ok; btn.style.color = ok ? 'var(--ok)' : '#8aa0b3'; }
+    nameField.addEventListener('input', updateLock); updateLock();
     form.addEventListener('submit', (e)=>{
       e.preventDefault();
-      const agent = {
-        name: document.getElementById('fName').value.trim(),
-        codename: document.getElementById('fCode').value.trim(),
-        department: document.getElementById('fDept').value.trim(),
-        agentCode: document.getElementById('fAgent').value.trim(),
-      };
+      const agent = { name: document.getElementById('fName').value.trim(), codename: document.getElementById('fCode').value.trim(), department: document.getElementById('fDept').value.trim(), agentCode: document.getElementById('fAgent').value.trim() };
       localStorage.setItem('qcpd.agent', JSON.stringify(agent));
       location.href = 'game.html';
     });

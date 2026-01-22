@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Evidence — QCPD</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="doors.css" />
 </head>
 <body>
   <div class="app">
@@ -30,7 +31,7 @@
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
         <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
-        <button class="tab disabled" data-tab="zipgrid">Path Grid</button>
+        <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
         <button class="tab disabled" data-tab="colorcode">Cipher Rings</button>
         <button class="tab disabled" data-tab="findings">Findings</button>
       </div>
@@ -63,16 +64,10 @@
         </div>
       </section>
 
-      <section id="zipgrid" class="section">
-        <h3>Path Grid — Hidato</h3>
-        <p>Fill the missing numbers 2→8 so that each number touches the previous one (including diagonals). When complete, note the highlighted digits and answer the note.</p>
-        <div id="hidato" class="hidato"></div>
-        <div class="toolrow">
-          <button id="hidReset">Reset</button>
-          <span id="hidStatus" class="status"></span>
-          <input id="zipAnswer" placeholder="Enter note answer (e.g., 627)" style="display:none" />
-          <button id="zipConfirm" style="display:none">Submit</button>
-        </div>
+      <section id="doors" class="section">
+        <h3>Doorway Sequence</h3>
+        <p class="status">Open each door and complete the mini‑game. Enter the digit to lock it. All three digits reveal the code.</p>
+        <div id="doorsHost"></div>
       </section>
 
       <section id="colorcode" class="section">
@@ -140,7 +135,10 @@
 
   <script src="app.js"></script>
   <script src="modules/cipher.js"></script>
-  <script src="modules/zipgrid.js"></script>
+  <script src="modules/doors.js"></script>
+  <script src="modules/door_minesweep.js"></script>
+  <script src="modules/door_lockpick.js"></script>
+  <script src="modules/door_snake.js"></script>
   <script src="modules/colorcode.js"></script>
 </body>
 </html>

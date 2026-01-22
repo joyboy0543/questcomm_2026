@@ -1,1 +1,22 @@
-/* see previous content */
+:root{--door-bg:#0b1218;--door-edge:#1c2d3a;--ok:#29d49a}
+.doors-hall{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.door-card{background:var(--door-bg);border:1px solid var(--door-edge);border-radius:14px;overflow:hidden}
+.door-top{padding:12px 12px 0 12px}
+.door-face{height:160px;display:grid;place-items:center;cursor:pointer}
+.door-face img{width:88px;height:88px;opacity:.9}
+.door-label{padding:10px 12px;color:#9fb1c1}
+.door-game{border-top:1px solid var(--door-edge);padding:10px;display:none}
+.door-card.open .door-game{display:block}
+.msw-board{display:grid;gap:4px}
+.msw-cell{width:28px;height:28px;display:grid;place-items:center;border:1px solid #243546;border-radius:6px;background:#091219;color:#cfe6f7;cursor:pointer}
+.msw-cell.revealed{background:#0e1b25}
+.lockpick{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:8px}
+.pin{height:160px;background:#0d1a24;border:1px solid #243546;border-radius:10px;position:relative}
+.pin .thumb{position:absolute;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#2ea8ff}
+.pin .band{position:absolute;left:8px;right:8px;height:12px;background:rgba(41,212,154,.15);border:1px dashed var(--ok);border-radius:6px}
+.pin.set{outline:2px solid var(--ok)}
+.snake-wrap{width:100%;max-width:360px}
+.snake-cv{width:100%;height:auto;background:#0d1a24;border:1px solid #243546;border-radius:10px;display:block}
+.digit-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+.digit-row input{width:70px;padding:8px;border-radius:8px;border:1px solid #243546;background:#0d1a24;color:#fff;text-align:center}
+.digit-row button{padding:8px 10px;border-radius:8px;border:1px solid #243546;background:#102536;color:#fff;cursor:pointer}

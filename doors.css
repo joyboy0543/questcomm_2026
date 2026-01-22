@@ -7,8 +7,6 @@
 .door-game{border-top:1px solid var(--door-edge);padding:12px;display:none}
 .door-card.open .door-game{display:block}
 .game-host{display:flex;align-items:center;justify-content:center}
-
-/* Inputs (no "Locked" wording) */
 .digit-row{display:flex;gap:8px;align-items:center;margin-top:10px}
 .digit-row input{width:70px;padding:8px;border-radius:8px;border:1px solid #243546;background:#0d1a24;color:#fff;text-align:center}
 .digit-row button{padding:8px 10px;border-radius:8px;border:1px solid #243546;background:#102536;color:#fff;cursor:pointer}

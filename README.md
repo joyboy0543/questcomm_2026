@@ -1,21 +1,40 @@
-# QuestComm 2026 — QCPD Case (Full Update)
+# Doorway Sequence Fix Bundle
 
-This package contains a complete, drop‑in version of the site with:
+This bundle contains the **Doorway Sequence** orchestrator, 3 mini‑games, styles, and the white door asset. Use it to fix the issue where clicking a door shows nothing (missing script includes).
 
-- Landing page **QCPD Clearance** (`index.html`)
-- Game page **Evidence** (`game.html`) with tabs:
-  - Briefing → Cipher Terminal → **Doorway Sequence (new)** → Cipher Rings → Findings
-- Inline **Doorway Sequence** (3 doors) revealing code **367**
-- LocalStorage persistence for progress (`qcpd.case1` and `qcpd.doors`)
+## Files
+- doors.css
+- assets/door_white.svg
+- modules/doors.js
+- modules/door_minesweep4.js
+- modules/door_composite.js
+- modules/door_path7.js
 
-## How to run
-Open `index.html` or `game.html` directly in a browser (no server required).
+## Steps
+1) Copy these files into your repo (keeping the same paths):
+```
+assets/door_white.svg
+modules/doors.js
+modules/door_minesweep4.js
+modules/door_composite.js
+modules/door_path7.js
+doors.css
+```
+2) In `game.html`, ensure these scripts are included **after** your core app scripts:
+```html
+<link rel="stylesheet" href="doors.css">
+<script src="modules/doors.js?v=20260116"></script>
+<script src="modules/door_minesweep4.js?v=20260116"></script>
+<script src="modules/door_composite.js?v=20260116"></script>
+<script src="modules/door_path7.js?v=20260116"></script>
+```
+3) Remove older door scripts if present:
+```html
+<!-- Remove if present -->
+<!-- <script src="modules/door_minesweep.js"></script> -->
+<!-- <script src="modules/door_lockpick.js"></script> -->
+<!-- <script src="modules/door_snake.js"></script> -->
+```
+4) Hard‑refresh the page (disable cache in DevTools or add `?v=20260116` to the URL).
 
-## Replace in your repo
-Copy everything in this package into your repo, replacing files with the same names.
-
-## Notes
-- Radio hints appear if you click **Get hint for current puzzle**.
-- The Cipher image can be swapped by replacing `assets/letter_j.svg` and editing `style.css`.
-
-MIT License.
+That’s it — clicking a door should now render the mini‑game inline. On success, the digit can be **Recorded**, and when all three are recorded the banner shows **Door Number Identified: 3 6 7**.

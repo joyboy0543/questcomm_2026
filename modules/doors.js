@@ -43,10 +43,18 @@
         if(key==='one')      window.initDoorMinesweep4?.(host, ()=>{ showInput(); });
         else if(key==='two') window.initDoorComposite?.(host,  ()=>{ showInput(); });
         else if(key==='three')window.initDoorPath7?.(host,      ()=>{ showInput(); });
+
+        // Visible warning if a module is missing
+        if(host.children.length===0){
+          const warn=document.createElement('div');
+          warn.style.color='var(--warn)';
+          warn.textContent='Puzzle module not loaded. Check <script> includes for door_minesweep4.js, door_composite.js, door_path7.js';
+          host.appendChild(warn);
+          console.warn('[Doorway] missing module for', key);
+        }
       }
 
       face.addEventListener('click', ()=>{ mountGame(); });
-
       if(state[key]?.open){ mountGame(); }
       if(state[key]?.recorded){ showInput(); }
     });

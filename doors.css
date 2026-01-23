@@ -1,10 +1,9 @@
 :root{
   --door-bg:#0b1218; --door-edge:#1c2d3a; --ok:#29d49a; --primary:#2ea8ff; --warn:#ffcc29;
+  --gem: clamp(54px, 6vw, 72px);
+  --qcell: clamp(56px, 6.2vw, 74px);
   --msw: clamp(38px, 5vw, 56px);
-  --gem: clamp(54px, 6vw, 70px);
-  --lite: clamp(58px, 6.6vw, 76px);
 }
-/* Structure */
 .doors-hall{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .door-card{background:var(--door-bg);border:1px solid var(--door-edge);border-radius:14px;overflow:hidden}
 .door-top{padding:12px}
@@ -12,7 +11,7 @@
 .door-face img{width:84px;height:84px;opacity:.95}
 .door-game{border-top:1px solid var(--door-edge);padding:14px}
 .door-card.open .door-game{display:block}
-.game-host{display:flex;align-items:center;justify-content:center;min-height:280px}
+.game-host{display:flex;align-items:center;justify-content:center;min-height:300px}
 
 /* Input row */
 .digit-row{display:flex;gap:8px;align-items:center;margin-top:10px}
@@ -20,39 +19,27 @@
 .digit-row button{padding:8px 10px;border-radius:8px;border:1px solid #243546;background:#102536;color:#fff;cursor:pointer}
 .record-pill{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(41,212,154,.12);border:1px solid var(--ok);color:var(--ok);font-size:.8rem}
 
-/* === Game 1: Minesweeper 4x4 === */
-.msw-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+/* Jewel Latin 4x4 */
+.jlatin-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:560px}
+.jlatin-title{margin-bottom:2px}
+.jlatin-grid{display:grid;grid-template-columns:repeat(4,var(--gem));gap:8px;position:relative;margin-top:6px}
+.jcell{width:var(--gem);height:var(--gem);border:1px solid #243546;border-radius:12px;background:#0d1a24;display:grid;place-items:center;cursor:pointer}
+.jcell.given{background:#121f2a;color:#9fb1c1;cursor:not-allowed}
+.jcell img{width:calc(var(--gem) * .62);height:calc(var(--gem) * .62)}
+.jlatin-tools{display:flex;gap:10px;margin-top:10px}
+
+/* Queens 5x5 */
+.q-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:640px}
+.q-grid{display:grid;grid-template-columns:repeat(5,var(--qcell));gap:8px;margin-top:6px}
+.q-cell{width:var(--qcell);height:var(--qcell);border:1px solid #243546;border-radius:10px;background:#0d1a24;display:grid;place-items:center;cursor:pointer;position:relative}
+.q-cell.blocked{background:#0a151d linear-gradient(135deg, rgba(255,255,255,.06), rgba(0,0,0,.08)); cursor:not-allowed}
+.q-cell.attacked{box-shadow:0 0 0 2px rgba(255,92,92,.35) inset}
+.q-cell img{width:calc(var(--qcell) * .62);height:calc(var(--qcell) * .62)}
+.q-tools{display:flex;gap:10px}
+.q-status{min-height:1.2rem}
+
+/* Minesweeper (kept for Door 1 sizing parity) */
 .msw-board{display:grid;gap:8px;grid-template-columns:repeat(4,var(--msw))}
 .msw-cell{width:var(--msw);height:var(--msw);display:grid;place-items:center;border:1px solid #243546;border-radius:10px;background:#0e1620;color:#cfe6f7;cursor:pointer;font-weight:600}
 .msw-cell.revealed{background:#0f1f2b}
 .msw-cell.boom{background:#3b0f0f;border-color:#6f1a1a}
-.msw-status{min-height:1.2rem}
-
-/* === Game 2: Jewel Latin 4x4 (with 2x2 subgrid rule) === */
-.jlatin-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:520px}
-.jlatin-legend{display:flex;gap:10px;align-items:center;color:#9fb1c1;font-size:.96rem;margin:6px 0 4px}
-.jlatin-legend img{width:20px;height:20px;vertical-align:middle}
-.jlatin-grid{display:grid;grid-template-columns:repeat(4,var(--gem));gap:8px;position:relative;margin-top:4px}
-.jcell{width:var(--gem);height:var(--gem);border:1px solid #243546;border-radius:12px;background:#0d1a24;display:grid;place-items:center;cursor:pointer}
-.jcell.given{background:#121f2a;color:#9fb1c1;cursor:not-allowed}
-.jcell img{width:calc(var(--gem) * .6);height:calc(var(--gem) * .6)}
-.jlatin-tools{display:flex;gap:10px;margin-top:8px}
-.jlatin-grid::before,.jlatin-grid::after{content:"";position:absolute;border:1px dashed #2a3c4e}
-.jlatin-grid::before{left:0;right:0;top:calc(50% - 1px);height:0}
-.jlatin-grid::after{top:0;bottom:0;left:calc(50% - 1px);width:0}
-
-/* === Game 3: Lights Out 3x3 === */
-.lights-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:520px}
-.lights-grid{display:grid;grid-template-columns:repeat(3,var(--lite));gap:10px;margin-top:6px}
-.light{width:var(--lite);height:var(--lite);border-radius:12px;border:1px solid #243546;cursor:pointer;transition:filter .12s ease}
-.light.on{background:#29d49a;box-shadow:0 0 12px rgba(41,212,154,.55)}
-.light.off{background:#0d1a24}
-.light:hover{filter:brightness(1.05)}
-.lights-tools{display:flex;gap:10px}
-
-/* Responsive tweak for narrow screens */
-@media (max-width: 640px){
-  .door-face{height:120px}
-  .door-face img{width:72px;height:72px}
-  .game-host{min-height:240px}
-}

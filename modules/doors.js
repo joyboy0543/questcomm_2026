@@ -6,7 +6,7 @@
   const v='20260116'; const pending={};
   function need(fn){ return typeof window[fn]!== 'function'; }
   function loadScript(src){ if(pending[src]) return pending[src]; return pending[src]=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src+(src.includes('?')?'':'?v='+v); s.onload=res; s.onerror=()=>rej(new Error('Failed to load '+src)); document.head.appendChild(s); }); }
-  async function ensure(keys){ const t=[]; if(keys.includes('one') && need('initDoorMinesweep4')) t.push(loadScript('modules/door_minesweep4.js')); if(keys.includes('two') && need('initDoorJewelLatin')) t.push(loadScript('modules/door_jewel_latin.js')); if(keys.includes('three') && need('initDoorLights3x3')) t.push(loadScript('modules/door_lights3x3.js')); if(t.length) await Promise.all(t); }
+  async function ensure(keys){ const t=[]; if(keys.includes('one') && need('initDoorMinesweep4')) t.push(loadScript('modules/door_minesweep4.js')); if(keys.includes('two') && need('initDoorJewelLatin')) t.push(loadScript('modules/door_jewel_latin.js')); if(keys.includes('three') && need('initDoorQueens5')) t.push(loadScript('modules/door_queens5.js')); if(t.length) await Promise.all(t); }
 
   function build(container){ container.innerHTML=`<div class="doors-hall">${['one','two','three'].map(k=>`<div class=\"door-card ${state[k]?.open?'open':''}\" data-door=\"${k}\"><div class=\"door-top\"><div class=\"door-face\" role=\"button\" aria-label=\"Open puzzle\"><img src=\"assets/door_white.svg\" alt=\"door\"/></div></div><div class=\"door-game\"><div class=\"game-host\" id=\"host-${k}\"></div><div class=\"digit-row\" style=\"display:none\"><input aria-label=\"Record digit\" maxlength=\"1\" inputmode=\"numeric\" pattern=\"[0-9]\" /><button>Record</button><span class=\"pill\" style=\"display:none\"><span class=\"record-pill\">✔ Recorded</span></span></div></div></div>`).join('')}</div>`;
 
@@ -16,7 +16,7 @@
       function record(){ if(input.value===correct){ input.readOnly=true; pill.style.display='inline-block'; state[key]={open:true, recorded:true, digit:correct}; save(); radio('A door puzzle was completed. Digit noted.'); checkAll(); } else { input.classList.add('shake'); setTimeout(()=>input.classList.remove('shake'),200); } }
       btn.addEventListener('click',record);
 
-      async function mount(){ card.classList.add('open'); state[key]=state[key]||{open:true}; save(); try{ await ensure([key]); if(key==='one') window.initDoorMinesweep4?.(host, ()=>showInput()); else if(key==='two') window.initDoorJewelLatin?.(host, ()=>showInput()); else if(key==='three') window.initDoorLights3x3?.(host, ()=>showInput()); } catch(e){ host.innerHTML=`<div style=\"color:var(--warn)\">${e.message}</div>`; } }
+      async function mount(){ card.classList.add('open'); state[key]=state[key]||{open:true}; save(); try{ await ensure([key]); if(key==='one') window.initDoorMinesweep4?.(host, ()=>showInput()); else if(key==='two') window.initDoorJewelLatin?.(host, ()=>showInput()); else if(key==='three') window.initDoorQueens5?.(host, ()=>showInput()); } catch(e){ host.innerHTML=`<div style=\"color:var(--warn)\">${e.message}</div>`; } }
 
       face.addEventListener('click', ()=>mount()); if(state[key]?.open) mount(); if(state[key]?.recorded) showInput();
     });

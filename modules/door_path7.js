@@ -1,46 +1,129 @@
-(function(){
-  function init(host,onSolved){
-    host.innerHTML='';
-    const wrap=document.createElement('div'); wrap.className='path-wrap';
-    const title=document.createElement('div'); title.innerHTML='<strong>Seven Steps</strong> — Follow arrows; land on the flag in exactly 7 moves.';
-    const gridEl=document.createElement('div'); gridEl.className='path-grid';
-    const status=document.createElement('div'); status.className='path-status';
-    const tools=document.createElement('div'); tools.className='toolrow';
-    const btnStep=document.createElement('button'); btnStep.textContent='Step';
-    const btnReset=document.createElement('button'); btnReset.textContent='Reset';
-    tools.append(btnStep,btnReset);
-    wrap.append(title,gridEl,tools,status); host.appendChild(wrap);
+// modules/door_path7.js
+// Queens Protocol 5x5 with colored regions (sections)
 
-    // 4x4 arrow map; Start at (0,0); Exit at (3,3)
-    const map=[
-      ['E','S','E','S'],
-      ['N','E','S','W'],
-      ['E','E','N','W'],
-      ['N','E','E','X']
-    ];
-    let pos={r:0,c:0}; let steps=0;
+export function mountPath7(host, onSolved) {
+  const SIZE = 5;
 
-    function render(){ gridEl.innerHTML=''; for(let r=0;r<4;r++) for(let c=0;c<4;c++){ const cell=document.createElement('div'); cell.className='path-cell';
-        const ch=map[r][c];
-        cell.textContent= ch==='X' ? '⛳' : ({N:'↑',S:'↓',E:'→',W:'←'}[ch]);
-        if(r===0&&c===0) cell.classList.add('start');
-        if(ch==='X') cell.classList.add('exit');
-        if(r===pos.r&&c===pos.c) cell.style.outline='2px solid var(--primary)';
-        gridEl.appendChild(cell); }
-      status.textContent=`Steps: ${steps}/7`;
+  // Region map (0..4) -> colored sections
+  const REGIONS = [
+    [0, 0, 1, 1, 1],
+    [0, 2, 2, 3, 1],
+    [0, 2, 4, 3, 3],
+    [4, 2, 4, 4, 3],
+    [4, 4, 4, 3, 3]
+  ];
+  const COLORS = {
+    0: "#0f2230",
+    1: "#122b3b",
+    2: "#153547",
+    3: "#184053",
+    4: "#1b4b60",
+  };
+
+  const wrap = document.createElement("div");
+  wrap.className = "q-wrap";
+  wrap.innerHTML = `
+    <h4 class="jlatin-title">Queens Protocol</h4>
+    <p class="status">Place queens so that: (1) no two share a row or column, (2) no two touch—even diagonally, and (3) each colored section contains exactly <strong>one</strong> queen.</p>
+    <div class="q-grid"></div>
+    <div class="q-tools">
+      <button id="qClear">Clear</button>
+    </div>
+    <p id="qStatus" class="q-status"></p>
+  `;
+  const grid = wrap.querySelector(".q-grid");
+  const btnClear = wrap.querySelector("#qClear");
+  const status = wrap.querySelector("#qStatus");
+  host.appendChild(wrap);
+
+  const cells = [];
+  for (let r = 0; r < SIZE; r++) {
+    cells[r] = [];
+    for (let c = 0; c < SIZE; c++) {
+      const el = document.createElement("div");
+      el.className = "q-cell";
+      el.dataset.q = "0";
+      el.style.background = COLORS[REGIONS[r][c]];
+      el.onclick = () => toggleQueen(el);
+      grid.appendChild(el);
+      cells[r][c] = el;
+    }
+  }
+
+  function toggleQueen(el) {
+    el.dataset.q = (el.dataset.q === "1") ? "0" : "1";
+    render(el);
+    validate();
+  }
+
+  function render(el) {
+    el.innerHTML = "";
+    if (el.dataset.q === "1") {
+      // reuse jewel as a queen: star (distinct) — optional
+      const img = document.createElement("img");
+      img.src = "assets/jewels/star.svg";
+      img.alt = "Q";
+      el.appendChild(img);
+    }
+  }
+
+  function validate() {
+    // clear attack/marks
+    cells.flat().forEach(e => e.classList.remove("attacked"));
+
+    const queens = [];
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (cells[r][c].dataset.q === "1") queens.push([r, c]);
+      }
     }
 
-    function doStep(){ const dir=map[pos.r][pos.c]; if(dir==='X') return; if(dir==='N') pos.r=Math.max(0,pos.r-1); else if(dir==='S') pos.r=Math.min(3,pos.r+1); else if(dir==='E') pos.c=Math.min(3,pos.c+1); else if(dir==='W') pos.c=Math.max(0,pos.c-1); steps++; render(); check(); }
-    function reset(){ pos={r:0,c:0}; steps=0; status.style.color=''; render(); }
-    function check(){ if(steps>7){ status.style.color='var(--warn)'; status.textContent='Too many moves. Resetting.'; setTimeout(reset,900); return; }
-      if(steps===7){ if(map[pos.r][pos.c]==='X'){ status.style.color='var(--ok)'; status.textContent='Exit reached in 7!'; onSolved?.(); } else { status.style.color='var(--warn)'; status.textContent='Not on the exit at 7. Resetting.'; setTimeout(reset,900); } } }
+    let ok = true;
 
-    btnStep.addEventListener('click', doStep);
-    btnReset.addEventListener('click', reset);
-    // also allow clicking grid to step for convenience
-    gridEl.addEventListener('click', doStep);
+    // rows & cols uniqueness
+    for (let r = 0; r < SIZE; r++) {
+      if (queens.filter(q => q[0] === r).length > 1) ok = false;
+    }
+    for (let c = 0; c < SIZE; c++) {
+      if (queens.filter(q => q[1] === c).length > 1) ok = false;
+    }
 
-    render();
+    // regions uniqueness
+    const seenRegion = new Set();
+    for (const [r, c] of queens) {
+      const reg = REGIONS[r][c];
+      const key = "R" + reg;
+      if (seenRegion.has(key)) ok = false;
+      seenRegion.add(key);
+    }
+
+    // adjacency (no touch diagonally or orthogonally)
+    const dirs = [
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1], [0, 1],
+      [1, -1], [1, 0], [1, 1]
+    ];
+    for (const [r, c] of queens) {
+      for (const [dr, dc] of dirs) {
+        const rr = r + dr, cc = c + dc;
+        if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && cells[rr][cc].dataset.q === "1") {
+          cells[r][c].classList.add("attacked");
+          cells[rr][cc].classList.add("attacked");
+          ok = false;
+        }
+      }
+    }
+
+    if (ok && queens.length === SIZE) { // one per region → 5 queens
+      status.textContent = "The queens’ jewels have been secured and isolated inside our secure box and the final digit is revealed. The encoded digit is 7.";
+      onSolved?.("Queens Protocol", 7);
+    } else {
+      status.textContent = "";
+    }
   }
-  window.initDoorPath7=init;
-})();
+
+  btnClear.onclick = () => {
+    cells.flat().forEach(el => { el.dataset.q = "0"; el.innerHTML = ""; el.classList.remove("attacked"); });
+    status.textContent = "";
+  };
+}

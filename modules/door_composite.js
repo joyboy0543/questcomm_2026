@@ -1,26 +1,94 @@
-(function(){
-  function init(host,onSolved){
-    host.innerHTML='';
-    const wrap=document.createElement('div'); wrap.className='comp-wrap';
-    const title=document.createElement('div'); title.innerHTML='<strong>Composite Sweep</strong> — Select all composite numbers.';
-    const grid=document.createElement('div'); grid.className='comp-grid';
-    const status=document.createElement('div'); status.style.minHeight='1.2rem';
-    wrap.append(title,grid,status); host.appendChild(wrap);
+// modules/door_composite.js
+// Jewel Latin 4x4 (uses assets/jewels/*.svg)
 
-    const nums=[1,2,3,4,6,9,10,12,15];
-    const tiles=[]; const isComposite=n=> n>3? (n%2===0 || n%3===0 || (function(){for(let i=5;i*i<=n;i+=6){ if(n%i===0||n%(i+2)===0) return true;}return false;})()): (n===4);
+export function mountComposite(host, onSolved) {
+  const JEWELS = ["emerald", "hex", "ruby", "amethyst"];
+  const SIZE = 4;
 
-    nums.forEach(n=>{ const b=document.createElement('button'); b.className='comp-tile'; b.textContent=n; b.addEventListener('click',()=>{ b.classList.toggle('on'); }); grid.appendChild(b); tiles.push({el:b,n}); });
+  const wrap = document.createElement("div");
+  wrap.className = "jlatin-wrap";
+  wrap.innerHTML = `
+    <h4 class="jlatin-title">Jewel Latin</h4>
+    <p class="status">Each row and column must contain every jewel exactly once.</p>
+    <div class="jlatin-grid"></div>
+    <p id="jlStatus" class="status"></p>
+    <div class="jlatin-tools">
+      <button id="jlClear">Clear</button>
+    </div>
+  `;
 
-    const checkBtn=document.createElement('button'); checkBtn.textContent='Check'; checkBtn.style.marginTop='4px'; wrap.appendChild(checkBtn);
+  const gridEl = wrap.querySelector(".jlatin-grid");
+  const status = wrap.querySelector("#jlStatus");
+  const btnClear = wrap.querySelector("#jlClear");
+  host.appendChild(wrap);
 
-    checkBtn.addEventListener('click',()=>{
-      const selected=tiles.filter(t=>t.el.classList.contains('on')).map(t=>t.n);
-      const want=nums.filter(isComposite);
-      const ok = selected.length===want.length && selected.every(v=>want.includes(v));
-      if(ok){ status.style.color='var(--ok)'; status.textContent='Composite tiles set: 6'; onSolved?.(); }
-      else { status.style.color='var(--warn)'; status.textContent='Not quite. Tip: 1 is special; 2 & 3 are prime.'; }
-    });
+  const cells = [];
+  for (let r = 0; r < SIZE; r++) {
+    cells[r] = [];
+    for (let c = 0; c < SIZE; c++) {
+      const el = document.createElement("div");
+      el.className = "jcell";
+      el.dataset.value = "";
+      el.onclick = () => cycle(el);
+      gridEl.appendChild(el);
+      cells[r][c] = el;
+    }
   }
-  window.initDoorComposite=init;
-})();
+
+  function cycle(cell) {
+    const idx = JEWELS.indexOf(cell.dataset.value);
+    cell.dataset.value = JEWELS[(idx + 1) % JEWELS.length];
+    render(cell);
+    validate();
+  }
+
+  function render(cell) {
+    cell.innerHTML = "";
+    if (!cell.dataset.value) return;
+    const img = document.createElement("img");
+    img.src = `assets/jewels/${cell.dataset.value}.svg`;
+    img.alt = cell.dataset.value;
+    cell.appendChild(img);
+  }
+
+  function validate() {
+    let ok = true;
+
+    // clear any error styles
+    cells.flat().forEach(c => c.style.boxShadow = "");
+
+    // rows + cols unique
+    for (let i = 0; i < SIZE; i++) {
+      ok &= uniq(cells[i]);
+      ok &= uniq(cells.map(r => r[i]));
+    }
+
+    if (ok && cells.flat().every(c => c.dataset.value)) {
+      status.textContent = "The solved puzzle on the door has now unlocked the next digit. The encoded digit is 6.";
+      onSolved?.("Jewel Latin", 6);
+    } else {
+      status.textContent = "";
+    }
+  }
+
+  function uniq(list) {
+    const seen = {}; let valid = true;
+    for (const el of list) {
+      const v = el.dataset.value;
+      if (!v) continue;
+      if (seen[v]) {
+        el.style.boxShadow = "0 0 0 2px rgba(255,92,92,.45)";
+        seen[v].style.boxShadow = "0 0 0 2px rgba(255,92,92,.45)";
+        valid = false;
+      } else {
+        seen[v] = el;
+      }
+    }
+    return valid;
+  }
+
+  btnClear.onclick = () => {
+    cells.flat().forEach(c => { c.dataset.value = ""; c.innerHTML = ""; c.style.boxShadow = ""; });
+    status.textContent = "";
+  };
+}

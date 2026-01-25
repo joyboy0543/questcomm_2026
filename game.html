@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,8 +8,10 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="doors.css" />
 </head>
+
 <body>
   <div class="app">
+    <!-- Left panel: Database / Cases -->
     <aside class="panel" id="dbPanel">
       <h2 class="title">Database</h2>
       <p id="hello" style="color:var(--muted);margin-bottom:8px"></p>
@@ -23,89 +26,127 @@
       </ul>
     </aside>
 
+    <!-- Center panel: Evidence -->
     <main class="panel" id="evidencePanel">
       <h2 class="title">Evidence</h2>
 
       <div id="caseMsg" class="msg" style="display:none"></div>
 
+      <!-- Tabs -->
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
         <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
+        <button class="tab disabled" data-tab="riddle1">Riddle</button>
+        <button class="tab disabled" data-tab="potion">Potion</button>
         <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
         <button class="tab disabled" data-tab="colorcode">Cipher Rings</button>
         <button class="tab disabled" data-tab="findings">Findings</button>
       </div>
 
+      <!-- Sections -->
       <section id="briefing" class="section active">
         <h3>Case: The Sapphire Heist</h3>
-        <p>Welcome, Detective. Each station below contains a puzzle. Clear all three to extract the key findings.</p>
+        <p>Welcome, Detective. Each station below contains a puzzle. Clear them to extract the key findings.</p>
         <p class="status">Press the agreement below to begin.</p>
         <button id="agreeBtn">I agree to solve the clues and handle the evidence as per the QCPD regulations.</button>
       </section>
 
       <section id="cipher" class="section">
-        <h3>Cipher Terminal — Decode &amp; Unscramble</h3>
-        <p class="status">Hint: <em>Decode the image and enter what it is to reveal the clue.</em></p>
-        <div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:start">
-          <div>
-            <div id="jewel-board" class="jewel-board" aria-label="Scrambled letter J"></div>
-          </div>
-          <div>
-            <label for="shift">Shift</label>
-            <input id="shift" type="range" min="0" max="25" value="0" />
-            <div class="status"><span>Encoded:</span> <code id="encoded">UFTU</code></div>
-            <div class="status"><span>Decoded:</span> <code id="decoded">TEST</code></div>
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <input id="decodedInput" placeholder="Enter solution" />
-              <button id="cipherConfirm">Confirm</button>
-            </div>
-            <p id="cipherStatus" class="status"></p>
-          </div>
+        <h3>Cipher Terminal — Photo Forensics</h3>
+        <p class="status">Zoom and pan the image if needed. Enter the code you deduce.</p>
+        <div class="zoom-wrap" id="zoomWrap">
+          <img id="zoomImg" class="zoom-img" src="assets/buildings.jpg"
+            alt="Evidence photo: buildings and reflection" />
         </div>
+        <div class="zoom-tools">
+          <button id="zOut">−</button>
+          <button id="zReset">Reset</button>
+          <button id="zIn">+</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+          <input id="cipherInput" placeholder="Enter solution" inputmode="numeric" />
+          <button id="cipherConfirm">Confirm</button>
+        </div>
+        <p id="cipherStatus" class="status"></p>
+      </section>
+
+      <section id="riddle1" class="section">
+        <h3>Riddle</h3>
+        <p class="status">Think carefully; the answer is a single digit.</p>
+        <div style="max-width:680px;margin:auto;text-align:left">
+          <p><em>I stand alone, the start of counts;
+              before two’s shadow I announce.
+              With me you switch from none to some —
+              what am I when the first step’s done?</em></p>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+          <input id="riddle1Input" placeholder="Your answer" inputmode="numeric" />
+          <button id="riddle1Confirm">Confirm</button>
+        </div>
+        <p id="riddle1Status" class="status"></p>
+      </section>
+
+      <section id="potion" class="section">
+        <h3>Padlock Lock Potion</h3>
+        <div style="max-width:820px;margin:auto;text-align:left;white-space:pre-wrap">
+          How to Brew a Basic Padlock Lock Potion
+
+          To bind a common padlock shut and command its clasp to sleep.
+
+          First, one eyelash from a wild dragon — caught in the sunset’s ruby‑sparked glow.
+          Next, two bones from a royal frog — crown‑kissed and pale as snow.
+          Last, three drops of snot from a liar's nose — lies condensed to a glistening flow.
+
+          Stir clockwise: once for the lash, twice for the bones, thrice for the drops.
+          Then whisper: “By scale and crown, by truth denied — bolt, bar, and latch, be tied.”
+
+          Mind the order! Reverse the steps, and you may unlock forces eager to snap any padlock wide open
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+          <input id="potionInput" placeholder="Enter the encoded number" inputmode="numeric" />
+          <button id="potionConfirm">Confirm</button>
+        </div>
+        <p id="potionStatus" class="status"></p>
       </section>
 
       <section id="doors" class="section">
         <h3>Doorway Sequence</h3>
-        <p class="status">Open each door and complete the mini‑game. <strong>Record</strong> the digit you find. When all three are recorded, the <strong>door number</strong> is revealed.</p>
+        <p class="status">Open each door and complete the mini‑game. Messages will hint at the digits you need.</p>
         <div id="doorsHost"></div>
       </section>
 
       <section id="colorcode" class="section">
-        <h3>Cipher Rings — Assemble the Phrase</h3>
-        <p>Rotate each ring to select the right word. Set all three correctly to reveal the finding.</p>
-        <div class="rings">
-          <div class="ring" data-ring="0">
-            <button class="prev">◀</button>
-            <div class="val" aria-live="polite">A</div>
-            <button class="next">▶</button>
-          </div>
-          <div class="ring" data-ring="1">
-            <button class="prev">◀</button>
-            <div class="val" aria-live="polite">SEA</div>
-            <button class="next">▶</button>
-          </div>
-          <div class="ring" data-ring="2">
-            <button class="prev">◀</button>
-            <div class="val" aria-live="polite">ROAD</div>
-            <button class="next">▶</button>
-          </div>
+        <h3>Cipher Rings — Final Riddle</h3>
+        <p>Answer the riddle to complete the findings.</p>
+        <div style="max-width:720px;margin:auto;text-align:left">
+          <p><em>
+              I gift perspective without a word,
+              Pins and borders deftly heard.
+              Search the globe, connect each gap —
+              What phrase directs you?
+            </em></p>
         </div>
-        <div class="toolrow">
-          <span id="colorStatus" class="status"></span>
+        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+          <input id="ringsInput" placeholder="Enter the phrase" />
+          <button id="ringsConfirm">Confirm</button>
         </div>
+        <p id="ringsStatus" class="status"></p>
       </section>
 
       <section id="findings" class="section">
         <h3>Findings</h3>
         <ol>
-          <li>A view of building from the office</li>
-          <li>627</li>
-          <li>The world map</li>
+          <li>243 — from the photo cipher</li>
+          <li>1 — from the riddle</li>
+          <li>928 — from the potion</li>
+          <li>367 — from the doorway sequence</li>
+          <li>THE WORLD MAP — from the final riddle</li>
         </ol>
         <p class="status">Good work, Detective.</p>
       </section>
     </main>
 
+    <!-- Right panel: Radio -->
     <aside class="panel" id="radioPanel">
       <h2 class="title">Radio</h2>
       <details open>
@@ -133,15 +174,20 @@
   </div>
 
   <script src="app.js"></script>
+
+  <!-- Your modules -->
   <script src="modules/cipher.js"></script>
+  <script src="modules/riddle1.js"></script>
+  <script src="modules/potion.js"></script>
 
-  <!-- Doorway Sequence Orchestrator -->
-  <script src="modules/doors.js?v=20260116"></script>
-  <!-- Doorway Sequence Mini‑games (REQUIRED) -->
-  <script src="modules/door_minesweep4.js?v=20260116"></script>
-  <script src="modules/door_composite.js?v=20260116"></script>
-  <script src="modules/door_path7.js?v=20260116"></script>
+  <!-- Doorway Sequence Orchestrator & Games -->
+  <script src="modules/doors.js?v=20260123-3"></script>
+  <script src="modules/door_minesweep4.js?v=20260123-3"></script>
+  <script src="modules/door_composite.js?v=20260123-3"></script>
+  <script src="modules/door_path7.js?v=20260123-3"></script>
 
+  <!-- Final riddle module (replacing old rings behavior) -->
   <script src="modules/colorcode.js"></script>
 </body>
+
 </html>

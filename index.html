@@ -1,41 +1,59 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>QCPD Clearance</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body class="landing">
+  <!-- Inline icon path for lock -->
   <svg width="0" height="0" style="position:absolute">
     <defs>
-      <path id="lock" d="M8 3a4 4 0 0 1 8 0v3h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1V3zm2 3h4V3a2 2 0 1 0-4 0v3z"/>
+      <path id="lock"
+        d="M8 3a4 4 0 0 1 8 0v3h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1V3zm2 3h4V3a2 2 0 1 0-4 0v3z" />
     </defs>
   </svg>
+
   <div class="center">
     <div class="card">
       <header>
         <h1 style="margin:0">QCPD Clearance</h1>
         <span class="badge">Access gateway</span>
       </header>
-      <p style="margin-bottom:14px;color:var(--muted)">Enter your credentials to access the database.</p>
+      <p style="margin-bottom:14px;color:var(--muted)">
+        Enter your credentials to access the database.
+      </p>
+
       <form id="clearanceForm" class="grid" autocomplete="on">
         <div class="span2">
-          <label>Name (required)</label>
+          <label for="fName">Name (required)</label>
           <input id="fName" name="name" required placeholder="Your name" />
         </div>
+
         <div>
-          <label>Codename</label>
+          <label for="fCode">Codename</label>
           <input id="fCode" name="codename" placeholder="Codename" />
         </div>
+
         <div>
-          <label>Department</label>
-          <input id="fDept" name="department" placeholder="Department" />
+          <label for="fDept">Department</label>
+          <select id="fDept" name="department">
+            <option value="">Select department</option>
+            <option>Forensics Lab</option>
+            <option>Cyber Unit</option>
+            <option>Surveillance</option>
+            <option>Narcotics</option>
+            <option>Homicide</option>
+            <option>Special Operations</option>
+            <option>Evidence Control</option>
+            <option>Harbor Patrol</option>
+            <option>Internal Affairs</option>
+          </select>
         </div>
-        <div class="span2">
-          <label>Agent code</label>
-          <input id="fAgent" name="agent" placeholder="Unique agent code" />
-        </div>
+
         <div class="span2" style="display:flex;justify-content:flex-end;gap:10px;align-items:center;margin-top:6px">
           <button id="enterBtn" type="submit" class="lock-btn" disabled>
             <span class="lock" aria-hidden="true"></span>
@@ -45,20 +63,35 @@
       </form>
     </div>
   </div>
+
   <footer class="footer">Confidential data - QCPD</footer>
 
   <script>
     const form = document.getElementById('clearanceForm');
     const btn = document.getElementById('enterBtn');
     const nameField = document.getElementById('fName');
-    function updateLock(){ const ok = nameField.value.trim().length>0; btn.disabled = !ok; btn.style.color = ok ? 'var(--ok)' : '#8aa0b3'; }
+
+    function updateLock() {
+      const ok = nameField.value.trim().length > 0;
+      // Enable/disable button
+      btn.disabled = !ok;
+      // Lock color handled via CSS states; force visibility by toggling a class
+      btn.classList.toggle('is-unlocked', ok);
+      btn.classList.toggle('is-locked', !ok);
+    }
     nameField.addEventListener('input', updateLock); updateLock();
-    form.addEventListener('submit', (e)=>{
+
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const agent = { name: document.getElementById('fName').value.trim(), codename: document.getElementById('fCode').value.trim(), department: document.getElementById('fDept').value.trim(), agentCode: document.getElementById('fAgent').value.trim() };
+      const agent = {
+        name: document.getElementById('fName').value.trim(),
+        codename: document.getElementById('fCode').value.trim(),
+        department: document.getElementById('fDept').value
+      };
       localStorage.setItem('qcpd.agent', JSON.stringify(agent));
       location.href = 'game.html';
     });
   </script>
 </body>
+
 </html>

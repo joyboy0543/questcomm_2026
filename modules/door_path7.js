@@ -13,11 +13,11 @@ export function mountPath7(host, onSolved) {
     [4, 4, 4, 3, 3]
   ];
   const COLORS = {
-    0: "#0f2230",
-    1: "#122b3b",
-    2: "#153547",
-    3: "#184053",
-    4: "#1b4b60",
+    0: "#09c9e2",
+    1: "#5c0404",
+    2: "#0ed159",
+    3: "#8153ec",
+    4: "#eccc11",
   };
 
   const wrap = document.createElement("div");

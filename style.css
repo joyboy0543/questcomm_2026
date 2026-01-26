@@ -29,11 +29,14 @@ button {
     border: 1px solid #1c2d3a;
     border-radius: 10px;
     padding: 10px 14px;
-    cursor: pointer
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px
 }
 
 button:disabled {
-    opacity: .6;
+    opacity: .8;
     cursor: not-allowed
 }
 
@@ -41,7 +44,8 @@ button:hover:not(:disabled) {
     background: #16344a
 }
 
-input {
+input,
+select {
     background: #0b1218;
     color: #fff;
     border: 1px solid #1c2d3a;
@@ -110,6 +114,18 @@ body.landing {
     -webkit-mask: url('#lock') no-repeat 50% 50%/contain
 }
 
+.lock-btn.is-locked .lock,
+.lock-btn:disabled .lock {
+    color: #ef4444;
+}
+
+/* red when locked */
+.lock-btn.is-unlocked .lock,
+.lock-btn:not(:disabled) .lock {
+    color: #22c55e;
+}
+
+/* green when unlocked */
 .footer {
     padding: 10px 16px;
     text-align: center;
@@ -212,29 +228,80 @@ body.landing {
     min-height: 1.2rem
 }
 
-/* Cipher image grid */
-.jewel-board {
-    position: relative;
-    width: min(320px, 80vw);
-    height: min(320px, 80vw);
+/* Zoomable image viewer */
+.zoom-wrap {
+    --w: min(640px, 92vw);
+    width: var(--w);
+    height: calc(var(--w) * 0.56);
     background: #0b1218;
     border: 1px solid #1c2d3a;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 8px
+    margin: 8px auto;
+    touch-action: none;
+    position: relative;
 }
 
-.jewel-tile {
+.zoom-img {
     position: absolute;
-    width: 25%;
-    height: 25%;
-    background-image: url('assets/letter_j.svg');
-    background-size: 400% 400%;
-    transition: left .6s ease, top .6s ease
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    user-select: none;
+    -webkit-user-drag: none;
+    max-width: none;
+    max-height: none;
 }
 
-.jewel-board.solved .jewel-tile {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, .08) inset
+.zoom-tools {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px
+}
+
+/* Ribbon */
+.ribbon {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid #1c2d3a;
+    border-radius: 10px;
+    background: #0b1218;
+    margin: 8px 0 12px;
+    overflow: auto;
+}
+
+.ribbon .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    opacity: .8
+}
+
+.ribbon .step .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #243546;
+    box-shadow: 0 0 0 2px #1c2d3a inset
+}
+
+.ribbon .step.done {
+    opacity: 1
+}
+
+.ribbon .step.done .dot {
+    background: var(--ok);
+    box-shadow: none
+}
+
+.ribbon .step .label {
+    color: #cfe6f7;
+    font-size: .95rem
 }
 
 /* Radio */
@@ -274,4 +341,104 @@ summary {
         height: auto;
         max-height: unset
     }
+}
+
+/* --- Photo preview (small) --- */
+.photo-thumb {
+    width: min(360px, 86vw);
+    margin: 8px auto;
+    border: 1px solid #1c2d3a;
+    border-radius: 12px;
+    background: #0b1218;
+    overflow: hidden;
+    cursor: zoom-in;
+    position: relative;
+    display: grid;
+    place-items: center;
+}
+
+.photo-thumb img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.photo-thumb figcaption {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    background: rgba(0, 0, 0, .45);
+    color: #e6eef5;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: .8rem;
+}
+
+/* --- Lightbox modal for zoomable image --- */
+.lb-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    display: grid;
+    place-items: center;
+    z-index: 1000;
+}
+
+.lb-panel {
+    width: min(92vw, 980px);
+    height: min(80vh, 680px);
+    background: #0b1218;
+    border: 1px solid #1c2d3a;
+    border-radius: 12px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 8px;
+    padding: 10px;
+}
+
+.lb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px
+}
+
+.lb-title {
+    color: #cfe6f7;
+    font-weight: 600
+}
+
+.lb-close {
+    background: #102536;
+    border: 1px solid #1c2d3a;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer
+}
+
+.lb-view {
+    position: relative;
+    border: 1px solid #1c2d3a;
+    border-radius: 10px;
+    background: #0b1218;
+    overflow: hidden
+}
+
+.lb-tools {
+    display: flex;
+    justify-content: center;
+    gap: 8px
+}
+
+/* Reuse viewer styles but namespaced for modal */
+.lb-view .zoom-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    user-select: none;
+    -webkit-user-drag: none;
+    max-width: none;
+    max-height: none;
 }

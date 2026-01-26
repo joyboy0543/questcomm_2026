@@ -30,6 +30,16 @@
     <main class="panel" id="evidencePanel">
       <h2 class="title">Evidence</h2>
 
+      <!-- 🔵 NEW: Progress ribbon -->
+      <div id="progressRibbon" class="ribbon" aria-label="Case progress">
+        <div class="step" data-step="cipher"><span class="dot"></span><span class="label">Photo (243)</span></div>
+        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Riddle (1)</span></div>
+        <div class="step" data-step="potion"><span class="dot"></span><span class="label">Potion (928)</span></div>
+        <div class="step" data-step="doors"><span class="dot"></span><span class="label">Doors (367)</span></div>
+        <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Final (THE WORLD
+            MAP)</span></div>
+      </div>
+
       <div id="caseMsg" class="msg" style="display:none"></div>
 
       <!-- Tabs -->
@@ -53,16 +63,15 @@
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal — Photo Forensics</h3>
-        <p class="status">Zoom and pan the image if needed. Enter the code you deduce.</p>
-        <div class="zoom-wrap" id="zoomWrap">
-          <img id="zoomImg" class="zoom-img" src="assets/buildings.jpg"
-            alt="Evidence photo: buildings and reflection" />
-        </div>
-        <div class="zoom-tools">
-          <button id="zOut">−</button>
-          <button id="zReset">Reset</button>
-          <button id="zIn">+</button>
-        </div>
+        <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the code you deduce.</p>
+
+        <!-- Small preview (click to open modal viewer) -->
+        <figure class="photo-thumb">
+          assets/buildings.jpg
+          <figcaption>Tap/click to open</figcaption>
+        </figure>
+
+        <!-- Zoom tools move inside the modal; we keep only input & confirm here -->
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="cipherInput" placeholder="Enter solution" inputmode="numeric" />
           <button id="cipherConfirm">Confirm</button>
@@ -175,19 +184,22 @@
 
   <script src="app.js"></script>
 
-  <!-- Your modules -->
-  <script src="modules/cipher.js"></script>
-  <script src="modules/riddle1.js"></script>
-  <script src="modules/potion.js"></script>
+  <!-- 🔵 NEW shared helpers (ribbon, radio, persist) -->
+  <script src="modules/progress.js?v=20260123-4"></script>
+
+  <!-- Puzzle modules -->
+  <script src="modules/cipher.js?v=20260123-4"></script>
+  <script src="modules/riddle1.js?v=20260123-4"></script>
+  <script src="modules/potion.js?v=20260123-4"></script>
 
   <!-- Doorway Sequence Orchestrator & Games -->
-  <script src="modules/doors.js?v=20260123-3"></script>
-  <script src="modules/door_minesweep4.js?v=20260123-3"></script>
-  <script src="modules/door_composite.js?v=20260123-3"></script>
-  <script src="modules/door_path7.js?v=20260123-3"></script>
+  <script src="modules/doors.js?v=20260123-4"></script>
+  <script src="modules/door_minesweep4.js?v=20260123-4"></script>
+  <script src="modules/door_composite.js?v=20260123-4"></script>
+  <script src="modules/door_path7.js?v=20260123-4"></script>
 
-  <!-- Final riddle module (replacing old rings behavior) -->
-  <script src="modules/colorcode.js"></script>
+  <!-- Final riddle module -->
+  <script src="modules/colorcode.js?v=20260123-4"></script>
 </body>
 
 </html>

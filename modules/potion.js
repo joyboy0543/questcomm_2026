@@ -1,9 +1,12 @@
 // Potion — expects "928"
 (function () {
-    function unlockNext(nextId, msgEl, message) {
-        msgEl.textContent = message;
-        const btn = document.querySelector(`.tab[data-tab="${nextId}"]`);
-        if (btn) { btn.classList.remove('disabled'); btn.click?.(); }
+    const KEY = 'potion', ANSWER = '928';
+
+    function solved(out) {
+        out.textContent = 'Brew logged. Proceed to the Doorway Sequence.';
+        window.QCPD?.save(KEY, ANSWER);
+        window.QCPD?.radio('Potion decoded: 928');
+        window.QCPD?.unlockTab('doors', { autoSwitch: true });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -11,13 +14,13 @@
         const btn = document.getElementById('potionConfirm');
         const out = document.getElementById('potionStatus');
 
+        const saved = (window.QCPD?.load() || {})[KEY];
+        if (saved === ANSWER) { input.value = ANSWER; solved(out); }
+
         btn?.addEventListener('click', () => {
             const val = (input.value || '').trim();
-            if (val === '928') {
-                unlockNext('doors', out, 'Brew logged. Proceed to the Doorway Sequence.');
-            } else {
-                out.textContent = 'That incantation number doesn’t bind. Re-check the steps and counts.';
-            }
+            if (val === ANSWER) solved(out);
+            else out.textContent = 'That incantation number doesn’t bind. Re-check the steps and counts.';
         });
     });
 })();

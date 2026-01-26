@@ -1,9 +1,12 @@
 // Riddle #1 — expects "1"
 (function () {
-    function unlockNext(nextId, msgEl, message) {
-        msgEl.textContent = message;
-        const btn = document.querySelector(`.tab[data-tab="${nextId}"]`);
-        if (btn) { btn.classList.remove('disabled'); btn.click?.(); }
+    const KEY = 'riddle1', ANSWER = '1';
+
+    function solved(out) {
+        out.textContent = 'Correct. The first step is secured — move to the potion.';
+        window.QCPD?.save(KEY, ANSWER);
+        window.QCPD?.radio('Riddle solved: 1');
+        window.QCPD?.unlockTab('potion', { autoSwitch: true });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -11,13 +14,13 @@
         const btn = document.getElementById('riddle1Confirm');
         const out = document.getElementById('riddle1Status');
 
+        const saved = (window.QCPD?.load() || {})[KEY];
+        if (saved === ANSWER) { input.value = ANSWER; solved(out); }
+
         btn?.addEventListener('click', () => {
             const val = (input.value || '').trim();
-            if (val === '1') {
-                unlockNext('potion', out, 'Correct. The first step is secured — move to the potion.');
-            } else {
-                out.textContent = 'Try again. The answer is a single digit.';
-            }
+            if (val === ANSWER) solved(out);
+            else out.textContent = 'Try again. The answer is a single digit.';
         });
     });
 })();

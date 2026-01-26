@@ -565,3 +565,54 @@ summary {
 }
 
 /* red if skipped */
+
+/* ---- Inputs: success / error with shake ---- */
+.input-ok {
+    border-color: #29d49a !important;
+    box-shadow: 0 0 0 2px rgba(41, 212, 154, .18);
+}
+
+.input-bad {
+    border-color: #ef6b6b !important;
+    box-shadow: 0 0 0 2px rgba(239, 107, 107, .18);
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0)
+    }
+
+    20% {
+        transform: translateX(-4px)
+    }
+
+    40% {
+        transform: translateX(4px)
+    }
+
+    60% {
+        transform: translateX(-3px)
+    }
+
+    80% {
+        transform: translateX(3px)
+    }
+}
+
+.shake {
+    animation: shake .25s linear
+}
+
+/* ---- Highlight span for numbers in success text ---- */
+.hl {
+    color: #ffd768;
+    font-weight: 700
+}
+
+/* ---- Potion: ensure font applies to every line (except warning) ---- */
+.potion-card,
+.potion-card *:not(.potion-warning) {
+    font-family: "Agency FB", "AgencyFB", "Arial Narrow", "Segoe UI", sans-serif;
+}

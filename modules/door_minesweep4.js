@@ -120,7 +120,7 @@
       const safeTotal = cells.filter(c => !c.bomb).length;
       const revealedSafe = cells.filter(c => c.revealed && !c.bomb).length;
       if (revealedSafe === safeTotal) {
-        status.textContent = 'Three bombs were diffused in front of the doorway.';
+        status.innerHTML = '<span> <span class="hl">Three</span> bombs were diffused in front of the doorway.</span>';
         onSolved && onSolved();
       }
     }

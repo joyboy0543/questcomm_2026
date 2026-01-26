@@ -2,7 +2,7 @@
 // Jewel Latin 4x4 (uses assets/jewels/*.svg)
 
 export function mountComposite(host, onSolved) {
-  const JEWELS = ["emerald", "hex", "ruby", "amethyst"];
+  const JEWELS = ["emerald", "hex", "ruby", "amethyst", "star", "diamond"]; // 6 types
   const SIZE = 4;
 
   const wrap = document.createElement("div");
@@ -64,8 +64,8 @@ export function mountComposite(host, onSolved) {
     }
 
     if (ok && cells.flat().every(c => c.dataset.value)) {
-      status.textContent = "The solved puzzle on the door has now unlocked the next digit. The encoded digit is 6.";
-      onSolved?.("Jewel Latin", 6);
+      status.innerHTML = 'The encryption on the door has <strong class="hl">revealed</strong> that there are <strong class="hl">Six</strong> types of jewels.';
+      onSolved && onSolved();
     } else {
       status.textContent = "";
     }

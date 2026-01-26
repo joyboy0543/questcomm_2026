@@ -45,12 +45,21 @@
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
         <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
+        <button class="tab disabled" data-tab="riddle1">First Step</button> <!-- was Riddle -->
+        <button class="tab disabled" data-tab="potion">Evidence Note</button> <!-- was Potion -->
+        <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
+        <button class="tab disabled" data-tab="colorcode">Corridor Clue</button> <!-- was Cipher Rings -->
+        <button class="tab disabled" data-tab="findings">Findings</button>
+      </div>
+      <!-- <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="briefing">Briefing</button>
+        <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
         <button class="tab disabled" data-tab="riddle1">Riddle</button>
         <button class="tab disabled" data-tab="potion">Potion</button>
         <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
         <button class="tab disabled" data-tab="colorcode">Cipher Rings</button>
         <button class="tab disabled" data-tab="findings">Findings</button>
-      </div>
+      </div> -->
 
       <!-- Sections -->
       <section id="briefing" class="section active">
@@ -64,11 +73,14 @@
         <h3>Cipher Terminal — Photo Forensics</h3>
         <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the code you deduce.</p>
         <p class="status" style="opacity:.8">Ops: If the screen is quiet, the corridor walls might speak.</p>
+
         <!-- Small preview (click to open modal viewer) -->
-        <figure class="photo-thumb">
+        <figure class="photo-thumb"></figure> <!-- <- empty, no literal text -->
+        <!-- Small preview (click to open modal viewer) -->
+        <!-- <figure class="photo-thumb">
           assets/buildings.jpg
           <figcaption>Tap/click to open</figcaption>
-        </figure>
+        </figure> -->
 
         <!-- Zoom tools move inside the modal; we keep only input & confirm here -->
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
@@ -96,10 +108,10 @@
       </section>
 
       <section id="potion" class="section">
-        <h3>Padlock Lock Potion</h3>
+        <h3>Evidence Note</h3>
 
         <article class="potion-card">
-          <header class="potion-title">How to Brew a Basic Padlock Lock Potion</header>
+          <header class="potion-title">Padlock Potion</header>
 
           <div class="potion-body">
             <p class="potion-lede">To bind a common padlock shut and command its clasp to sleep.</p>
@@ -112,12 +124,12 @@
               </li>
             </ul>
 
-            <p class="potion-stir">Stir clockwise: once for the lash, twice for the bones, thrice for the drops.</p>
-            <p class="potion-incantation"><em>Then whisper: “By scale and crown, by truth denied — bolt, bar, and latch,
-                be tied.”</em></p>
+            <p>Stir clockwise: once for the lash, twice for the bones, thrice for the drops.</p>
+            <p><em>Then whisper: “By scale and crown, by truth denied — bolt, bar, and latch, be tied.”</em></p>
 
-            <p class="potion-warning">Mind the order! Reverse the steps, and you may unlock forces eager to snap any
-              padlock wide open.</p>
+            <p class="potion-warning">
+              Mind the order! Reverse the steps, and you may unlock forces eager to snap any padlock wide open.
+            </p>
           </div>
         </article>
 

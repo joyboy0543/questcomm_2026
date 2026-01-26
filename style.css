@@ -577,3 +577,57 @@ summary {
     color: #ffd768;
     font-weight: 700
 }
+
+/* Corridor Clue — 3 columns */
+.corridor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    gap: 12px;
+    max-width: min(96vw, 900px);
+    margin: 10px auto 0;
+}
+
+.column {
+    background: #0b1218;
+    border: 1px solid #1c2d3a;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.col-title {
+    color: #9ad7ff;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.word-list {
+    display: grid;
+    gap: 8px
+}
+
+.word {
+    background: #102536;
+    color: #e6eef5;
+    border: 1px solid #1c2d3a;
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.word:hover {
+    background: #16344a
+}
+
+.word.selected {
+    border-color: #29d49a;
+    box-shadow: 0 0 0 2px rgba(41, 212, 154, .18);
+}
+
+@media (max-width: 780px) {
+    .corridor-grid {
+        grid-template-columns: 1fr;
+    }
+}

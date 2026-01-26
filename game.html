@@ -136,9 +136,26 @@
       </section>
 
       <section id="colorcode" class="section">
+        <h3>Corridor Clue</h3> <!-- Four hint lines -->
+        <div class="corridor-riddle"> <!-- S1 → Column 1 target is MAP -->
+          <p>I show the way without walking, the shape without the land. Fold me and I hide places; wet me and I blur
+            the route. What am I?</p> <!-- S2 → Column 2 target is THE -->
+          <p>I choose the only one among many—place me before a name to make it the one you mean. Who am I?</p>
+          <!-- S3 → Order hint (2nd, then 3rd, then 1st column) -->
+          <p><strong>Arrange your answers:</strong> start with the middle column, then the right, then the left.</p>
+          <!-- S4 → Column 3 target is WORLD -->
+          <p>I spin yet stay in place; I hold every sea and street; I’m the home that contains every home. What am I?
+          </p>
+        </div> <!-- The three columns (words are injected by JS and shuffled each load) -->
+        <div id="corridorGrid" class="corridor-grid" aria-label="Select one word from each column"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center"> <input id="ringsInput"
+            placeholder="Enter one word from each column" /> <button id="ringsConfirm">Confirm</button> </div>
+        <p id="ringsStatus" class="status"></p>
+      </section>
+      <!-- <section id="colorcode" class="section">
         <h3>Corridor Clue</h3>
 
-        <!-- Distinct serif font + cyan palette -->
+        // Distinct serif font + cyan palette
         <div class="corridor-riddle">
           <p>I give perspective without a sound.</p>
           <p>Three words, spoken as one, describe what I am.</p>
@@ -153,7 +170,7 @@
         </div>
 
         <p id="ringsStatus" class="status"></p>
-      </section>
+      </section> -->
 
       <section id="findings" class="section">
         <h3>Findings</h3>

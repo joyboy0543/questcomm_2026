@@ -37,7 +37,7 @@
               <div class="game-host" id="host-${k}"></div>
 
               <div class="digit-row skip-row" style="display:flex;gap:8px;align-items:center;margin-top:10px">
-                <input aria-label="Enter digit" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="Enter the digit" />
+                <input aria-label="Enter digit" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="Enter digit" />
                 <button class="skip-confirm">Confirm</button>
               </div>
               <p class="status door-status" style="min-height:1.2rem"></p>

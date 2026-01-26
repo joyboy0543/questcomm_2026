@@ -7,6 +7,7 @@
     --warn: #ffcc29
 }
 
+/* Base */
 * {
     box-sizing: border-box
 }
@@ -20,7 +21,7 @@ body {
     margin: 0;
     background: var(--bg);
     color: #e6eef5;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
 }
 
 button {
@@ -32,7 +33,7 @@ button {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px
+    gap: 8px;
 }
 
 button:disabled {
@@ -116,13 +117,13 @@ body.landing {
 
 .lock-btn.is-locked .lock,
 .lock-btn:disabled .lock {
-    color: #ef4444;
+    color: #ef4444
 }
 
 /* red when locked */
 .lock-btn.is-unlocked .lock,
 .lock-btn:not(:disabled) .lock {
-    color: #22c55e;
+    color: #22c55e
 }
 
 /* green when unlocked */
@@ -142,7 +143,7 @@ body.landing {
     }
 }
 
-/* Game Layout */
+/* App layout */
 .app {
     display: grid;
     grid-template-columns: 260px 1fr 320px;
@@ -216,134 +217,20 @@ body.landing {
     outline: 2px solid var(--primary)
 }
 
+/* Sections visibility — Findings should ONLY show on its tab */
 .section {
-    display: none
+    display: none !important
 }
 
 .section.active {
-    display: block
+    display: block !important
 }
 
 .status {
     min-height: 1.2rem
 }
 
-/* Zoomable image viewer */
-.zoom-wrap {
-    --w: min(640px, 92vw);
-    width: var(--w);
-    height: calc(var(--w) * 0.56);
-    background: #0b1218;
-    border: 1px solid #1c2d3a;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 8px auto;
-    touch-action: none;
-    position: relative;
-}
-
-.zoom-img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: center center;
-    user-select: none;
-    -webkit-user-drag: none;
-    max-width: none;
-    max-height: none;
-}
-
-.zoom-tools {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 6px
-}
-
-/* Ribbon */
-.ribbon {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 8px 10px;
-    border: 1px solid #1c2d3a;
-    border-radius: 10px;
-    background: #0b1218;
-    margin: 8px 0 12px;
-    overflow: auto;
-}
-
-.ribbon .step {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    opacity: .8
-}
-
-.ribbon .step .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #243546;
-    box-shadow: 0 0 0 2px #1c2d3a inset
-}
-
-.ribbon .step.done {
-    opacity: 1
-}
-
-.ribbon .step.done .dot {
-    background: var(--ok);
-    box-shadow: none
-}
-
-.ribbon .step .label {
-    color: #cfe6f7;
-    font-size: .95rem
-}
-
-/* Radio */
-details {
-    border: 1px solid #1c2d3a;
-    border-radius: 10px;
-    background: #0b1218;
-    margin-bottom: 10px
-}
-
-summary {
-    cursor: pointer;
-    padding: 8px 12px;
-    list-style: none
-}
-
-.group {
-    padding: 8px 12px;
-    border-top: 1px solid #1c2d3a
-}
-
-.msg {
-    background: #0e1720;
-    border: 1px solid #1c2d3a;
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 6px
-}
-
-@media(max-width:1080px) {
-    .app {
-        grid-template-columns: 1fr;
-        grid-auto-rows: max-content
-    }
-
-    .panel {
-        height: auto;
-        max-height: unset
-    }
-}
-
-/* --- Photo preview (small) --- */
+/* Photo preview (small) */
 .photo-thumb {
     width: min(360px, 86vw);
     margin: 8px auto;
@@ -360,7 +247,7 @@ summary {
 .photo-thumb img {
     display: block;
     width: 100%;
-    height: auto;
+    height: auto
 }
 
 .photo-thumb figcaption {
@@ -374,14 +261,14 @@ summary {
     font-size: .8rem;
 }
 
-/* --- Lightbox modal for zoomable image --- */
+/* Lightbox modal (zoom viewer) */
 .lb-backdrop {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, .65);
     display: grid;
     place-items: center;
-    z-index: 1000;
+    z-index: 1000
 }
 
 .lb-panel {
@@ -430,52 +317,152 @@ summary {
     gap: 8px
 }
 
-/* Reuse viewer styles but namespaced for modal */
-.lb-view .zoom-img {
+.zoom-img {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(1);
-    transform-origin: center center;
+    transform-origin: center;
     user-select: none;
     -webkit-user-drag: none;
     max-width: none;
-    max-height: none;
+    max-height: none
 }
 
+/* Ribbon */
+.ribbon {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid #1c2d3a;
+    border-radius: 10px;
+    background: #0b1218;
+    margin: 8px 0 12px;
+    overflow: auto;
+}
+
+.ribbon .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    opacity: .8
+}
+
+.ribbon .step .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #243546;
+    box-shadow: 0 0 0 2px #1c2d3a inset
+}
+
+.ribbon .step.done {
+    opacity: 1
+}
+
+.ribbon .step.done .dot {
+    background: var(--ok);
+    box-shadow: none
+}
+
+.ribbon .step.skip .dot {
+    background: #ef6b6b !important
+}
+
+/* red if skipped */
+.ribbon-hidden {
+    display: none
+}
+
+.ribbon .step .label {
+    color: #cfe6f7;
+    font-size: .95rem
+}
+
+/* Radio blocks */
+details {
+    border: 1px solid #1c2d3a;
+    border-radius: 10px;
+    background: #0b1218;
+    margin-bottom: 10px
+}
+
+summary {
+    cursor: pointer;
+    padding: 8px 12px;
+    list-style: none
+}
+
+.group {
+    padding: 8px 12px;
+    border-top: 1px solid #1c2d3a
+}
+
+.msg {
+    background: #0e1720;
+    border: 1px solid #1c2d3a;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px
+}
+
+@media(max-width:1080px) {
+    .app {
+        grid-template-columns: 1fr;
+        grid-auto-rows: max-content
+    }
+
+    .panel {
+        height: auto;
+        max-height: unset
+    }
+}
+
+/* Unlock Screen (Agency FB) */
 .qcpd-riddle {
-    /* Font handling */
     font-family: "Agency FB", "AgencyFB", "Arial Narrow", "Segoe UI", sans-serif;
-    /* Plum Accent 5 – Lighter 50% (matched visually for web) */
     color: #b46ea6;
-    /* Responsive sizing */
     font-size: clamp(1.4rem, 2.6vw, 2.2rem);
     line-height: 1.35;
-    /* Layout */
     max-width: min(92vw, 720px);
     margin: 24px auto;
     text-align: center;
-    /* Prevent cropping */
     padding: 12px 16px;
     word-wrap: break-word;
     hyphens: auto;
 }
 
-/* Slight emphasis on the question line */
 .qcpd-riddle .qcpd-question {
     margin-top: 12px;
     font-size: clamp(1.6rem, 3vw, 2.4rem);
-    letter-spacing: 0.04em;
+    letter-spacing: .04em
 }
 
-/* ===== POTION THEME ===== */
+/* Corridor Clue (serif + cyan palette) */
+.corridor-riddle {
+    font-family: "Georgia", "Garamond", "Times New Roman", serif;
+    color: #7FD3FF;
+    font-size: clamp(1.3rem, 2.4vw, 2rem);
+    line-height: 1.4;
+    max-width: min(92vw, 760px);
+    margin: 24px auto;
+    text-align: center;
+    padding: 12px 16px;
+}
+
+.corridor-riddle .qcpd-question {
+    margin-top: 12px;
+    color: #9ad7ff;
+    letter-spacing: .03em
+}
+
+/* Potion theme (Agency FB for all but the final warning) */
 .potion-card {
     --ring: #6ee7ff;
-    /* cyan highlight */
     --mist: #b46ea6;
-    /* plum accent (matches your Plum Accent 5 Lighter 50%) */
     --glow: rgba(110, 231, 255, .22);
-
     background:
         radial-gradient(110% 80% at 10% 0%, rgba(180, 110, 166, .10), transparent 60%),
         radial-gradient(120% 90% at 100% 100%, rgba(110, 231, 255, .08), transparent 60%),
@@ -488,8 +475,12 @@ summary {
     margin: 10px auto;
 }
 
+.potion-card,
+.potion-card *:not(.potion-warning) {
+    font-family: "Agency FB", "AgencyFB", "Arial Narrow", "Segoe UI", sans-serif !important;
+}
+
 .potion-title {
-    font-family: "Agency FB", "AgencyFB", "Arial Narrow", "Segoe UI", sans-serif;
     font-size: clamp(1.4rem, 3.2vw, 2.2rem);
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -505,7 +496,7 @@ summary {
 .potion-body {
     color: #cfe6f7;
     font-size: clamp(1rem, 2.1vw, 1.12rem);
-    line-height: 1.55;
+    line-height: 1.55
 }
 
 .potion-lede {
@@ -522,11 +513,6 @@ summary {
     margin: 6px 0
 }
 
-.potion-stir {
-    color: #9fb1c1;
-    margin: 8px 0 4px
-}
-
 .potion-incantation {
     color: #b46ea6;
     background: linear-gradient(90deg, rgba(110, 231, 255, .06), rgba(180, 110, 166, .06));
@@ -539,42 +525,23 @@ summary {
     color: #ffd768;
     margin-top: 8px;
     text-shadow: 0 0 10px rgba(255, 215, 104, .12);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif !important;
 }
 
-/* Ribbon visibility + dot colors */
-.ribbon-hidden {
-    display: none
+/* Doorway digit input width + feedback */
+.digit-row input {
+    min-width: 130px
 }
 
-.ribbon .step .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #243546;
-    box-shadow: 0 0 0 2px #1c2d3a inset
-}
-
-.ribbon .step.done .dot {
-    background: #29d49a;
-    box-shadow: none
-}
-
-/* green by default */
-.ribbon .step.skip .dot {
-    background: #ef6b6b !important
-}
-
-/* red if skipped */
-
-/* ---- Inputs: success / error with shake ---- */
+/* shows full "Enter digit" */
 .input-ok {
     border-color: #29d49a !important;
-    box-shadow: 0 0 0 2px rgba(41, 212, 154, .18);
+    box-shadow: 0 0 0 2px rgba(41, 212, 154, .18)
 }
 
 .input-bad {
     border-color: #ef6b6b !important;
-    box-shadow: 0 0 0 2px rgba(239, 107, 107, .18);
+    box-shadow: 0 0 0 2px rgba(239, 107, 107, .18)
 }
 
 @keyframes shake {
@@ -605,14 +572,8 @@ summary {
     animation: shake .25s linear
 }
 
-/* ---- Highlight span for numbers in success text ---- */
+/* Highlight helper (for numbers like Three / Six / Seven) */
 .hl {
     color: #ffd768;
     font-weight: 700
-}
-
-/* ---- Potion: ensure font applies to every line (except warning) ---- */
-.potion-card,
-.potion-card *:not(.potion-warning) {
-    font-family: "Agency FB", "AgencyFB", "Arial Narrow", "Segoe UI", sans-serif;
 }

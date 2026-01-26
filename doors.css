@@ -291,3 +291,8 @@
 :root {
   --msw: clamp(34px, 4.6vw, 50px);
 }
+
+/* Ensure the digit input has enough width to show placeholder */
+.digit-row input {
+  min-width: 130px;
+}

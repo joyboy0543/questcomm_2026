@@ -33,10 +33,10 @@
       <!-- Progress ribbon (hidden until all evidence is cleared) -->
       <div id="progressRibbon" class="ribbon ribbon-hidden" aria-label="Case progress">
         <div class="step" data-step="cipher"><span class="dot"></span><span class="label">Photo</span></div>
-        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Riddle</span></div>
-        <div class="step" data-step="potion"><span class="dot"></span><span class="label">Potion</span></div>
+        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Unlock</span></div>
+        <div class="step" data-step="potion"><span class="dot"></span><span class="label">Evidence</span></div>
         <div class="step" data-step="doors"><span class="dot"></span><span class="label">Doors</span></div>
-        <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Final</span></div>
+        <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Corridor</span></div>
       </div>
 
       <div id="caseMsg" class="msg" style="display:none"></div>
@@ -44,22 +44,13 @@
       <!-- Tabs -->
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
-        <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
-        <button class="tab disabled" data-tab="riddle1">First Step</button> <!-- was Riddle -->
-        <button class="tab disabled" data-tab="potion">Evidence Note</button> <!-- was Potion -->
+        <button class="tab disabled" data-tab="cipher">Cipher Terminal Photo</button>
+        <button class="tab disabled" data-tab="riddle1">Unlock Screen</button> <!-- was Riddle -->
+        <button class="tab disabled" data-tab="potion">Evidence Note on HomeScreen</button> <!-- was Potion -->
         <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
         <button class="tab disabled" data-tab="colorcode">Corridor Clue</button> <!-- was Cipher Rings -->
         <button class="tab disabled" data-tab="findings">Findings</button>
       </div>
-      <!-- <div class="tabs" id="tabs">
-        <button class="tab active" data-tab="briefing">Briefing</button>
-        <button class="tab disabled" data-tab="cipher">Cipher Terminal</button>
-        <button class="tab disabled" data-tab="riddle1">Riddle</button>
-        <button class="tab disabled" data-tab="potion">Potion</button>
-        <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
-        <button class="tab disabled" data-tab="colorcode">Cipher Rings</button>
-        <button class="tab disabled" data-tab="findings">Findings</button>
-      </div> -->
 
       <!-- Sections -->
       <section id="briefing" class="section active">
@@ -72,17 +63,11 @@
       <section id="cipher" class="section">
         <h3>Cipher Terminal — Photo Forensics</h3>
         <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the code you deduce.</p>
-        <p class="status" style="opacity:.8">Ops: If the screen is quiet, the corridor walls might speak.</p>
 
-        <!-- Small preview (click to open modal viewer) -->
-        <figure class="photo-thumb"></figure> <!-- <- empty, no literal text -->
-        <!-- Small preview (click to open modal viewer) -->
-        <!-- <figure class="photo-thumb">
-          assets/buildings.jpg
-          <figcaption>Tap/click to open</figcaption>
-        </figure> -->
+        <!-- Small preview (click to open modal viewer). Leave EMPTY; JS injects the image -->
+        <figure class="photo-thumb"></figure>
 
-        <!-- Zoom tools move inside the modal; we keep only input & confirm here -->
+        <!-- Only input + confirm here -->
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="cipherInput" placeholder="Enter solution" inputmode="numeric" />
           <button id="cipherConfirm">Confirm</button>
@@ -91,15 +76,18 @@
       </section>
 
       <section id="riddle1" class="section">
-        <h3>Riddle</h3>
+        <h3>Unlock Screen</h3>
         <p class="status" style="opacity:.7">Think carefully; the answer is a single digit.</p>
-        <div class="qcpd-riddle" style="max-width:680px;margin:auto;text-align:left">
+
+        <!-- Centered riddle -->
+        <div class="qcpd-riddle">
           <p>I arrive before the journey begins.</p>
           <p>Yet, I am not the road.</p>
           <p>I turn the empty into something.</p>
           <p>Without ever becoming many.</p>
           <p class="qcpd-question">What am I?</p>
         </div>
+
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="riddle1Input" placeholder="Your answer" inputmode="numeric" />
           <button id="riddle1Confirm">Confirm</button>
@@ -108,7 +96,7 @@
       </section>
 
       <section id="potion" class="section">
-        <h3>Evidence Note</h3>
+        <h3>Evidence Note on HomeScreen</h3>
 
         <article class="potion-card">
           <header class="potion-title">Padlock Potion</header>
@@ -148,13 +136,14 @@
       </section>
 
       <section id="colorcode" class="section">
-        <h3>Cipher Rings — Final Riddle</h3>
+        <h3>Corridor Clue</h3>
 
-        <div class="qcpd-riddle">
+        <!-- Distinct serif font + cyan palette -->
+        <div class="corridor-riddle">
           <p>I give perspective without a sound.</p>
           <p>Three words, spoken as one, describe what I am.</p>
           <p>I live where paths connect and footsteps pass,</p>
-          <p>pressed flat against the wall, watching the everyone go by.</p>
+          <p>pressed flat against the wall, watching the world go by.</p>
           <p class="qcpd-question">Seek me where directions meet, and say my name.</p>
         </div>
 
@@ -164,16 +153,18 @@
         </div>
 
         <p id="ringsStatus" class="status"></p>
-      </section <section id="findings" class="section">
-      <h3>Findings</h3>
-      <ol>
-        <li>243 — from the photo cipher</li>
-        <li>1 — from the riddle</li>
-        <li>928 — from the potion</li>
-        <li>367 — from the doorway sequence</li>
-        <li>THE WORLD MAP — from the final riddle</li>
-      </ol>
-      <p class="status">Good work, Detective.</p>
+      </section>
+
+      <section id="findings" class="section">
+        <h3>Findings</h3>
+        <ol>
+          <li>243 — from the photo cipher</li>
+          <li>1 — from the riddle</li>
+          <li>928 — from the evidence note</li>
+          <li>367 — from the doorway sequence</li>
+          <li>THE WORLD MAP — from the corridor clue</li>
+        </ol>
+        <p class="status">Good work, Detective.</p>
       </section>
     </main>
 
@@ -206,7 +197,7 @@
 
   <script src="app.js"></script>
 
-  <!-- 🔵 NEW shared helpers (ribbon, radio, persist) -->
+  <!-- Shared helpers (ribbon, radio, persist) -->
   <script src="modules/progress.js?v=20260123-4"></script>
 
   <!-- Puzzle modules -->
@@ -215,12 +206,12 @@
   <script src="modules/potion.js?v=20260123-4"></script>
 
   <!-- Doorway Sequence Orchestrator & Games -->
-  <script src="modules/doors.js?v=20260123-4"></script>
+  <script src="modules/doors.js?v=20260123-6"></script> <!-- ensure -6 version for Enter digit + green/red feedback -->
   <script src="modules/door_minesweep4.js?v=20260123-4"></script>
   <script src="modules/door_composite.js?v=20260123-4"></script>
   <script src="modules/door_path7.js?v=20260123-4"></script>
 
-  <!-- Final riddle module -->
+  <!-- Corridor clue module -->
   <script src="modules/colorcode.js?v=20260123-4"></script>
 </body>
 

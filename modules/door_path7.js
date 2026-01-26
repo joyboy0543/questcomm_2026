@@ -1,28 +1,32 @@
 // modules/door_path7.js
-// Queens Protocol 6x6 with clearly-different colored sections, smaller cells, and a Check button.
-// Exposes window.initDoorQueens5(host, onSolved) for the Doors loader.
+// Queens Protocol 7x7 with 7 clearly-different colored regions + Check/Clear.
+// Rules: (1) no shared row/column, (2) no touching (incl. diagonals), (3) exactly one queen per region.
+// Exposes: window.initDoorQueens5(host, onSolved)
 
 (function () {
   window.initDoorQueens5 = function (host, onSolved) {
-    const SIZE = 6; // change to 5 if you want 5x5 later
+    const SIZE = 7; // <-- 7x7, require exactly 7 queens
 
-    // 6 distinct regions (0..5) — clearly different colors (not just shades)
-    // You can tweak shapes anytime; keep exactly one queen per region as a rule.
+    // 7 distinct regions (0..6). Shapes deliberately varied; each region must contain exactly one queen.
     const REGIONS = [
-      [0, 0, 0, 1, 1, 1],
-      [0, 2, 2, 1, 3, 1],
-      [0, 2, 4, 4, 3, 3],
-      [5, 2, 4, 4, 3, 3],
-      [5, 2, 2, 4, 4, 3],
-      [5, 5, 2, 4, 4, 3]
+      [0, 0, 0, 1, 1, 1, 2],
+      [0, 3, 3, 1, 4, 1, 2],
+      [0, 3, 4, 4, 4, 1, 2],
+      [5, 3, 4, 6, 4, 1, 2],
+      [5, 3, 6, 6, 4, 2, 2],
+      [5, 5, 6, 6, 6, 2, 2],
+      [5, 5, 5, 6, 6, 6, 2]
     ];
+
+    // 7 fully different colors (not shades of one color)
     const COLORS = {
       0: "#ef6b6b", // red
       1: "#4cc9f0", // cyan
       2: "#43aa8b", // teal/green
       3: "#f8961e", // orange
       4: "#9b5de5", // purple
-      5: "#ffd166"  // yellow
+      5: "#ffd166", // yellow
+      6: "#2dd4bf"  // aqua
     };
 
     const wrap = document.createElement("div");
@@ -48,8 +52,7 @@
     host.innerHTML = "";
     host.appendChild(wrap);
 
-    // Make the board smaller visually (without editing doors.css)
-    // We force a fixed size for this mini-board.
+    // Compact board for phones (without changing global CSS)
     grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
 
     const cells = [];
@@ -62,18 +65,17 @@
         el.style.width = "52px";
         el.style.height = "52px";
         el.style.background = COLORS[REGIONS[r][c]];
-        el.style.filter = "saturate(1) brightness(0.9)"; // punchier blocks
-        el.onclick = () => toggleQ(el);
+        el.style.filter = "saturate(1) brightness(0.9)";
+        el.addEventListener("click", () => toggleQ(el));
         grid.appendChild(el);
         cells[r][c] = el;
       }
     }
 
     function toggleQ(el) {
-      el.dataset.q = el.dataset.q === "1" ? "0" : "1";
+      el.dataset.q = (el.dataset.q === "1") ? "0" : "1";
       render(el);
     }
-
     function render(el) {
       el.innerHTML = "";
       if (el.dataset.q === "1") {
@@ -86,9 +88,9 @@
       }
     }
 
-    function validate() {
-      // Return true if solved; mark any conflicts for UX
-      cells.flat().forEach((e) => e.classList.remove("attacked"));
+    function validateAndMark() {
+      // clear marks
+      cells.flat().forEach(e => e.classList.remove("attacked"));
 
       const queens = [];
       for (let r = 0; r < SIZE; r++) {
@@ -100,43 +102,22 @@
       let ok = true;
 
       // row/col uniqueness
-      for (let r = 0; r < SIZE; r++) {
-        if (queens.filter((q) => q[0] === r).length > 1) ok = false;
-      }
-      for (let c = 0; c < SIZE; c++) {
-        if (queens.filter((q) => q[1] === c).length > 1) ok = false;
-      }
+      for (let r = 0; r < SIZE; r++) if (queens.filter(q => q[0] === r).length > 1) ok = false;
+      for (let c = 0; c < SIZE; c++) if (queens.filter(q => q[1] === c).length > 1) ok = false;
 
-      // region uniqueness
+      // one per region
       const seen = new Set();
       for (const [r, c] of queens) {
         const key = "R" + REGIONS[r][c];
-        if (seen.has(key)) ok = false;
-        else seen.add(key);
+        if (seen.has(key)) ok = false; else seen.add(key);
       }
 
-      // adjacency (no touch)
-      const dirs = [
-        [-1, -1],
-        [-1, 0],
-        [-1, 1],
-        [0, -1],
-        [0, 1],
-        [1, -1],
-        [1, 0],
-        [1, 1],
-      ];
+      // cannot touch (8-neighborhood)
+      const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
       for (const [r, c] of queens) {
         for (const [dr, dc] of dirs) {
-          const rr = r + dr,
-            cc = c + dc;
-          if (
-            rr >= 0 &&
-            rr < SIZE &&
-            cc >= 0 &&
-            cc < SIZE &&
-            cells[rr][cc].dataset.q === "1"
-          ) {
+          const rr = r + dr, cc = c + dc;
+          if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && cells[rr][cc].dataset.q === "1") {
             cells[r][c].classList.add("attacked");
             cells[rr][cc].classList.add("attacked");
             ok = false;
@@ -144,34 +125,28 @@
         }
       }
 
-      // exactly one per region means: number of queens == number of regions (6 here)
-      if (ok && queens.length === 6) return true;
-      return false;
+      // ✅ exactly 7 queens required
+      if (queens.length !== 7) ok = false;
+
+      return ok;
     }
 
-    btnCheck.onclick = () => {
-      const solved = validate();
-      status.textContent = solved
-        ? "Queens secured. Threats neutralized."
-        : "Conflicts detected — adjust the placements.";
-      // Shake the Check button if incorrect
-      btnCheck.classList.remove("shake");
-      if (!solved) {
+    btnCheck.addEventListener("click", () => {
+      const solved = validateAndMark();
+      if (solved) {
+        status.innerHTML = 'The <span class="hl">Seven</span> Queens have been located. Threats neutralized.';
+        onSolved && onSolved();
+      } else {
+        status.textContent = "Conflicts detected — adjust the placements.";
+        btnCheck.classList.remove("shake");
         btnCheck.classList.add("shake");
         setTimeout(() => btnCheck.classList.remove("shake"), 300);
-      } else {
-        // call Doors to record as solved
-        onSolved && onSolved();
       }
-    };
+    });
 
-    btnClear.onclick = () => {
-      cells.flat().forEach((el) => {
-        el.dataset.q = "0";
-        el.innerHTML = "";
-        el.classList.remove("attacked");
-      });
+    btnClear.addEventListener("click", () => {
+      cells.flat().forEach(el => { el.dataset.q = "0"; el.innerHTML = ""; el.classList.remove("attacked"); });
       status.textContent = "";
-    };
+    });
   };
 })();

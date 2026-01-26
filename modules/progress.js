@@ -1,33 +1,20 @@
-// Shared helpers for QCPD: radio, persistence, ribbon, and tabs
+{/* <script> */ }
+// Shared helpers: radio, persistence, ribbon, tabs. Shows ribbon only when all steps cleared.
+// Marks steps as 'puzzle' (green) or 'skip' (red).
 (function () {
     const KEY = 'qcpd.progress';
     const ORDER = ['cipher', 'riddle1', 'potion', 'doors', 'colorcode'];
 
     const QCPD = {
-        load() {
-            try { return JSON.parse(localStorage.getItem(KEY) || '{}'); }
-            catch { return {}; }
-        },
-        /**
-         * Save a step.
-         * @param {string} part - step id
-         * @param {string} value - e.g., '243'
-         * @param {'puzzle'|'skip'} method - how it was cleared (default 'puzzle')
-         */
+        load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } },
         save(part, value, method = 'puzzle') {
-            const p = QCPD.load();
-            p[part] = { value, method, ts: Date.now() };
+            const p = QCPD.load(); p[part] = { value, method, ts: Date.now() };
             localStorage.setItem(KEY, JSON.stringify(p));
             QCPD.updateRibbon();
         },
         radio(msg) {
             const box = document.getElementById('radioChatter');
-            if (box) {
-                const div = document.createElement('div');
-                div.className = 'msg';
-                div.textContent = msg;
-                box.prepend(div);
-            }
+            if (box) { const div = document.createElement('div'); div.className = 'msg'; div.textContent = msg; box.prepend(div); }
             if (typeof window.radioHint === 'function') { window.radioHint(msg); }
         },
         unlockTab(tabId, { autoSwitch = false, message } = {}) {
@@ -35,10 +22,7 @@
             if (!btn) return;
             btn.classList.remove('disabled');
             if (message) QCPD.radio(message);
-            if (autoSwitch) {
-                btn.click?.();
-                QCPD.switchTo(tabId);
-            }
+            if (autoSwitch) { btn.click?.(); QCPD.switchTo(tabId); }
             QCPD.updateRibbon();
         },
         switchTo(tabId) {
@@ -47,36 +31,28 @@
             btns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
             secs.forEach(s => s.classList.toggle('active', s.id === tabId));
         },
-        // Show ribbon only when all evidence steps exist; color red if method==='skip'
         updateRibbon() {
             const p = QCPD.load();
             const ribbon = document.getElementById('progressRibbon');
             if (!ribbon) return;
-
             const allDone = ORDER.every(id => p[id]);
             ribbon.classList.toggle('ribbon-hidden', !allDone);
-
             [...ribbon.querySelectorAll('.step')].forEach(step => {
-                const id = step.dataset.step;
-                const data = p[id];
-                const done = Boolean(data);
-                step.classList.toggle('done', done);
+                const id = step.dataset.step; const data = p[id];
+                const done = Boolean(data); step.classList.toggle('done', done);
                 step.classList.toggle('skip', done && data.method === 'skip');
             });
         },
         resume() {
             const p = QCPD.load();
-            // Unlock tabs in sequence if previously cleared
             if (p.cipher) QCPD.unlockTab('riddle1');
             if (p.riddle1) QCPD.unlockTab('potion');
             if (p.potion) QCPD.unlockTab('doors');
             if (p.doors) QCPD.unlockTab('colorcode');
             if (p.colorcode) QCPD.unlockTab('findings');
-
-            // Refresh ribbon state (may still be hidden if not all done)
             QCPD.updateRibbon();
         },
-        markDoorsComplete(method = 'puzzle') { // left for external callers if needed
+        markDoorsComplete(method = 'puzzle') {
             QCPD.save('doors', '367', method);
             QCPD.unlockTab('colorcode', { message: 'Doorway sequence complete. Door number 367 noted.' });
             QCPD.radio('Sequence complete. Door number 367 noted.');
@@ -94,11 +70,11 @@
         });
 
         document.getElementById('tabs')?.addEventListener('click', (e) => {
-            const b = e.target.closest('.tab');
-            if (!b || b.classList.contains('disabled')) return;
+            const b = e.target.closest('.tab'); if (!b || b.classList.contains('disabled')) return;
             QCPD.switchTo(b.dataset.tab);
         });
 
         QCPD.resume();
     });
 })();
+// </script >

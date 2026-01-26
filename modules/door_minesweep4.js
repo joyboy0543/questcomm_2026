@@ -1,6 +1,6 @@
-// Safe Sweep (4x4, 3 bombs) with flagging and colorful counts
+{/* <script> */ }
+// Safe Sweep (4x4, 3 bombs) with flagging, colorful counts, and success text highlighting "Three".
 // Exposes: window.initDoorMinesweep4(host, onSolved)
-
 (function () {
   window.initDoorMinesweep4 = function (host, onSolved) {
     const SIZE = 4, BOMBS = 3;
@@ -30,17 +30,13 @@
     const idx = (r, c) => r * SIZE + c;
 
     function neighbors(cell) {
-      const out = [];
-      for (const [dr, dc] of dirs) {
-        const r = cell.r + dr, c = cell.c + dc;
-        if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]);
-      }
-      return out;
+      const out = []; for (const [dr, dc] of dirs) {
+        const r = cell.r + dr, c = cell.c + dc; if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]);
+      } return out;
     }
 
     function place() {
       board.innerHTML = ''; cells.length = 0;
-      // bombs
       const pool = [...Array(SIZE * SIZE).keys()];
       for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
       const bombs = new Set(pool.slice(0, BOMBS));
@@ -57,75 +53,50 @@
         elOn(cell.el, 'click', () => { if (!cell.flag) reveal(cell); });
         elOn(cell.el, 'contextmenu', e => { e.preventDefault(); toggleFlag(cell); });
         elOn(cell.el, 'dblclick', () => { if (!cell.revealed) toggleFlag(cell); });
-
-        // long press to flag (mobile)
         let tId = null;
         elOn(cell.el, 'touchstart', () => { if (cell.revealed) return; tId = setTimeout(() => { toggleFlag(cell); tId = null; }, 420); }, { passive: true });
         elOn(cell.el, 'touchend', () => { if (tId) { clearTimeout(tId); } }, { passive: true });
       }
 
-      status.textContent = '';
-      renderAll();
+      status.textContent = ''; renderAll();
     }
-
     function elOn(el, ev, fn, opt) { el.addEventListener(ev, fn, opt); }
 
-    function toggleFlag(cell) {
-      if (cell.revealed) return;
-      cell.flag = !cell.flag;
-      cell.el.classList.toggle('flag', cell.flag);
-    }
+    function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; cell.el.classList.toggle('flag', cell.flag); }
 
     function reveal(cell) {
       if (cell.revealed || cell.flag) return;
       cell.revealed = true;
 
       if (cell.bomb) {
-        cell.el.classList.add('boom');
-        cell.el.style.background = '#3b0f0f';
+        cell.el.classList.add('boom'); cell.el.style.background = '#3b0f0f';
         setTimeout(() => { cell.el.classList.remove('boom'); cell.el.style.background = ''; }, 600);
         return;
       }
-
       if (cell.count === 0) {
-        for (const n of neighbors(cell)) {
-          if (!n.revealed && !n.flag && !n.bomb) reveal(n);
-        }
+        for (const n of neighbors(cell)) { if (!n.revealed && !n.flag && !n.bomb) reveal(n); }
       }
-      renderCell(cell);
-      checkWin();
+      renderCell(cell); checkWin();
     }
 
     function renderCell(cell) {
-      const el = cell.el; el.textContent = '';
-      el.classList.add('revealed');
+      const el = cell.el; el.textContent = ''; el.classList.add('revealed');
       if (!cell.bomb && cell.count > 0) {
-        const span = document.createElement('span');
-        span.textContent = cell.count;
-        span.className = 'n' + cell.count;
-        el.appendChild(span);
+        const span = document.createElement('span'); span.textContent = cell.count; span.className = 'n' + cell.count; el.appendChild(span);
       }
     }
-
-    function renderAll() {
-      for (const cell of cells) {
-        cell.el.className = 'msw-cell';
-        cell.el.textContent = '';
-        if (cell.flag) cell.el.classList.add('flag');
-        if (cell.revealed) renderCell(cell);
-      }
-    }
+    function renderAll() { for (const cell of cells) { cell.el.className = 'msw-cell'; cell.el.textContent = ''; if (cell.flag) cell.el.classList.add('flag'); if (cell.revealed) renderCell(cell); } }
 
     function checkWin() {
       const safeTotal = cells.filter(c => !c.bomb).length;
       const revealedSafe = cells.filter(c => c.revealed && !c.bomb).length;
       if (revealedSafe === safeTotal) {
-        status.innerHTML = '<span> <span class="hl">Three</span> bombs were diffused in front of the doorway.</span>';
+        status.innerHTML = '<span><span class="hl">Three</span> bombs were diffused in front of the doorway.</span>';
         onSolved && onSolved();
       }
     }
-
     btnClear.addEventListener('click', place);
     place();
   };
 })();
+{/* </script> */ }

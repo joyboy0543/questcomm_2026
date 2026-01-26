@@ -1,10 +1,9 @@
-// modules/door_path7.js
-// Queens Protocol 7x7 with 7 colored sections; success text & new icon
+{/* <script> */ }
+// Queens Protocol 7x7 with 7 colored sections; exposes window.initDoorQueens5 for Doors loader.
 (function () {
   window.initDoorQueens5 = function (host, onSolved) {
     const SIZE = 7;
 
-    // 7 region labels (0..6). Adjust pattern as you like visually.
     const REGIONS = [
       [0, 0, 1, 1, 1, 2, 2],
       [0, 3, 3, 1, 4, 2, 2],
@@ -43,46 +42,29 @@
       }
     }
 
-    function toggleQ(el) {
-      el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
-      render(el); validate();
-    }
+    function toggleQ(el) { el.dataset.q = (el.dataset.q === '1') ? '0' : '1'; render(el); validate(); }
     function render(el) {
       el.innerHTML = '';
-      if (el.dataset.q === '1') {
-        const img = document.createElement('img');
-        img.src = 'assets/queen.svg'; img.alt = 'Q';
-        el.appendChild(img);
-      }
+      if (el.dataset.q === '1') { const img = document.createElement('img'); img.src = 'assets/queen.svg'; img.alt = 'Q'; el.appendChild(img); }
     }
 
     function validate() {
       cells.flat().forEach(e => e.classList.remove('attacked'));
-      const queens = [];
-      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (cells[r][c].dataset.q === '1') queens.push([r, c]);
+      const queens = []; for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (cells[r][c].dataset.q === '1') queens.push([r, c]);
 
       let ok = true;
-
-      // row/col uniqueness
       for (let r = 0; r < SIZE; r++) { if (queens.filter(q => q[0] === r).length > 1) ok = false; }
       for (let c = 0; c < SIZE; c++) { if (queens.filter(q => q[1] === c).length > 1) ok = false; }
 
-      // region uniqueness
       const seen = new Set();
-      for (const [r, c] of queens) {
-        const key = 'R' + REGIONS[r][c];
-        if (seen.has(key)) ok = false; else seen.add(key);
-      }
+      for (const [r, c] of queens) { const key = 'R' + REGIONS[r][c]; if (seen.has(key)) ok = false; else seen.add(key); }
 
-      // adjacency
       const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
       for (const [r, c] of queens) {
         for (const [dr, dc] of dirs) {
           const rr = r + dr, cc = c + dc;
           if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && cells[rr][cc].dataset.q === '1') {
-            cells[r][c].classList.add('attacked');
-            cells[rr][cc].classList.add('attacked');
-            ok = false;
+            cells[r][c].classList.add('attacked'); cells[rr][cc].classList.add('attacked'); ok = false;
           }
         }
       }
@@ -93,9 +75,7 @@
       } else status.textContent = "";
     }
 
-    btnClear.onclick = () => {
-      cells.flat().forEach(el => { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); });
-      status.textContent = '';
-    };
+    btnClear.onclick = () => { cells.flat().forEach(el => { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); }); status.textContent = ''; };
   };
 })();
+{/* </script> */ }

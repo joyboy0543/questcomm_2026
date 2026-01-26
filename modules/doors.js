@@ -1,3 +1,5 @@
+{/* <script> */ }
+// Doorway hall: adds per-door skip inputs with green/red feedback; integrates with QCPD ribbon/persist.
 (function () {
   const state = JSON.parse(localStorage.getItem('qcpd.doors') || '{}');
   function save() { localStorage.setItem('qcpd.doors', JSON.stringify(state)); }
@@ -16,8 +18,10 @@
   }
   async function ensure(keys) {
     const t = [];
-    if (keys.includes('one')) t.push(loadScript('modules/door_minesweep4.js')); // force-load
-    if (keys.includes('two') && need('initDoorJewelLatin')) t.push(loadScript('modules/door_jewel_latin.js'));
+    // Force-load Safe Sweep module to avoid race
+    if (keys.includes('one')) t.push(loadScript('modules/door_minesweep4.js'));
+    // These are already included via script tags, and we export globals below.
+    if (keys.includes('two') && need('initDoorJewelLatin')) t.push(loadScript('modules/door_jewel_latin.js')); // will be a no-op if our global exists
     if (keys.includes('three') && need('initDoorQueens5')) t.push(loadScript('modules/door_queens5.js'));
     if (t.length) await Promise.all(t);
   }
@@ -56,10 +60,10 @@
       const info = card.querySelector('.door-status');
       const digit = correctDigit[key];
 
-      function markSolved(method) {  // 'puzzle' or 'skip'
+      function markSolved(method) {  // 'puzzle' | 'skip'
         state[key] = { ...(state[key] || {}), open: true, recorded: true, digit, method };
         save();
-        // if all three, mark Doors step in global progress
+
         const all = ['one', 'two', 'three'].every(k => state[k]?.recorded);
         if (all) {
           const anySkip = ['one', 'two', 'three'].some(k => state[k]?.method === 'skip');
@@ -74,38 +78,44 @@
         state[key] = state[key] || { open: true }; save();
         try {
           await ensure([key]);
+
           if (key === 'one') {
             if (typeof window.initDoorMinesweep4 === 'function') {
               window.initDoorMinesweep4(host, () => markSolved('puzzle'));
-            } else host.innerHTML = '<div style="color:var(--warn)">Minesweeper module did not initialize.</div>';
+            } else {
+              host.innerHTML = '<div style="color:var(--warn)">Minesweeper module did not initialize.</div>';
+            }
           }
           if (key === 'two') window.initDoorJewelLatin?.(host, () => markSolved('puzzle'));
           if (key === 'three') window.initDoorQueens5?.(host, () => markSolved('puzzle'));
-        } catch (e) { host.innerHTML = `<div style="color:var(--warn)">${e.message}</div>`; }
+        } catch (e) {
+          host.innerHTML = `<div style="color:var(--warn)">${e.message}</div>`;
+        }
 
         // restore visual state
         if (state[key]?.recorded) {
           input.value = state[key].digit || digit;
           input.readOnly = true;
-          input.classList.add(state[key].method === 'skip' ? 'input-ok' : 'input-ok');
+          input.classList.add('input-ok');
         }
       }
 
       face.addEventListener('click', () => mount());
       if (state[key]?.open) mount();
 
+      // Skip-confirm behavior
       btn.addEventListener('click', () => {
         input.classList.remove('input-ok', 'input-bad', 'shake');
         const ok = input.value.trim() === digit;
         if (ok) {
           input.classList.add('input-ok');
           input.readOnly = true;
+          info.textContent = '';      // no "Recorded" text
           markSolved('skip');
-          info.textContent = ''; // no messages after confirm
         } else {
           input.classList.add('input-bad', 'shake');
           setTimeout(() => input.classList.remove('shake'), 250);
-          info.textContent = ''; // keep clean per your spec
+          info.textContent = '';      // keep clean per spec
         }
       });
     });
@@ -113,3 +123,4 @@
 
   window.initDoorsHall = function (container) { build(container); };
 })();
+{/* </script> */ }

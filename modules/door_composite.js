@@ -37,9 +37,24 @@
 
     // Choose some givens (coordinates) — tweak if you want more/less
     // Format: [r,c]
-    const GIVENS = new Set(
-      ["0,0", "0,3", "1,1", "1,4", "2,2", "2,5", "3,0", "3,3", "4,2", "5,4", "4,5"]
-    );
+    // const GIVENS = new Set(
+    //   ["0,0", "0,3", "1,1", "1,4", "2,2", "2,5", "3,0", "3,3", "4,2", "5,4", "4,5"]
+    // );
+    const GIVENS = new Set([
+      // Row 0
+      "0,0", "0,2", "0,4",
+      // Row 1
+      "1,1", "1,3", "1,5",
+      // Row 2
+      "2,0", "2,2", "2,4",
+      // Row 3
+      "3,1", "3,3", "3,5",
+      // Row 4
+      "4,0", "4,4",
+      // Row 5
+      "5,2"
+    ]);
+
 
     // --- Create cells ---
     const cells = [];

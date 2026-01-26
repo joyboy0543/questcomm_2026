@@ -4,7 +4,8 @@
   --ok: #29d49a;
   --primary: #2ea8ff;
   --warn: #ffcc29;
-  --gem: clamp(54px, 6vw, 72px);
+  /* --gem: clamp(54px, 6vw, 72px); */
+  --gem: clamp(48px, 6vw, 72px);
   --qcell: clamp(56px, 6.2vw, 74px);
   --msw: clamp(38px, 5vw, 56px);
 }
@@ -295,4 +296,50 @@
 /* Ensure the digit input has enough width to show placeholder */
 .digit-row input {
   min-width: 130px;
+}
+
+/* Iconic jewels: small chip behind the jewel SVG */
+.jcell .jewel-chip {
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--gem) * .70);
+  height: calc(var(--gem) * .70);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .12));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .25), 0 0 0 1px rgba(255, 255, 255, .05) inset;
+}
+
+.jcell .jewel-chip img {
+  width: 70%;
+  height: 70%;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .25));
+}
+
+/* (Shared) tiny shake for buttons, already defined for inputs; keep here for Queens Check */
+@keyframes shake-btn {
+
+  0%,
+  100% {
+    transform: translateX(0)
+  }
+
+  20% {
+    transform: translateX(-4px)
+  }
+
+  40% {
+    transform: translateX(4px)
+  }
+
+  60% {
+    transform: translateX(-3px)
+  }
+
+  80% {
+    transform: translateX(3px)
+  }
+}
+
+button.shake {
+  animation: shake-btn .25s linear
 }

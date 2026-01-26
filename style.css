@@ -467,3 +467,101 @@ summary {
     font-size: clamp(1.6rem, 3vw, 2.4rem);
     letter-spacing: 0.04em;
 }
+
+/* ===== POTION THEME ===== */
+.potion-card {
+    --ring: #6ee7ff;
+    /* cyan highlight */
+    --mist: #b46ea6;
+    /* plum accent (matches your Plum Accent 5 Lighter 50%) */
+    --glow: rgba(110, 231, 255, .22);
+
+    background:
+        radial-gradient(110% 80% at 10% 0%, rgba(180, 110, 166, .10), transparent 60%),
+        radial-gradient(120% 90% at 100% 100%, rgba(110, 231, 255, .08), transparent 60%),
+        #0b1218;
+    border: 1px solid #1c2d3a;
+    border-radius: 14px;
+    padding: 14px 16px;
+    box-shadow: 0 0 0 1px rgba(28, 45, 58, .5) inset, 0 12px 28px rgba(0, 0, 0, .28);
+    max-width: min(92vw, 840px);
+    margin: 10px auto;
+}
+
+.potion-title {
+    font-family: "Agency FB", "AgencyFB", "Arial Narrow", "Segoe UI", sans-serif;
+    font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #6ee7ff 0%, #b46ea6 60%, #6ee7ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 18px var(--glow);
+    margin: 2px 0 10px;
+    text-align: center;
+}
+
+.potion-body {
+    color: #cfe6f7;
+    font-size: clamp(1rem, 2.1vw, 1.12rem);
+    line-height: 1.55;
+}
+
+.potion-lede {
+    color: #dbe9f5;
+    margin: 4px 0 10px;
+    text-align: center
+}
+
+.potion-steps {
+    margin: 10px 0 12px 1.2em
+}
+
+.potion-steps li {
+    margin: 6px 0
+}
+
+.potion-stir {
+    color: #9fb1c1;
+    margin: 8px 0 4px
+}
+
+.potion-incantation {
+    color: #b46ea6;
+    background: linear-gradient(90deg, rgba(110, 231, 255, .06), rgba(180, 110, 166, .06));
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-align: center
+}
+
+.potion-warning {
+    color: #ffd768;
+    margin-top: 8px;
+    text-shadow: 0 0 10px rgba(255, 215, 104, .12);
+}
+
+/* Ribbon visibility + dot colors */
+.ribbon-hidden {
+    display: none
+}
+
+.ribbon .step .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #243546;
+    box-shadow: 0 0 0 2px #1c2d3a inset
+}
+
+.ribbon .step.done .dot {
+    background: #29d49a;
+    box-shadow: none
+}
+
+/* green by default */
+.ribbon .step.skip .dot {
+    background: #ef6b6b !important
+}
+
+/* red if skipped */

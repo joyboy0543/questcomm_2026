@@ -30,14 +30,13 @@
     <main class="panel" id="evidencePanel">
       <h2 class="title">Evidence</h2>
 
-      <!-- 🔵 NEW: Progress ribbon -->
-      <div id="progressRibbon" class="ribbon" aria-label="Case progress">
-        <div class="step" data-step="cipher"><span class="dot"></span><span class="label">Photo (243)</span></div>
-        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Riddle (1)</span></div>
-        <div class="step" data-step="potion"><span class="dot"></span><span class="label">Potion (928)</span></div>
-        <div class="step" data-step="doors"><span class="dot"></span><span class="label">Doors (367)</span></div>
-        <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Final (THE WORLD
-            MAP)</span></div>
+      <!-- Progress ribbon (hidden until all evidence is cleared) -->
+      <div id="progressRibbon" class="ribbon ribbon-hidden" aria-label="Case progress">
+        <div class="step" data-step="cipher"><span class="dot"></span><span class="label">Photo</span></div>
+        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Riddle</span></div>
+        <div class="step" data-step="potion"><span class="dot"></span><span class="label">Potion</span></div>
+        <div class="step" data-step="doors"><span class="dot"></span><span class="label">Doors</span></div>
+        <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Final</span></div>
       </div>
 
       <div id="caseMsg" class="msg" style="display:none"></div>
@@ -64,7 +63,7 @@
       <section id="cipher" class="section">
         <h3>Cipher Terminal — Photo Forensics</h3>
         <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the code you deduce.</p>
-
+        <p class="status" style="opacity:.8">Ops: If the screen is quiet, the corridor walls might speak.</p>
         <!-- Small preview (click to open modal viewer) -->
         <figure class="photo-thumb">
           assets/buildings.jpg
@@ -98,24 +97,35 @@
 
       <section id="potion" class="section">
         <h3>Padlock Lock Potion</h3>
-        <div style="max-width:820px;margin:auto;text-align:left;white-space:pre-wrap">
-          How to Brew a Basic Padlock Lock Potion
 
-          To bind a common padlock shut and command its clasp to sleep.
+        <article class="potion-card">
+          <header class="potion-title">How to Brew a Basic Padlock Lock Potion</header>
 
-          First, one eyelash from a wild dragon — caught in the sunset’s ruby‑sparked glow.
-          Next, two bones from a royal frog — crown‑kissed and pale as snow.
-          Last, three drops of snot from a liar's nose — lies condensed to a glistening flow.
+          <div class="potion-body">
+            <p class="potion-lede">To bind a common padlock shut and command its clasp to sleep.</p>
 
-          Stir clockwise: once for the lash, twice for the bones, thrice for the drops.
-          Then whisper: “By scale and crown, by truth denied — bolt, bar, and latch, be tied.”
+            <ul class="potion-steps">
+              <li><strong>First</strong>, one eyelash from a wild dragon — caught in the sunset’s ruby‑sparked glow.
+              </li>
+              <li><strong>Next</strong>, two bones from a royal frog — crown‑kissed and pale as snow.</li>
+              <li><strong>Last</strong>, three drops of snot from a liar’s nose — lies condensed to a glistening flow.
+              </li>
+            </ul>
 
-          Mind the order! Reverse the steps, and you may unlock forces eager to snap any padlock wide open
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+            <p class="potion-stir">Stir clockwise: once for the lash, twice for the bones, thrice for the drops.</p>
+            <p class="potion-incantation"><em>Then whisper: “By scale and crown, by truth denied — bolt, bar, and latch,
+                be tied.”</em></p>
+
+            <p class="potion-warning">Mind the order! Reverse the steps, and you may unlock forces eager to snap any
+              padlock wide open.</p>
+          </div>
+        </article>
+
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
           <input id="potionInput" placeholder="Enter the encoded number" inputmode="numeric" />
           <button id="potionConfirm">Confirm</button>
         </div>
+
         <p id="potionStatus" class="status"></p>
       </section>
 
@@ -127,32 +137,31 @@
 
       <section id="colorcode" class="section">
         <h3>Cipher Rings — Final Riddle</h3>
-        <p>Answer the riddle to complete the findings.</p>
-        <div style="max-width:720px;margin:auto;text-align:left">
-          <p><em>
-              I gift perspective without a word,
-              Pins and borders deftly heard.
-              Search the globe, connect each gap —
-              What phrase directs you?
-            </em></p>
+
+        <div class="qcpd-riddle">
+          <p>I give perspective without a sound.</p>
+          <p>Three words, spoken as one, describe what I am.</p>
+          <p>I live where paths connect and footsteps pass,</p>
+          <p>pressed flat against the wall, watching the everyone go by.</p>
+          <p class="qcpd-question">Seek me where directions meet, and say my name.</p>
         </div>
+
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="ringsInput" placeholder="Enter the phrase" />
           <button id="ringsConfirm">Confirm</button>
         </div>
-        <p id="ringsStatus" class="status"></p>
-      </section>
 
-      <section id="findings" class="section">
-        <h3>Findings</h3>
-        <ol>
-          <li>243 — from the photo cipher</li>
-          <li>1 — from the riddle</li>
-          <li>928 — from the potion</li>
-          <li>367 — from the doorway sequence</li>
-          <li>THE WORLD MAP — from the final riddle</li>
-        </ol>
-        <p class="status">Good work, Detective.</p>
+        <p id="ringsStatus" class="status"></p>
+      </section <section id="findings" class="section">
+      <h3>Findings</h3>
+      <ol>
+        <li>243 — from the photo cipher</li>
+        <li>1 — from the riddle</li>
+        <li>928 — from the potion</li>
+        <li>367 — from the doorway sequence</li>
+        <li>THE WORLD MAP — from the final riddle</li>
+      </ol>
+      <p class="status">Good work, Detective.</p>
       </section>
     </main>
 

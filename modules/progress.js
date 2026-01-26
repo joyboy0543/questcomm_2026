@@ -1,4 +1,4 @@
-// Shared helpers for QCPD: radio, persistence, ribbon, and basic tab switching.
+// Shared helpers for QCPD: radio, persistence, ribbon, and tabs
 (function () {
     const KEY = 'qcpd.progress';
     const ORDER = ['cipher', 'riddle1', 'potion', 'doors', 'colorcode'];
@@ -8,14 +8,19 @@
             try { return JSON.parse(localStorage.getItem(KEY) || '{}'); }
             catch { return {}; }
         },
-        save(part, value) {
+        /**
+         * Save a step.
+         * @param {string} part - step id
+         * @param {string} value - e.g., '243'
+         * @param {'puzzle'|'skip'} method - how it was cleared (default 'puzzle')
+         */
+        save(part, value, method = 'puzzle') {
             const p = QCPD.load();
-            p[part] = value;
+            p[part] = { value, method, ts: Date.now() };
             localStorage.setItem(KEY, JSON.stringify(p));
             QCPD.updateRibbon();
         },
         radio(msg) {
-            // Push to chatter panel
             const box = document.getElementById('radioChatter');
             if (box) {
                 const div = document.createElement('div');
@@ -23,7 +28,6 @@
                 div.textContent = msg;
                 box.prepend(div);
             }
-            // Also push to hint stream if provided by your code
             if (typeof window.radioHint === 'function') { window.radioHint(msg); }
         },
         unlockTab(tabId, { autoSwitch = false, message } = {}) {
@@ -33,7 +37,6 @@
             if (message) QCPD.radio(message);
             if (autoSwitch) {
                 btn.click?.();
-                // manual fallback switch if app.js isn't handling tabs:
                 QCPD.switchTo(tabId);
             }
             QCPD.updateRibbon();
@@ -44,40 +47,37 @@
             btns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
             secs.forEach(s => s.classList.toggle('active', s.id === tabId));
         },
+        // Show ribbon only when all evidence steps exist; color red if method==='skip'
         updateRibbon() {
             const p = QCPD.load();
-            [...document.querySelectorAll('#progressRibbon .step')].forEach(step => {
+            const ribbon = document.getElementById('progressRibbon');
+            if (!ribbon) return;
+
+            const allDone = ORDER.every(id => p[id]);
+            ribbon.classList.toggle('ribbon-hidden', !allDone);
+
+            [...ribbon.querySelectorAll('.step')].forEach(step => {
                 const id = step.dataset.step;
-                const done = Boolean(p[id]);
+                const data = p[id];
+                const done = Boolean(data);
                 step.classList.toggle('done', done);
+                step.classList.toggle('skip', done && data.method === 'skip');
             });
         },
         resume() {
             const p = QCPD.load();
+            // Unlock tabs in sequence if previously cleared
+            if (p.cipher) QCPD.unlockTab('riddle1');
+            if (p.riddle1) QCPD.unlockTab('potion');
+            if (p.potion) QCPD.unlockTab('doors');
+            if (p.doors) QCPD.unlockTab('colorcode');
+            if (p.colorcode) QCPD.unlockTab('findings');
 
-            // Unlock tabs in flow based on progress
-            function unlocked(id) { return Boolean(p[id]); }
-            if (unlocked('cipher')) QCPD.unlockTab('riddle1');
-            if (unlocked('riddle1')) QCPD.unlockTab('potion');
-            if (unlocked('potion')) QCPD.unlockTab('doors');
-            if (unlocked('doors')) QCPD.unlockTab('colorcode');
-            if (unlocked('colorcode')) QCPD.unlockTab('findings');
-
-            // Prefill statuses if modules added messages themselves (they do).
+            // Refresh ribbon state (may still be hidden if not all done)
             QCPD.updateRibbon();
-
-            // Optional: jump to first incomplete step
-            const firstIncomplete = ORDER.find(id => !p[id]);
-            if (firstIncomplete) {
-                // keep user on briefing until they press Agree; after that, modules move flow.
-            } else {
-                // All done → show Findings
-                QCPD.unlockTab('findings', { autoSwitch: false });
-            }
         },
-        // For external modules (Doors) to mark completion:
-        markDoorsComplete() {
-            QCPD.save('doors', '367');
+        markDoorsComplete(method = 'puzzle') { // left for external callers if needed
+            QCPD.save('doors', '367', method);
             QCPD.unlockTab('colorcode', { message: 'Doorway sequence complete. Door number 367 noted.' });
             QCPD.radio('Sequence complete. Door number 367 noted.');
         }
@@ -85,7 +85,6 @@
 
     window.QCPD = QCPD;
 
-    // Lightweight tabs in case app.js doesn’t control them
     window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('agreeBtn')?.addEventListener('click', () => {
             const cipherTab = document.querySelector('.tab[data-tab="cipher"]');

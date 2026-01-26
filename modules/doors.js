@@ -3,7 +3,7 @@
   function save() { localStorage.setItem('qcpd.doors', JSON.stringify(state)); }
   function radio(msg) { if (typeof window.radioHint === 'function') radioHint(msg); window.QCPD?.radio(msg); }
 
-  const v = '20260123-4'; const pending = {};
+  const v = '20260123-5'; const pending = {};
   function need(fn) { return typeof window[fn] !== 'function'; }
   function loadScript(src) {
     if (pending[src]) return pending[src];
@@ -16,7 +16,7 @@
   }
   async function ensure(keys) {
     const t = [];
-    if (keys.includes('one')) t.push(loadScript('modules/door_minesweep4.js')); // force-load to avoid race
+    if (keys.includes('one')) t.push(loadScript('modules/door_minesweep4.js')); // force-load
     if (keys.includes('two') && need('initDoorJewelLatin')) t.push(loadScript('modules/door_jewel_latin.js'));
     if (keys.includes('three') && need('initDoorQueens5')) t.push(loadScript('modules/door_queens5.js'));
     if (t.length) await Promise.all(t);
@@ -35,6 +35,14 @@
             </div>
             <div class="door-game">
               <div class="game-host" id="host-${k}"></div>
+
+              <!-- Skip Row: allow entering the digit directly -->
+              <div class="digit-row skip-row" style="display:flex;gap:8px;align-items:center;margin-top:10px">
+                <input aria-label="Enter digit" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="Digit" />
+                <button class="skip-confirm">Confirm</button>
+                <span class="pill" style="display:none"><span class="record-pill">✔ Recorded</span></span>
+              </div>
+              <p class="status door-status" style="min-height:1.2rem"></p>
             </div>
           </div>
         `).join('')
@@ -44,65 +52,84 @@
       const key = card.dataset.door;
       const host = card.querySelector('.game-host');
       const face = card.querySelector('.door-face');
+      const row = card.querySelector('.skip-row');
+      const input = row.querySelector('input');
+      const btn = row.querySelector('.skip-confirm');
+      const pill = row.querySelector('.pill');
+      const info = card.querySelector('.door-status');
       const digit = correctDigit[key];
 
-      function markSolved() {
-        state[key] = { ...(state[key] || {}), open: true, recorded: true, digit };
+      function markSolved(method) {  // method: 'puzzle' | 'skip'
+        state[key] = { ...(state[key] || {}), open: true, recorded: true, digit, method };
+        pill.style.display = 'inline-block';
+        input.value = digit; input.readOnly = true;
         save();
-        // Persist & ribbon
-        if (key === 'one') radio('Safe Sweep cleared. Three hazards neutralized.');
-        if (key === 'two') radio('Jewel Latin solved. Second digit verified.');
-        if (key === 'three') radio('Queens Protocol complete. Final digit verified.');
 
-        if (state.one?.recorded && state.two?.recorded && state.three?.recorded) {
-          // mark full doors success
-          window.QCPD?.markDoorsComplete();
+        if (method === 'puzzle') {
+          if (key === 'one') radio('Safe Sweep cleared. Three hazards neutralized.');
+          if (key === 'two') radio('Jewel Latin solved. Second digit verified.');
+          if (key === 'three') radio('Queens Protocol complete. Final digit verified.');
+        } else {
+          radio(`Digit ${digit} recorded for Door ${key === 'one' ? 1 : key === 'two' ? 2 : 3} (manual entry).`);
         }
-        checkAll();
+
+        // If all three recorded, mark Doors step in global progress.
+        const all = ['one', 'two', 'three'].every(k => state[k]?.recorded);
+        if (all) {
+          // mark Doors step with method 'puzzle' only if none were skipped
+          const anySkip = ['one', 'two', 'three'].some(k => state[k]?.method === 'skip');
+          window.QCPD?.save('doors', '367', anySkip ? 'skip' : 'puzzle');
+          window.QCPD?.unlockTab('colorcode', { message: 'Doorway sequence complete. Door number 367 noted.' });
+          radio('Sequence complete. Door number 367 noted.');
+        }
       }
 
+      // OPEN/MOUNT
       async function mount() {
         card.classList.add('open');
         state[key] = state[key] || { open: true }; save();
 
         try {
           await ensure([key]);
-          if (key === 'one') { if (typeof window.initDoorMinesweep4 === 'function') { window.initDoorMinesweep4(host, () => markSolved()); } else { host.innerHTML = '<div style="color:var(--warn)">Minesweeper module did not initialize.</div>'; } }
-          if (key === 'two') window.initDoorJewelLatin?.(host, () => markSolved());
-          if (key === 'three') window.initDoorQueens5?.(host, () => markSolved());
+          if (key === 'one') {
+            if (typeof window.initDoorMinesweep4 === 'function') {
+              window.initDoorMinesweep4(host, () => markSolved('puzzle'));
+            } else {
+              host.innerHTML = '<div style="color:var(--warn)">Minesweeper module did not initialize.</div>';
+            }
+          }
+          if (key === 'two') window.initDoorJewelLatin?.(host, () => markSolved('puzzle'));
+          if (key === 'three') window.initDoorQueens5?.(host, () => markSolved('puzzle'));
         } catch (e) {
           host.innerHTML = `<div style="color:var(--warn)">${e.message}</div>`;
+        }
+
+        // Restore skip row if already recorded
+        if (state[key]?.recorded) {
+          pill.style.display = 'inline-block';
+          input.value = state[key].digit || digit;
+          input.readOnly = true;
         }
       }
 
       face.addEventListener('click', () => mount());
       if (state[key]?.open) mount();
+
+      // Skip confirm
+      btn.addEventListener('click', () => {
+        if (input.value.trim() === digit) {
+          info.textContent = 'Digit recorded.';
+          markSolved('skip');
+        } else {
+          info.textContent = 'Incorrect digit.';
+          input.classList.add('shake');
+          setTimeout(() => input.classList.remove('shake'), 200);
+        }
+      });
     });
   }
 
-  function checkAll() {
-    const s = JSON.parse(localStorage.getItem('qcpd.doors') || '{}');
-    if (s.one?.recorded && s.two?.recorded && s.three?.recorded) {
-      if (!document.getElementById('doors-complete')) {
-        const b = document.createElement('div');
-        b.id = 'doors-complete';
-        b.style.margin = '12px 0';
-        b.style.padding = '10px';
-        b.style.border = '1px solid #284a63';
-        b.style.borderRadius = '10px';
-        b.style.background = '#0b1218';
-        b.innerHTML = '<strong>Door Number Identified: 3 6 7</strong>';
-        document.querySelector('.doors-hall').before(b);
-      }
-      const st = JSON.parse(localStorage.getItem('qcpd.case1') || '{}');
-      st.doors = true; localStorage.setItem('qcpd.case1', JSON.stringify(st));
-      const t = document.querySelector('.tab[data-tab="colorcode"]');
-      if (t) t.classList.remove('disabled');
-      radio('Sequence complete. Door number 367 noted.');
-      // Persist in shared progress for ribbon
-      window.QCPD?.save('doors', '367');
-    }
-  }
-
-  window.initDoorsHall = function (container) { build(container); checkAll(); };
+  window.initDoorsHall = function (container) {
+    build(container);
+  };
 })();

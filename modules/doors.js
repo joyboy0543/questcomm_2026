@@ -68,8 +68,8 @@
         if (all) {
           const anySkip = ['one', 'two', 'three'].some(k => state[k]?.method === 'skip');
           window.QCPD?.save('doors', '367', anySkip ? 'skip' : 'puzzle');
-          window.QCPD?.unlockTab('colorcode', { message: 'Doorway sequence complete. Door number 367 noted.' });
-          radio('Sequence complete. Door number 367 noted.');
+          window.QCPD?.unlockTab('colorcode', { message: 'Doorway sequence complete. Over!' });
+          radio('Sequence complete. Digits noted. Over!');
         }
       }
 

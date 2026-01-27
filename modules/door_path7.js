@@ -32,11 +32,11 @@
     const wrap = document.createElement("div");
     wrap.className = "q-wrap";
     wrap.innerHTML = `
-      <h4 class="jlatin-title">Queens Protocol</h4>
+      <h4 class="jlatin-title">Defuser Protocol</h4>
       <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
-        <li>Place queens so no two share a row or a column.</li>
-        <li>Queens cannot touch — not even diagonally.</li>
-        <li>Each colored section must contain exactly one queen.</li>
+        <li>Place defusers so no two share a row or a column or structure.</li>
+        <li>The defusers cannot touch, not even diagonally. This is to ensure the circuit doesn't detonate.</li>
+        <li>Each colored section must contain exactly one defuser.</li>
       </ol>
       <div class="q-grid small"></div>
       <div class="q-tools" style="display:flex;gap:8px;justify-content:center">
@@ -134,10 +134,10 @@
     btnCheck.addEventListener("click", () => {
       const solved = validateAndMark();
       if (solved) {
-        status.innerHTML = 'The <span class="hl">Seven</span> Queens have been located. Threats neutralized.';
+        status.innerHTML = 'The <span class="hl">Seven</span> defusers have been placed. Threats neutralized. Over!';
         onSolved && onSolved();
       } else {
-        status.textContent = "Conflicts detected — adjust the placements.";
+        status.textContent = "Conflicts detected — adjust the placements. Over!";
         btnCheck.classList.remove("shake");
         btnCheck.classList.add("shake");
         setTimeout(() => btnCheck.classList.remove("shake"), 300);

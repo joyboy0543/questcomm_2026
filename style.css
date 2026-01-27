@@ -127,8 +127,8 @@ body.landing {
     height: 18px;
     display: inline-block;
     background: currentColor;
-    mask: url('#lock') no-repeat 50% 50%/contain;
-    -webkit-mask: url('#lock') no-repeat 50% 50%/contain;
+    mask: url(#lock) no-repeat 50% 50%/contain;
+    -webkit-mask: url(#lock) no-repeat 50% 50%/contain;
 }
 
 .lock-btn.is-locked .lock,

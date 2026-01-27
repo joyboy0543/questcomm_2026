@@ -124,7 +124,7 @@
 
       if (ok && cells.flat().every((c) => c.dataset.value)) {
         status.innerHTML =
-          'The encryption on the door has <strong class="hl">revealed</strong> that there are <strong class="hl">Six</strong> types of jewels.';
+          'The encryption on the door has revealed that there were <strong class="hl">six</strong> types of jewels.';
         onSolved && onSolved();
       } else {
         status.textContent = "";

@@ -3,9 +3,9 @@
     const KEY = 'potion', ANSWER = '928';
 
     function solved(out) {
-        out.textContent = 'Brew logged. Proceed to the Doorway Sequence.';
+        out.textContent = 'Brew logged. Proceed to the Doorway Sequence. Over!';
         window.QCPD?.save(KEY, ANSWER);
-        window.QCPD?.radio('Potion decoded: 928');
+        window.QCPD?.radio('Potion decoded: Code-928. Over!');
         window.QCPD?.unlockTab('doors', { autoSwitch: true });
     }
 
@@ -20,7 +20,7 @@
         btn?.addEventListener('click', () => {
             const val = (input.value || '').trim();
             if (val === ANSWER) solved(out);
-            else out.textContent = 'That incantation number doesn’t bind. Re-check the steps and counts.';
+            else out.textContent = 'That incantation number doesn’t bind. Re-check the steps and counts. Over!';
         });
     });
 })();

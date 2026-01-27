@@ -11,20 +11,20 @@
     col1: {
       target: 'MAP',
       pool: [
-        'KEY', 'SCALE', 'LEGEND', // homonyms / map parts with other meanings
-        'ATLAS', 'CHART', 'PLAN', 'SKETCH', 'BLUEPRINT', 'GUIDE', 'MAP'
+        'KEY', 'SCALE', 'DIAMOND', // homonyms / map parts with other meanings
+        'JEWEL', 'NOTE', 'PLAN', 'DRAW', 'DESK', 'ROAD', 'MAP'
       ]
     },
     col2: {
       target: 'THE',
       pool: [
-        'SUCH', 'EACH', 'EITHER', 'NEITHER', 'SAME', 'THIS', 'THAT', 'YON', 'THE'
+        'I', 'EACH', 'YOU', 'NEITHER', 'GOLD', 'THIS', 'THAT', 'WE', 'THE'
       ]
     },
     col3: {
       target: 'WORLD',
       pool: [
-        'EARTH', 'GLOBE', 'SPHERE', 'REALM', 'DOMAIN', 'TERRA', 'WORLD'
+        'SILVER', 'GLOBE', 'SPHERE', 'REALM', 'TREE', 'TERRAIN', 'WORLD'
       ]
     }
   };
@@ -36,11 +36,11 @@
   }
 
   function solved(out, silent = false) {
-    out.textContent = 'Phrase accepted. Findings are now complete.';
+    out.textContent = 'Phrase accepted and the data from the phone is neutralized. Findings are now complete. Over!';
     window.QCPD?.save(KEY, ANSWER);
     window.QCPD?.unlockTab('findings', { autoSwitch: true });
     if (!silent) {
-      window.QCPD?.radio('Ops note: Some references aren’t digital. Check the corridor — something important is mounted on the wall.');
+      window.QCPD?.radio('These were the words from the burglar: Some references aren’t digital, they are also found on the walls. Over!');
     }
   }
 
@@ -132,7 +132,7 @@
       if (val === ANSWER) {
         solved(out);
       } else {
-        out.textContent = 'Not quite. Pick one word from each column and apply the order: 2 → 3 → 1.';
+        out.textContent = 'Not quite. Let uss try picking one word from each column. Over!';
         input?.classList.remove('input-ok', 'input-bad', 'shake');
         input?.classList.add('input-bad', 'shake');
         setTimeout(() => input?.classList.remove('shake'), 250);

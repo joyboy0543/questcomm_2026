@@ -31,13 +31,13 @@
       <h2 class="title">Evidence</h2>
 
       <!-- Progress ribbon (hidden until all evidence is cleared) -->
-      <div id="progressRibbon" class="ribbon ribbon-hidden" aria-label="Case progress">
+      <!-- <div id="progressRibbon" class="ribbon ribbon-hidden" aria-label="Case progress">
         <div class="step" data-step="cipher"><span class="dot"></span><span class="label">Photo</span></div>
         <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Unlock</span></div>
         <div class="step" data-step="potion"><span class="dot"></span><span class="label">Evidence</span></div>
         <div class="step" data-step="doors"><span class="dot"></span><span class="label">Doors</span></div>
         <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Corridor</span></div>
-      </div>
+      </div> -->
 
       <div id="caseMsg" class="msg" style="display:none"></div>
 
@@ -55,21 +55,30 @@
       <!-- Sections -->
       <section id="briefing" class="section active">
         <h3>Case: The Sapphire Heist</h3>
-        <p>Welcome, Detective. Each station below contains a puzzle. Clear them to extract the key findings.</p>
-        <p class="status">Press the agreement below to begin.</p>
-        <button id="agreeBtn">I agree to solve the clues and handle the evidence as per the QCPD regulations.</button>
+        <p>Welcome, Detective. Great to hear that you have uncovered the hidden clues. Amazing work on finding
+          <li>A 3 digit code, that might hopefully be helpful later.</li>
+          <li>A single digit, supposedly a part of a code.</li>
+          <li>A single digit, supposedly a part of a code.</li>
+
+          In the Evidence panel, each station contains information extracted from the burglar's phone. Some notes are
+          gathered based on the conversation from the interrogation. The collected evidence seems to be encrypted in
+          some form of puzzle or a riddle. Decode them and extract the key findings.
+        </p>
+        <p class="status">And one more thing detective! Don't forget to keep the findings confidential and handle the
+          evidence with care.</p>
+        <button id="agreeBtn">I agree to investigate the evidence as per the QCPD regulations.</button>
       </section>
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal — Photo Forensics</h3>
-        <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the code you deduce.</p>
+        <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the 3-digit code that you find.</p>
 
         <!-- Small preview (click to open modal viewer). Leave EMPTY; JS injects the image -->
         <figure class="photo-thumb"></figure>
 
         <!-- Only input + confirm here -->
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
-          <input id="cipherInput" placeholder="Enter solution" inputmode="numeric" />
+          <input id="cipherInput" placeholder="Enter code" inputmode="numeric" />
           <button id="cipherConfirm">Confirm</button>
         </div>
         <p id="cipherStatus" class="status"></p>
@@ -77,7 +86,8 @@
 
       <section id="riddle1" class="section">
         <h3>Unlock Screen</h3>
-        <p class="status" style="opacity:.7">Think carefully; the answer is a single digit.</p>
+        <p class="status" style="opacity:.7">This is seen on the recovered LockScreen of the burglar's phone. The code
+          seems to be a single digit. Please type in once you have solved it.</p>
 
         <!-- Centered riddle -->
         <div class="qcpd-riddle">
@@ -89,7 +99,7 @@
         </div>
 
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
-          <input id="riddle1Input" placeholder="Your answer" inputmode="numeric" />
+          <input id="riddle1Input" placeholder="Ener digit" inputmode="numeric" />
           <button id="riddle1Confirm">Confirm</button>
         </div>
         <p id="riddle1Status" class="status"></p>
@@ -102,22 +112,24 @@
           <header class="potion-title">Padlock Potion</header>
 
           <div class="potion-body">
-            <p class="potion-lede">To bind a common padlock shut and command its clasp to sleep.</p>
+            <p>You have now reached the HomeScreen of the burglar's phone. We believe that solving might be the only way
+              to avoid auto-deletion.</p>
+            <p class="potion-lede">How to Brew a basic Padlock Potion</p>
 
             <ul class="potion-steps">
-              <li><strong>First</strong>, one eyelash from a wild dragon — caught in the sunset’s ruby‑sparked glow.
+              <li>To bind a common padlock shut and command its clasp to sleep.</li>
+              <li><strong>First, one eyelash from a wild dragon — caught in the sunset’s ruby‑sparked glow.</strong>
               </li>
-              <li><strong>Next</strong>, two bones from a royal frog — crown‑kissed and pale as snow.</li>
-              <li><strong>Last</strong>, three drops of snot from a liar’s nose — lies condensed to a glistening flow.
+              <li><strong>Next, two bones from a royal frog — crown‑kissed and pale as snow.</strong></li>
+              <li><strong>Last, three drops of snot from a liar’s nose — lies condensed to a glistening flow.</strong>
+              </li>
+              <li><strong>Stir clockwise:</strong> once for the lash, twice for the bones, thrice for the drops.</li>
+              <li><strong>Then whisper:</strong> “By scale and crown, by truth denied — bolt, bar, and latch, be tied.”
               </li>
             </ul>
-
-            <p>Stir clockwise: once for the lash, twice for the bones, thrice for the drops.</p>
-            <p><em>Then whisper: “By scale and crown, by truth denied — bolt, bar, and latch, be tied.”</em></p>
-
-            <p class="potion-warning">
-              Mind the order! Reverse the steps, and you may unlock forces eager to snap any padlock wide open.
-            </p>
+            <p class="potion-warning"><em>
+                Mind the order! Reverse the steps, and you may unlock forces eager to snap any padlock wide open.
+              </em></p>
           </div>
         </article>
 
@@ -131,35 +143,49 @@
 
       <section id="doors" class="section">
         <h3>Doorway Sequence</h3>
-        <p class="status">Open each door and complete the mini‑game. Messages will hint at the digits you need.</p>
+        <p>Great, detective! We have entered the burglar's phone and it only has these three doors. Let's
+          investigate on what they do!</p>
+        <p class="status">Open each door and solve them. The messages coudl hint to some code that might be useful.</p>
         <div id="doorsHost"></div>
       </section>
 
       <section id="colorcode" class="section">
         <h3>Corridor Clue</h3>
+        <p>Almost there detective! There seems to be a fail-safe that the burglars have programmed on their phone. Let's
+          solve this and see where it leads!</p>
 
         <!-- Numbered, thinkable hints -->
         <ol class="corridor-hints">
           <!-- 1) Column 1 → MAP (homonyms/commonly-grouped decoys like KEY, SCALE, LEGEND, ATLAS, CHART, PLAN, SKETCH) -->
-          <li>
-            I don’t move, yet travelers fold me; I keep a key that opens nothing, a scale that weighs no thing, and a
-            legend that tells no tale. What am I?
+          <li><strong>
+              I keep a key to connect something, a scale that weighs nothing.
+              I have many legends that tells no tale, but find in me the help to your ail.
+              You see in me what you seek, but I am not what you need.
+              You have me everywhere, but don't always need me - beware!</strong>
+            What am I?
           </li>
 
           <!-- 2) Column 2 → THE (harder selector words, not just prepositions) -->
-          <li>
-            In a crowded room, I quietly choose the one you meant all along—say me, and the many become a single known.
+          <li><strong>
+              I am single, sometimes many. In a place of common, I choose only me.
+              I make you feel special in every other way; I am always before you, yet you never let me stay.</strong>
+            What am I?
           </li>
 
           <!-- 3) Column 3 → WORLD (with rival decoys like GLOBE, EARTH, SPHERE, REALM, DOMAIN) -->
-          <li>
-            I am the address of every address—the stage on which every story happens—yet I am not a city, nor a country.
+          <li><strong>
+              I hold many havens, yet never drop them.
+              I run in circles, but never feel dizzy.
+              I have my own ups and downs, and among my beings I wear the crown.</strong>
+            What am I?
           </li>
 
           <!-- 4) Order hint → 2nd, then 3rd, then 1st column -->
           <li>
-            Assemble your picks in this order: <strong>middle column</strong>, then <strong>right</strong>, then
-            <strong>left</strong>.
+            What comes first sets the tone, what surrounds gives it meaning,
+            and what follows reveals the way forward.
+            Assemble them in an order, a sentence that places you in the corridor.
+            I await your arrival - your destination is near.
           </li>
         </ol>
 
@@ -174,34 +200,15 @@
         <p id="ringsStatus" class="status"></p>
       </section>
 
-      <!-- <section id="colorcode" class="section">
-        <h3>Corridor Clue</h3>
-
-        // Distinct serif font + cyan palette
-        <div class="corridor-riddle">
-          <p>I give perspective without a sound.</p>
-          <p>Three words, spoken as one, describe what I am.</p>
-          <p>I live where paths connect and footsteps pass,</p>
-          <p>pressed flat against the wall, watching the world go by.</p>
-          <p class="qcpd-question">Seek me where directions meet, and say my name.</p>
-        </div>
-
-        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
-          <input id="ringsInput" placeholder="Enter the phrase" />
-          <button id="ringsConfirm">Confirm</button>
-        </div>
-
-        <p id="ringsStatus" class="status"></p>
-      </section> -->
-
       <section id="findings" class="section">
         <h3>Findings</h3>
+        <p>Impressive! I have gathered the decoded information and codes here.</p>
         <ol>
-          <li>243 — from the photo cipher</li>
-          <li>1 — from the riddle</li>
-          <li>928 — from the evidence note</li>
-          <li>367 — from the doorway sequence</li>
-          <li>THE WORLD MAP — from the corridor clue</li>
+          <li>243 - Decoded from the Encrypted image.</li>
+          <li>1 - Decoded from the UnlockScreen of the phone.</li>
+          <li>928 - Decoded from evidence found on the HomeScreen of the phone, The Padlock potion.</li>
+          <li>367 — Decoded from the Doorway Sequence</li>
+          <li>THE WORLD MAP — Decoded from the Corridor Clue</li>
         </ol>
         <p class="status">Good work, Detective.</p>
       </section>
@@ -226,9 +233,11 @@
       <details>
         <summary>Team Contacts</summary>
         <div class="group">
-          <div class="msg">Evidence Handling: ext. 2214 — Sgt. R. Patel</div>
-          <div class="msg">Forensics Lab: ext. 3391 — Dr. L. Chen</div>
-          <div class="msg">Surveillance: ext. 7749 — Ops Desk</div>
+          <div class="msg">Case Lead: Det. Emma</div>
+          <div class="msg">Asst Lead: Det. Jay</div>
+          <div class="msg">Evidence Handling: ext. 2214 — Det. L.</div>
+          <div class="msg">Forensics Lab: ext. 3391 — Dr. D.</div>
+          <div class="msg">Surveillance: ext. 7749 — QCPD Systems</div>
         </div>
       </details>
     </aside>

@@ -32,16 +32,17 @@
             secs.forEach(s => s.classList.toggle('active', s.id === tabId));
         },
         updateRibbon() {
-            const p = QCPD.load();
-            const ribbon = document.getElementById('progressRibbon');
-            if (!ribbon) return;
-            const allDone = ORDER.every(id => p[id]);
-            ribbon.classList.toggle('ribbon-hidden', !allDone);
-            [...ribbon.querySelectorAll('.step')].forEach(step => {
-                const id = step.dataset.step; const data = p[id];
-                const done = Boolean(data); step.classList.toggle('done', done);
-                step.classList.toggle('skip', done && data.method === 'skip');
-            });
+            return;
+            // const p = QCPD.load();
+            // const ribbon = document.getElementById('progressRibbon');
+            // if (!ribbon) return;
+            // const allDone = ORDER.every(id => p[id]);
+            // ribbon.classList.toggle('ribbon-hidden', !allDone);
+            // [...ribbon.querySelectorAll('.step')].forEach(step => {
+            //     const id = step.dataset.step; const data = p[id];
+            //     const done = Boolean(data); step.classList.toggle('done', done);
+            //     step.classList.toggle('skip', done && data.method === 'skip');
+            // });
         },
         resume() {
             const p = QCPD.load();
@@ -54,8 +55,8 @@
         },
         markDoorsComplete(method = 'puzzle') {
             QCPD.save('doors', '367', method);
-            QCPD.unlockTab('colorcode', { message: 'Doorway sequence complete. Door number 367 noted.' });
-            QCPD.radio('Sequence complete. Door number 367 noted.');
+            QCPD.unlockTab('colorcode', { message: 'Doorway sequence complete.' });
+            QCPD.radio('Threats neutralized, Digits noted! Over!.');
         }
     };
 
@@ -66,7 +67,7 @@
             const cipherTab = document.querySelector('.tab[data-tab="cipher"]');
             cipherTab?.classList.remove('disabled');
             QCPD.switchTo('cipher');
-            QCPD.radio('Briefing acknowledged. Proceeding to Cipher Terminal.');
+            QCPD.radio('Briefing complete and acknowledged. Proceeding to Cipher Terminal Photo from Forensic Department. Over!');
         });
 
         document.getElementById('tabs')?.addEventListener('click', (e) => {

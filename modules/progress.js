@@ -67,7 +67,7 @@
             const cipherTab = document.querySelector('.tab[data-tab="cipher"]');
             cipherTab?.classList.remove('disabled');
             QCPD.switchTo('cipher');
-            QCPD.radio('Briefing complete and acknowledged. Proceeding to Cipher Terminal Photo from Forensic Department. Over!');
+            QCPD.radio('Investigating Photo from Forensic Department. Over!');
         });
 
         document.getElementById('tabs')?.addEventListener('click', (e) => {

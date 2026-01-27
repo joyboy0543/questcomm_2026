@@ -10,7 +10,7 @@
     const out = document.getElementById('cipherStatus');
     if (out) out.textContent = 'Decoded! Continue investigating the data from the phone.';
     window.QCPD?.save(KEY, ANSWER);
-    window.QCPD?.radio('Cipher cleared: Digits 243. Over!');
+    window.QCPD?.radio('Cipher cleared: Digits recorded. Over!');
     window.QCPD?.unlockTab('riddle1', { autoSwitch: true });
   }
 

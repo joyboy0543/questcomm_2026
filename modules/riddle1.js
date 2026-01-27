@@ -3,9 +3,9 @@
     const KEY = 'riddle1', ANSWER = '1';
 
     function solved(out) {
-        out.textContent = 'Correct. The first step is secured — move to the potion.';
+        out.textContent = 'Good job!. The first step is secured, let\'s carefully move to the next part.';
         window.QCPD?.save(KEY, ANSWER);
-        window.QCPD?.radio('Riddle solved: 1');
+        window.QCPD?.radio('Lock screen Unlocked: Digit recorded. Over!');
         window.QCPD?.unlockTab('potion', { autoSwitch: true });
     }
 
@@ -20,7 +20,7 @@
         btn?.addEventListener('click', () => {
             const val = (input.value || '').trim();
             if (val === ANSWER) solved(out);
-            else out.textContent = 'Try again. The answer is a single digit.';
+            else out.textContent = 'Try again. It looks like the answer is simple.';
         });
     });
 })();

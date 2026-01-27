@@ -40,7 +40,7 @@
     window.QCPD?.save(KEY, ANSWER);
     window.QCPD?.unlockTab('findings', { autoSwitch: true });
     if (!silent) {
-      window.QCPD?.radio('These were the words from the burglar: Some references aren’t digital, they are also found on the walls. Over!');
+      window.QCPD?.radio('These were the words from the burglar: Some references aren’t digital, they are also found on and behind the walls. Over!');
     }
   }
 
@@ -132,7 +132,7 @@
       if (val === ANSWER) {
         solved(out);
       } else {
-        out.textContent = 'Not quite. Let uss try picking one word from each column. Over!';
+        out.textContent = 'Not quite. Let us try picking a different word from each column.';
         input?.classList.remove('input-ok', 'input-bad', 'shake');
         input?.classList.add('input-bad', 'shake');
         setTimeout(() => input?.classList.remove('shake'), 250);

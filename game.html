@@ -33,7 +33,7 @@
       <!-- Progress ribbon (hidden until all evidence is cleared) -->
       <!-- <div id="progressRibbon" class="ribbon ribbon-hidden" aria-label="Case progress">
         <div class="step" data-step="cipher"><span class="dot"></span><span class="label">Photo</span></div>
-        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Unlock</span></div>
+        <div class="step" data-step="riddle1"><span class="dot"></span><span class="label">Lock</span></div>
         <div class="step" data-step="potion"><span class="dot"></span><span class="label">Evidence</span></div>
         <div class="step" data-step="doors"><span class="dot"></span><span class="label">Doors</span></div>
         <div class="step" data-step="colorcode"><span class="dot"></span><span class="label">Corridor</span></div>
@@ -45,8 +45,8 @@
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
         <button class="tab disabled" data-tab="cipher">Cipher Terminal Photo</button>
-        <button class="tab disabled" data-tab="riddle1">Unlock Screen</button> <!-- was Riddle -->
-        <button class="tab disabled" data-tab="potion">Evidence Note on HomeScreen</button> <!-- was Potion -->
+        <button class="tab disabled" data-tab="riddle1">Lock Screen</button> <!-- was Riddle -->
+        <button class="tab disabled" data-tab="potion">Evidence Note on home-screen</button> <!-- was Potion -->
         <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
         <button class="tab disabled" data-tab="colorcode">Corridor Clue</button> <!-- was Cipher Rings -->
         <button class="tab disabled" data-tab="findings">Findings</button>
@@ -55,11 +55,12 @@
       <!-- Sections -->
       <section id="briefing" class="section active">
         <h3>Case: The Sapphire Heist</h3>
-        <p>Welcome, Detective. Great to hear that you have uncovered the hidden clues. Amazing work on finding
-          <li>A 3 digit code, that might hopefully be helpful later.</li>
-          <li>A single digit, supposedly a part of a code.</li>
-          <li>A single digit, supposedly a part of a code.</li>
-
+        <p>Welcome, Detective. Great to hear that you have uncovered the hidden clues. Congratulations on your findings
+          so far. </p>
+        <ol>A 3 digit code, that might hopefully be helpful later.</ol>
+        <ol>A single digit, supposedly a part of a code.</ol>
+        <ol>A single digit, supposedly a part of a code.</ol>
+        <p>
           In the Evidence panel, each station contains information extracted from the burglar's phone. Some notes are
           gathered based on the conversation from the interrogation. The collected evidence seems to be encrypted in
           some form of puzzle or a riddle. Decode them and extract the key findings.
@@ -71,7 +72,7 @@
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal — Photo Forensics</h3>
-        <p class="status">Click the photo to open it. Zoom and pan if needed. Enter the 3-digit code that you find.</p>
+        <p class="status">Click the photo to open it. Zoom and pan if needed. Record the code that you decipher.</p>
 
         <!-- Small preview (click to open modal viewer). Leave EMPTY; JS injects the image -->
         <figure class="photo-thumb"></figure>
@@ -85,7 +86,7 @@
       </section>
 
       <section id="riddle1" class="section">
-        <h3>Unlock Screen</h3>
+        <h3>Lock Screen</h3>
         <p class="status" style="opacity:.7">This is seen on the recovered LockScreen of the burglar's phone. The code
           seems to be a single digit. Please type in once you have solved it.</p>
 
@@ -106,13 +107,14 @@
       </section>
 
       <section id="potion" class="section">
-        <h3>Evidence Note on HomeScreen</h3>
+        <h3>Evidence Note on Home-Screen</h3>
 
         <article class="potion-card">
           <header class="potion-title">Padlock Potion</header>
 
           <div class="potion-body">
-            <p>You have now reached the HomeScreen of the burglar's phone. We believe that solving might be the only way
+            <p>You have now reached the home-screen of the burglar's phone. We believe that solving might be the only
+              way
               to avoid auto-deletion.</p>
             <p class="potion-lede">How to Brew a basic Padlock Potion</p>
 
@@ -205,8 +207,8 @@
         <p>Impressive! I have gathered the decoded information and codes here.</p>
         <ol>
           <li>243 - Decoded from the Encrypted image.</li>
-          <li>1 - Decoded from the UnlockScreen of the phone.</li>
-          <li>928 - Decoded from evidence found on the HomeScreen of the phone, The Padlock potion.</li>
+          <li>1 - Decoded from the lock-screen of the phone.</li>
+          <li>928 - Decoded from evidence found on the home-screen of the phone, The Padlock potion.</li>
           <li>367 — Decoded from the Doorway Sequence</li>
           <li>THE WORLD MAP — Decoded from the Corridor Clue</li>
         </ol>
@@ -226,18 +228,18 @@
       </details>
 
       <details open>
-        <summary>Ops Chatter</summary>
+        <summary>Radio Chatter</summary>
         <div class="group" id="radioChatter"></div>
       </details>
 
       <details>
-        <summary>Team Contacts</summary>
+        <summary>Team Contacts (Please contact for additional hints)</summary>
         <div class="group">
           <div class="msg">Case Lead: Det. Emma</div>
           <div class="msg">Asst Lead: Det. Jay</div>
-          <div class="msg">Evidence Handling: ext. 2214 — Det. L.</div>
-          <div class="msg">Forensics Lab: ext. 3391 — Dr. D.</div>
-          <div class="msg">Surveillance: ext. 7749 — QCPD Systems</div>
+          <div class="msg">Evidence Handling: Det. L.</div>
+          <div class="msg">Forensics Lab: Dr. D.</div>
+          <div class="msg">Surveillance: QCPD Systems</div>
         </div>
       </details>
     </aside>

@@ -136,22 +136,44 @@
       </section>
 
       <section id="colorcode" class="section">
-        <h3>Corridor Clue</h3> <!-- Four hint lines -->
-        <div class="corridor-riddle"> <!-- S1 → Column 1 target is MAP -->
-          <p>I show the way without walking, the shape without the land. Fold me and I hide places; wet me and I blur
-            the route. What am I?</p> <!-- S2 → Column 2 target is THE -->
-          <p>I choose the only one among many—place me before a name to make it the one you mean. Who am I?</p>
-          <!-- S3 → Order hint (2nd, then 3rd, then 1st column) -->
-          <p><strong>Arrange your answers:</strong> start with the middle column, then the right, then the left.</p>
-          <!-- S4 → Column 3 target is WORLD -->
-          <p>I spin yet stay in place; I hold every sea and street; I’m the home that contains every home. What am I?
-          </p>
-        </div> <!-- The three columns (words are injected by JS and shuffled each load) -->
+        <h3>Corridor Clue</h3>
+
+        <!-- Numbered, thinkable hints -->
+        <ol class="corridor-hints">
+          <!-- 1) Column 1 → MAP (homonyms/commonly-grouped decoys like KEY, SCALE, LEGEND, ATLAS, CHART, PLAN, SKETCH) -->
+          <li>
+            I don’t move, yet travelers fold me; I keep a key that opens nothing, a scale that weighs no thing, and a
+            legend that tells no tale. What am I?
+          </li>
+
+          <!-- 2) Column 2 → THE (harder selector words, not just prepositions) -->
+          <li>
+            In a crowded room, I quietly choose the one you meant all along—say me, and the many become a single known.
+          </li>
+
+          <!-- 3) Column 3 → WORLD (with rival decoys like GLOBE, EARTH, SPHERE, REALM, DOMAIN) -->
+          <li>
+            I am the address of every address—the stage on which every story happens—yet I am not a city, nor a country.
+          </li>
+
+          <!-- 4) Order hint → 2nd, then 3rd, then 1st column -->
+          <li>
+            Assemble your picks in this order: <strong>middle column</strong>, then <strong>right</strong>, then
+            <strong>left</strong>.
+          </li>
+        </ol>
+
+        <!-- Three selectable columns (rendered & shuffled by JS) -->
         <div id="corridorGrid" class="corridor-grid" aria-label="Select one word from each column"></div>
-        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center"> <input id="ringsInput"
-            placeholder="Enter one word from each column" /> <button id="ringsConfirm">Confirm</button> </div>
+
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+          <input id="ringsInput" placeholder="Enter one word from each column" />
+          <button id="ringsConfirm">Confirm</button>
+        </div>
+
         <p id="ringsStatus" class="status"></p>
       </section>
+
       <!-- <section id="colorcode" class="section">
         <h3>Corridor Clue</h3>
 

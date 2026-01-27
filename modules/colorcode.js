@@ -1,17 +1,35 @@
-// Final puzzle (Corridor Clue) — three columns. Pick one word from each column.
-// Targets: Col2='THE', Col3='WORLD', Col1='MAP'; Order: 2 -> 3 -> 1 → "THE WORLD MAP".
+// Corridor Clue — three columns; choose one word from each column.
+// Targets: Column 1 = MAP, Column 2 = THE, Column 3 = WORLD
+// Order hint: 2 -> 3 -> 1 => "THE WORLD MAP"
 (function () {
   const KEY = 'colorcode';
   const ANSWER = 'THE WORLD MAP';
 
-  // Word banks (we'll shuffle and pick 5 including the target)
+  // Word banks with homonyms / grouped-but-different words in cols 1 & 3,
+  // and trickier selector words in col 2 (to avoid obvious "preposition" feel).
   const BANK = {
-    col1: { target: 'MAP', pool: ['PLAN', 'CHART', 'GUIDE', 'SKETCH', 'KEY', 'MAP', 'ATLAS'] },
-    col2: { target: 'THE', pool: ['A', 'AN', 'THE', 'THIS', 'THAT', 'YOUR'] },
-    col3: { target: 'WORLD', pool: ['WORLD', 'EARTH', 'GLOBE', 'PLANET', 'SPHERE', 'REALM'] }
+    col1: {
+      target: 'MAP',
+      pool: [
+        'KEY', 'SCALE', 'LEGEND', // homonyms / map parts with other meanings
+        'ATLAS', 'CHART', 'PLAN', 'SKETCH', 'BLUEPRINT', 'GUIDE', 'MAP'
+      ]
+    },
+    col2: {
+      target: 'THE',
+      pool: [
+        'SUCH', 'EACH', 'EITHER', 'NEITHER', 'SAME', 'THIS', 'THAT', 'YON', 'THE'
+      ]
+    },
+    col3: {
+      target: 'WORLD',
+      pool: [
+        'EARTH', 'GLOBE', 'SPHERE', 'REALM', 'DOMAIN', 'TERRA', 'WORLD'
+      ]
+    }
   };
 
-  // Utility: shuffle array in-place
+  // Shuffle helper
   function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; }
     return a;
@@ -21,7 +39,6 @@
     out.textContent = 'Phrase accepted. Findings are now complete.';
     window.QCPD?.save(KEY, ANSWER);
     window.QCPD?.unlockTab('findings', { autoSwitch: true });
-
     if (!silent) {
       window.QCPD?.radio('Ops note: Some references aren’t digital. Check the corridor — something important is mounted on the wall.');
     }
@@ -30,17 +47,15 @@
   function renderColumns() {
     const grid = document.getElementById('corridorGrid');
     if (!grid) return;
-
     grid.innerHTML = '';
 
-    // Build three columns
     const cols = [
-      { id: 'c1', label: 'Column 1', key: 'col1' },
-      { id: 'c2', label: 'Column 2', key: 'col2' },
-      { id: 'c3', label: 'Column 3', key: 'col3' }
+      { label: 'Column 1', key: 'col1' }, // MAP
+      { label: 'Column 2', key: 'col2' }, // THE
+      { label: 'Column 3', key: 'col3' }  // WORLD
     ];
 
-    cols.forEach(({ id, label, key }) => {
+    cols.forEach(({ label, key }) => {
       const col = document.createElement('div');
       col.className = 'column';
       col.setAttribute('data-col', key);
@@ -53,23 +68,22 @@
       const list = document.createElement('div');
       list.className = 'word-list';
 
-      // Create a shuffled list of 5 words that includes the target
-      const bank = [...BANK[key].pool];
-      if (!bank.includes(BANK[key].target)) bank.push(BANK[key].target);
-      shuffle(bank);
+      // Build 5 unique words including the target; then shuffle
+      const pool = Array.from(new Set(BANK[key].pool));
+      if (!pool.includes(BANK[key].target)) pool.push(BANK[key].target);
+      shuffle(pool);
       const five = [];
-      const target = BANK[key].target;
-      // Ensure target is included; pick 5 unique
-      for (const w of bank) { if (!five.includes(w)) { five.push(w); if (five.length === 5) break; } }
-      if (!five.includes(target)) { five[0] = target; shuffle(five); }
+      for (const w of pool) { five.push(w); if (five.length === 5) break; }
+      if (!five.includes(BANK[key].target)) { five[0] = BANK[key].target; }
+      shuffle(five);
 
       for (const w of five) {
         const btn = document.createElement('button');
         btn.className = 'word';
-        btn.textContent = w;
-        btn.setAttribute('type', 'button');
+        btn.type = 'button';
+        btn.textContent = w.toUpperCase();
         btn.addEventListener('click', () => {
-          // Only one selection per column
+          // one selection per column
           [...list.querySelectorAll('.word.selected')].forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
           autofill();
@@ -81,20 +95,19 @@
       grid.appendChild(col);
     });
 
-    function getSelection(colKey) {
-      const col = grid.querySelector(`.column[data-col="${colKey}"] .word.selected`);
-      return col ? col.textContent.trim().toUpperCase() : '';
+    function sel(colKey) {
+      const el = grid.querySelector(`.column[data-col="${colKey}"] .word.selected`);
+      return el ? el.textContent.trim().toUpperCase() : '';
     }
 
     function autofill() {
-      const s1 = getSelection('col1'); // MAP
-      const s2 = getSelection('col2'); // THE
-      const s3 = getSelection('col3'); // WORLD
+      const s1 = sel('col1'); // MAP
+      const s2 = sel('col2'); // THE
+      const s3 = sel('col3'); // WORLD
       if (s1 && s2 && s3) {
-        // order: col2, col3, col1
-        const val = `${s2} ${s3} ${s1}`;
+        // order: column 2, then 3, then 1
         const input = document.getElementById('ringsInput');
-        if (input) input.value = val;
+        if (input) input.value = `${s2} ${s3} ${s1}`;
       }
     }
   }
@@ -119,8 +132,7 @@
       if (val === ANSWER) {
         solved(out);
       } else {
-        out.textContent = 'Not quite. Choose one word in each column and follow the order hint.';
-        // subtle feedback on the input
+        out.textContent = 'Not quite. Pick one word from each column and apply the order: 2 → 3 → 1.';
         input?.classList.remove('input-ok', 'input-bad', 'shake');
         input?.classList.add('input-bad', 'shake');
         setTimeout(() => input?.classList.remove('shake'), 250);

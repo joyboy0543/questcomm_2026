@@ -4,17 +4,27 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>QCPD Photo Booth</title>
+    <title>QCPD Photo Booth — The Sapphire Heist</title>
     <style>
+        :root {
+            --edge: #243546;
+            --bg: #0b1218;
+            --panel: #0d1a24;
+            --ink: #cfe6f7;
+            --ok: #29d49a;
+            --warn: #ffcc29;
+            --accent: #2ea8ff;
+        }
+
         body {
             margin: 0;
-            background: #0b1218;
-            color: #cfe6f7;
+            background: var(--bg);
+            color: var(--ink);
             font-family: system-ui, Segoe UI, Roboto, Arial
         }
 
         .wrap {
-            max-width: 680px;
+            max-width: 760px;
             margin: 0 auto;
             padding: 16px;
             display: flex;
@@ -23,13 +33,8 @@
             align-items: center
         }
 
-        video,
-        canvas {
-            width: 100%;
-            max-width: 560px;
-            border: 1px solid #243546;
-            border-radius: 12px;
-            background: #0d1a24
+        h2 {
+            margin: 8px 0 4px
         }
 
         .row {
@@ -40,10 +45,11 @@
         }
 
         input,
-        button {
+        button,
+        select {
             padding: 10px 12px;
             border-radius: 10px;
-            border: 1px solid #243546;
+            border: 1px solid var(--edge);
             background: #102536;
             color: #fff
         }
@@ -51,18 +57,62 @@
         button {
             cursor: pointer
         }
+
+        video,
+        canvas {
+            width: 100%;
+            max-width: 660px;
+            border: 1px solid var(--edge);
+            border-radius: 16px;
+            background: var(--panel)
+        }
+
+        .hint {
+            opacity: .8;
+            font-size: .95rem
+        }
+
+        .badge {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            background: #102536;
+            border: 1px solid var(--edge);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .9rem
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--ok);
+            color: var(--ok);
+            background: rgba(41, 212, 154, .12)
+        }
+
+        #msg {
+            min-height: 1.2rem
+        }
     </style>
 </head>
 
 <body>
     <div class="wrap">
         <h2>QCPD Photo Booth — The Sapphire Heist</h2>
+
         <div class="row">
-            <input id="agent" placeholder="Detective name (for caption)">
+            <span class="badge">🎥 Camera • 📸 Evidence Shot • 👑 Sapphire Case</span>
+        </div>
+
+        <div class="row">
+            <input id="agent" placeholder="Detective name (caption)">
             <button id="open">Open Camera</button>
             <button id="capture" disabled>Capture</button>
             <button id="retake" disabled>Retake</button>
         </div>
+
         <video id="vid" playsinline></video>
         <canvas id="can" style="display:none"></canvas>
 
@@ -71,11 +121,22 @@
             <button id="email" disabled>Send via email</button>
         </div>
 
-        <p id="msg"></p>
+        <p id="msg" class="hint"></p>
     </div>
 
     <script>
+        // === CONFIG ===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDra52zJTHmD2Ed0R2ouGebHNy3rqlhnpuKMqBBMIm02OCi4X2KBf1IavHAz-5CUQrMQ/exec';
+
+        // Optional local stickers (drop files into /assets/, or leave as-is to load emojis only)
+        // PNG/GIF are fine; GIF animation is not preserved in the final still (canvas draws current frame).
+        const STICKERS = [
+            { src: 'assets/police_tape.png', x: 0.00, y: 0.78, w: 1.00, alpha: 0.90 }, // full-width tape near bottom
+            { src: 'assets/sparkle.gif', x: 0.82, y: 0.06, w: 0.12, alpha: 0.85 }, // sparkle top-right
+            { src: 'assets/badge_star.png', x: 0.03, y: 0.04, w: 0.14, alpha: 0.95 }, // star badge top-left
+        ];
+        // If you don’t have these files yet, we’ll still add emoji overlays below.
+
         const vid = document.getElementById('vid');
         const can = document.getElementById('can');
         const ctx = can.getContext('2d');
@@ -87,8 +148,15 @@
         const msg = document.getElementById('msg');
         const agent = document.getElementById('agent');
 
+        // Prefill agent from landing page identity if available
+        (() => {
+            const stored = localStorage.getItem('qcpd.name');
+            if (stored) agent.value = stored;
+        })();
+
         let stream;
         let imageDataURL;
+        let lastUploadURL = '';
 
         openBtn.onclick = async () => {
             try {
@@ -96,38 +164,84 @@
                 vid.srcObject = stream;
                 await vid.play();
                 capBtn.disabled = false;
-                msg.textContent = 'Camera ready.';
+                msg.textContent = 'Camera ready — align your shot and press “Capture”.';
             } catch (e) {
-                msg.textContent = 'Camera permission denied.';
+                console.error(e);
+                msg.textContent = 'Camera permission denied. Please allow camera access.';
             }
         };
 
-        capBtn.onclick = () => {
-            const w = vid.videoWidth, h = vid.videoHeight;
-            if (!w || !h) { msg.textContent = 'Video not ready.'; return; }
-            // Set canvas
-            can.width = w; can.height = h;
-            // Draw video frame
-            ctx.drawImage(vid, 0, 0, w, h);
+        // Load optional sticker images
+        async function loadStickers(w, h) {
+            const images = [];
+            for (const s of STICKERS) {
+                try {
+                    const img = await new Promise((res, rej) => {
+                        const i = new Image();
+                        i.onload = () => res(i);
+                        i.onerror = () => rej(new Error('sticker failed ' + s.src));
+                        i.src = s.src;
+                    });
+                    images.push({ img, ...s });
+                } catch (_) { /* ignore missing stickers */ }
+            }
+            return images;
+        }
 
-            // Overlay frame (simple themed frame + caption)
-            // Top banner
-            ctx.fillStyle = 'rgba(16,37,54,0.85)';
-            ctx.fillRect(0, 0, w, Math.floor(h * 0.12));
-            // Title
+        // Draw cool frame + stickers + caption
+        async function drawFrame(w, h, name) {
+            // Background is already drawn (photo). Now add frame elements.
+            // Top banner gradient
+            const grad = ctx.createLinearGradient(0, 0, w, 0);
+            grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
+
+            // Title row with crown + police dot (emoji are widely supported)
             ctx.fillStyle = '#cfe6f7';
-            ctx.font = `${Math.floor(h * 0.05)}px sans-serif`;
-            ctx.fillText('QCPD — The Sapphire Heist', Math.floor(w * 0.04), Math.floor(h * 0.08));
+            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
+            ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
 
             // Bottom ribbon
-            ctx.fillStyle = 'rgba(16,37,54,0.85)';
-            ctx.fillRect(0, Math.floor(h * 0.82), w, Math.floor(h * 0.18));
+            ctx.fillStyle = 'rgba(16,37,54,0.92)';
+            ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
 
             // Caption
-            const name = agent.value.trim() || 'Detective';
             ctx.fillStyle = '#29d49a';
-            ctx.font = `${Math.floor(h * 0.05)}px sans-serif`;
-            ctx.fillText(`QCPD Detective ${name} — Case Solved`, Math.floor(w * 0.04), Math.floor(h * 0.92));
+            ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
+            ctx.fillText(`Detective ${name || '—'} • Case Solved`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+
+            // Emoji corner accents (fallback if assets missing)
+            ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+            ctx.fillText('🔷', Math.floor(w * 0.90), Math.floor(h * 0.11)); // Sapphire
+            ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87)); // Car
+            ctx.fillText('✨', Math.floor(w * 0.82), Math.floor(h * 0.16)); // Sparkle
+
+            // Stickers (if files exist)
+            const stickers = await loadStickers(w, h);
+            for (const s of stickers) {
+                const sw = Math.floor(w * s.w);
+                const sh = Math.floor((s.img.height / s.img.width) * sw);
+                const sx = Math.floor(w * s.x);
+                const sy = Math.floor(h * s.y);
+                const prev = ctx.globalAlpha;
+                ctx.globalAlpha = s.alpha ?? 1;
+                ctx.drawImage(s.img, sx, sy, sw, sh);
+                ctx.globalAlpha = prev;
+            }
+        }
+
+        capBtn.onclick = async () => {
+            const w = vid.videoWidth, h = vid.videoHeight;
+            if (!w || !h) { msg.textContent = 'Video not ready.'; return; }
+
+            // Set canvas & draw frame
+            can.width = w; can.height = h;
+            ctx.drawImage(vid, 0, 0, w, h);
+
+            // Decorate image
+            const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
+            await drawFrame(w, h, name);
 
             // Stop preview and show canvas
             if (stream) { stream.getTracks().forEach(t => t.stop()); }
@@ -157,20 +271,34 @@
             fd.append('agentName', agent.value.trim());
             fd.append('imageBase64', imageDataURL);
             fd.append('filename', `qcpd_${Date.now()}.jpg`);
+
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd });
-            return res; // we don’t need to read the body for now
+            let json = null;
+            try { json = await res.json(); } catch (e) { /* non-JSON error from Apps Script */ }
+            return { ok: res.ok && json && json.ok, status: res.status, json };
         }
 
         uploadBtn.onclick = async () => {
-            msg.textContent = 'Uploading...';
-            await postForm('uploadPhoto');
-            msg.textContent = 'Uploaded to database (Drive + photos sheet).';
+            msg.textContent = 'Uploading…';
+            const r = await postForm('uploadPhoto');
+            if (r.ok) {
+                lastUploadURL = r.json.url || '';
+                msg.innerHTML = `✅ Uploaded: <a href="${lastUploadURL}" target="_blank" style="color:${getComputedStyle(document.body).getPropertyValue('--accent').trim()}">open file</a>`;
+            } else {
+                console.error('Upload error', r);
+                msg.textContent = `Upload failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
+            }
         };
 
         emailBtn.onclick = async () => {
-            msg.textContent = 'Sending email...';
-            await postForm('emailPhoto');
-            msg.textContent = 'Sent via email.';
+            msg.textContent = 'Sending email…';
+            const r = await postForm('emailPhoto');
+            if (r.ok) {
+                msg.textContent = '✅ Sent via email.';
+            } else {
+                console.error('Email error', r);
+                msg.textContent = `Email failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
+            }
         };
     </script>
 </body>

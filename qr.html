@@ -117,16 +117,8 @@
         </div>
     </div>
 
-    <!-- Load QRCode library with fallback -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.0.0/build/qrcode.min.js" onerror="
-    (function(){
-      var s=document.createElement('script');
-      s.src='https://unpkg.com/qrcode@1.0.0/build/qrcode.min.js';
-      s.onload=function() { window.__qrLibLoaded = true; };
-      s.onerror=function(){ console.error('QR lib failed to load'); };
-      document.head.appendChild(s);
-    })();
-  "></script>
+    <!-- ✅ Use the documented browser bundle (with fallback to unpkg) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.js"></script>
 
     <script>
         const toast = (msg) => {
@@ -144,7 +136,7 @@
             try {
                 QRCode.toCanvas(canvas, text, {
                     errorCorrectionLevel: 'M',
-                    margin: 1,
+                    margin: 2,          // slightly larger quiet zone for better scanning
                     width: 300,
                     color: { dark: colorDark, light: colorLight }
                 }, (err) => { if (err) { console.error(err); toast('QR render failed'); } });
@@ -178,7 +170,7 @@
             document.getElementById('gen2').onclick = gen2;
             document.getElementById('save2').onclick = () => saveCanvas('qr2', 'questcomm_photo_qr.png');
 
-            // Auto-generate once on load (after a tiny delay so the lib loads)
+            // Auto-generate once on load (after a tiny delay so the lib is ready)
             setTimeout(() => { gen1(); gen2(); }, 150);
         });
     </script>

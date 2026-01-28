@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Evidence — QCPD</title>
+  <title>Evidence - QCPD</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="doors.css" />
 </head>
@@ -29,7 +29,6 @@
     <!-- Center panel: Evidence -->
     <main class="panel" id="evidencePanel">
       <h2 class="title">Evidence</h2>
-
       <div id="caseMsg" class="msg" style="display:none"></div>
 
       <!-- Tabs -->
@@ -52,18 +51,6 @@
         <ol>A single digit, supposedly a part of a code.</ol>
         <ol>A single digit, supposedly a part of a code.</ol>
 
-        <!-- Added landing inputs for telemetry -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0">
-          <input id="nameInput" placeholder="Your name" />
-          <input id="codenameInput" placeholder="Codename" />
-          <select id="deptSelect">
-            <option value="">Select department</option>
-            <option>Forensics</option>
-            <option>Operations</option>
-            <option>Intelligence</option>
-          </select>
-        </div>
-
         <p>
           In the Evidence panel, each station contains information extracted from the burglar's phone. Some notes are
           gathered based on the conversation from the interrogation. The collected evidence seems to be encrypted in
@@ -75,13 +62,10 @@
       </section>
 
       <section id="cipher" class="section">
-        <h3>Cipher Terminal — Photo Forensics</h3>
+        <h3>Cipher Terminal - Photo Forensics</h3>
         <p class="status">Click the photo to open it. Zoom and pan if needed. Record the code that you decipher.</p>
-
-        <!-- Small preview (click to open modal viewer). Leave EMPTY; JS injects the image -->
         <figure class="photo-thumb"></figure>
 
-        <!-- Input + confirm -->
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="cipherInput" placeholder="Enter code" inputmode="numeric" />
           <button id="cipherConfirm">Confirm</button>
@@ -94,7 +78,6 @@
         <p class="status" style="opacity:.7">This is seen on the recovered LockScreen of the burglar's phone. The code
           seems to be a single digit. Please type in once you have solved it.</p>
 
-        <!-- Centered riddle -->
         <div class="qcpd-riddle">
           <p>I arrive before the journey begins.</p>
           <p>Yet, I am not the road.</p>
@@ -120,16 +103,15 @@
 
           <div class="potion-body">
             <p class="potion-lede">How to Brew a basic Padlock Potion</p>
-
             <ul class="potion-steps">
               <li>To bind a common padlock shut and command its clasp to sleep.</li>
-              <li><strong>First, one eyelash from a wild dragon — caught in the sunset’s ruby‑sparked glow.</strong>
+              <li><strong>First, one eyelash from a wild dragon - caught in the sunset’s ruby‑sparked glow.</strong>
               </li>
-              <li><strong>Next, two bones from a royal frog — crown‑kissed and pale as snow.</strong></li>
-              <li><strong>Last, three drops of snot from a liar’s nose — lies condensed to a glistening flow.</strong>
+              <li><strong>Next, two bones from a royal frog - crown‑kissed and pale as snow.</strong></li>
+              <li><strong>Last, three drops of snot from a liar’s nose - lies condensed to a glistening flow.</strong>
               </li>
               <li><strong>Stir clockwise:</strong> once for the lash, twice for the bones, thrice for the drops.</li>
-              <li><strong>Then whisper:</strong> “By scale and crown, by truth denied — bolt, bar, and latch, be tied.”
+              <li><strong>Then whisper:</strong> “By scale and crown, by truth denied - bolt, bar, and latch, be tied.”
               </li>
             </ul>
             <p class="potion-warning"><em>
@@ -139,10 +121,9 @@
         </article>
 
         <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
-          <input id="potionInput" placeholder="Enter the encoded number" inputmode="numeric" />
+          <input id="potionInput" placeholder="Enter the decoded number" inputmode="numeric" />
           <button id="potionConfirm">Confirm</button>
         </div>
-
         <p id="potionStatus" class="status"></p>
       </section>
 
@@ -153,12 +134,6 @@
         <p class="status">Click on each door and solve the encryptions. The messages could hint to some code that might
           be useful.</p>
         <div id="doorsHost"></div>
-
-        <!-- Added manual logging box for Doorway attempts/codes -->
-        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
-          <input id="doorwayInput" placeholder="Enter Doorway code or attempt" />
-          <button id="doorwayConfirm">Confirm</button>
-        </div>
         <p id="doorwayStatus" class="status"></p>
       </section>
 
@@ -167,7 +142,6 @@
         <p>Almost there detective! But, there seems to be a fail-safe that the burglars have programmed on their phone.
           Let's solve this and see where it leads!</p>
 
-        <!-- Numbered, thinkable hints -->
         <ol class="corridor-hints">
           <li><strong>
               I keep a key to connect something, a scale that weighs nothing.
@@ -198,16 +172,15 @@
           </li>
         </ol>
 
-        <!-- Three selectable columns (rendered & shuffled by JS) -->
+        <!-- Grid injected by module -->
         <div id="corridorGrid" class="corridor-grid" aria-label="Select one word from each column"></div>
 
-        <!-- Renamed to match telemetry -->
+        <!-- RESTORED: IDs expected by the corridor module -->
         <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
-          <input id="corridorInput" placeholder="Enter one word from each column" />
-          <button id="corridorConfirm">Confirm</button>
+          <input id="ringsInput" placeholder="Enter one word from each column" />
+          <button id="ringsConfirm">Confirm</button>
         </div>
-
-        <p id="corridorStatus" class="status"></p>
+        <p id="ringsStatus" class="status"></p>
       </section>
 
       <section id="findings" class="section">
@@ -272,7 +245,7 @@
   <script src="modules/riddle1.js?v=20260123-4"></script>
   <script src="modules/potion.js?v=20260123-4"></script>
 
-  <!-- Doorway Sequence Orchestrator & Games (your current set) -->
+  <!-- Doorway Sequence Orchestrator & Games -->
   <script src="modules/doors.js?v=20260123-6"></script>
   <script src="modules/door_minesweep4.js?v=20260123-4"></script>
   <script src="modules/door_composite.js?v=20260123-4"></script>
@@ -288,15 +261,22 @@
   <script type="module">
     import { startSession, appendAttempt } from './modules/telemetry.js';
 
-    // 1) Start session once on Agree
+    // Read identity only from localStorage (landing page sets these)
+    function getIdentity() {
+      return {
+        name: localStorage.getItem('qcpd.name') || '',
+        codename: localStorage.getItem('qcpd.codename') || '',
+        department: localStorage.getItem('qcpd.department') || ''
+      };
+    }
+
+    // 1) Start session once on Agree (no duplicate fields here)
     document.getElementById('agreeBtn')?.addEventListener('click', async () => {
-      const name = document.getElementById('nameInput')?.value || '';
-      const codename = document.getElementById('codenameInput')?.value || '';
-      const dept = document.getElementById('deptSelect')?.value || '';
-      await startSession({ name, codename, department: dept });
+      const { name, codename, department } = getIdentity();
+      await startSession({ name, codename, department });
     });
 
-    // 2) Append attempts per puzzle (column names must match Google Sheet headers)
+    // 2) Append attempts per puzzle (sheet headers must match)
     document.getElementById('cipherConfirm')?.addEventListener('click', async () => {
       const v = document.getElementById('cipherInput')?.value?.trim();
       if (v) await appendAttempt('photo puzzle', v);
@@ -312,19 +292,19 @@
       if (v) await appendAttempt('potion riddle', v);
     });
 
-    document.getElementById('doorwayConfirm')?.addEventListener('click', async () => {
-      const v = document.getElementById('doorwayInput')?.value?.trim();
-      if (v) await appendAttempt('doorway sequence', v);
-    });
-
-    document.getElementById('corridorConfirm')?.addEventListener('click', async () => {
-      const v = document.getElementById('corridorInput')?.value?.trim();
+    // Corridor: use the module's original IDs
+    document.getElementById('ringsConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('ringsInput')?.value?.trim();
       if (v) await appendAttempt('corridor riddle', v);
     });
+
+    // Doorway: log on banner insertion (no extra inputs/UI)
+    const doorsObs = new MutationObserver(async () => {
+      const bannerve(document.body, { childList: true, subtree: true });
+      const already = document.getElementById('doors-complete');
+      if (already) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
+    });
   </script>
-
-  <!-- <script src="vendor/qrcode.min.js"></script> -->
-
 </body>
 
 </html>

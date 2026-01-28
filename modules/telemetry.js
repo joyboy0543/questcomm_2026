@@ -1,5 +1,5 @@
 // modules/telemetry.js
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTx-QL4JV3ujreEHhZXQOwzsu2_t1PCKyapKWTo7Qp85pgwOVF6Nio3h-OwBiRCgH5Dg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1b9kKnbDFRd4jP_n05Brj6RrDoWWisZsHAAOOC7BMa9psy8iQPevc9Uk7XJwCZZBdQ/exec';
 
 // Per-visit session (new every load)
 const SESSION_ID = crypto.randomUUID();

@@ -12,7 +12,6 @@
             --panel: #0d1a24;
             --ink: #cfe6f7;
             --ok: #29d49a;
-            --warn: #ffcc29;
             --accent: #2ea8ff;
         }
 
@@ -88,16 +87,16 @@
         <canvas id="can" style="display:none"></canvas>
 
         <div class="row">
-            <input id="toEmail" type="email" placeholder="Recipient email (for Send via email)">
             <button id="upload" disabled>Upload to database</button>
-            <button id="email" disabled>Send via email</button>
+            <button id="download" disabled>Download Photo</button>
         </div>
 
-        <p id="msg" class="hint">By taking a photo you consent to uploading/emailing this image for event purposes.</p>
+        <p id="msg" class="hint">By taking a photo you consent to uploading this image for event purposes.</p>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTx-QL4JV3ujreEHhZXQOwzsu2_t1PCKyapKWTo7Qp85pgwOVF6Nio3h-OwBiRCgH5Dg/exec';
+        // Your latest Web App (must end with /exec)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1b9kKnbDFRd4jP_n05Brj6RrDoWWisZsHAAOOC7BMa9psy8iQPevc9Uk7XJwCZZBdQ/exec';
 
         const vid = document.getElementById('vid');
         const can = document.getElementById('can');
@@ -106,10 +105,9 @@
         const capBtn = document.getElementById('capture');
         const retakeBtn = document.getElementById('retake');
         const uploadBtn = document.getElementById('upload');
-        const emailBtn = document.getElementById('email');
+        const downloadBtn = document.getElementById('download');
         const msg = document.getElementById('msg');
         const agent = document.getElementById('agent');
-        const toEmail = document.getElementById('toEmail');
 
         // Prefill agent from landing page
         (() => {
@@ -117,23 +115,21 @@
             if (stored) agent.value = stored;
         })();
 
-        let stream, imageDataURL, lastUploadURL = '';
+        let stream, imageDataURL;
 
         openBtn.onclick = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 vid.srcObject = stream; await vid.play();
-                capBtn.disabled = false; msg.textContent = 'Camera ready — align your shot and press “Capture”.';
+                capBtn.disabled = false; msg.textContent = 'Camera ready — align and Capture.';
             } catch (e) { console.error(e); msg.textContent = 'Camera permission denied.'; }
         };
 
         function drawFrame(w, h, name) {
-            // Background photo already drawn
             // Top banner
             const grad = ctx.createLinearGradient(0, 0, w, 0);
             grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
-            // Title
             ctx.fillStyle = '#cfe6f7';
             ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
             ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
@@ -144,7 +140,7 @@
             ctx.fillStyle = '#29d49a';
             ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
             ctx.fillText(`Detective ${name} • Case Solved`, Math.floor(w * 0.035), Math.floor(h * 0.92));
-            // Fun emoji accents
+            // Fun accents
             ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
             ctx.fillText('🔷', Math.floor(w * 0.90), Math.floor(h * 0.11));
             ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
@@ -159,51 +155,45 @@
             drawFrame(w, h, name);
             if (stream) { stream.getTracks().forEach(t => t.stop()); }
             vid.style.display = 'none'; can.style.display = 'block';
-            retakeBtn.disabled = false; uploadBtn.disabled = false; emailBtn.disabled = false;
+            retakeBtn.disabled = false; uploadBtn.disabled = false; downloadBtn.disabled = false;
             imageDataURL = can.toDataURL('image/jpeg', 0.92);
-            msg.textContent = 'Review the shot. You can retake or upload/email.';
+            msg.textContent = 'Review the shot. You can retake or upload / download.';
         };
 
         retakeBtn.onclick = async () => {
             can.style.display = 'none'; vid.style.display = 'block';
-            uploadBtn.disabled = true; emailBtn.disabled = true; retakeBtn.disabled = true; capBtn.disabled = false;
+            uploadBtn.disabled = true; downloadBtn.disabled = true; retakeBtn.disabled = true; capBtn.disabled = false;
             await openBtn.onclick();
         };
 
-        async function postForm(op) {
+        async function postForm() {
             const fd = new FormData();
-            fd.append('op', op);
+            fd.append('op', 'uploadPhoto');
             fd.append('agentName', agent.value.trim());
             fd.append('imageBase64', imageDataURL);
             fd.append('filename', `qcpd_${Date.now()}.jpg`);
-            if (op === 'emailPhoto') fd.append('toEmail', (toEmail.value || '').trim());
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd });
-            let json = null;
-            try { json = await res.json(); } catch (e) { }
+            let json = null; try { json = await res.json(); } catch (e) { }
             return { ok: res.ok && json && json.ok, status: res.status, json };
         }
 
         uploadBtn.onclick = async () => {
             msg.textContent = 'Uploading…';
-            const r = await postForm('uploadPhoto');
+            const r = await postForm();
             if (r.ok) {
-                lastUploadURL = r.json.url || '';
-                msg.innerHTML = `✅ Uploaded to Drive. ${lastUploadURL}Open file</a>`;
+                const url = r.json.url || '';
+                msg.innerHTML = `✅ Uploaded to Drive. ${url}Open file</a>`;
             } else {
                 msg.textContent = `Upload failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
             }
         };
 
-        emailBtn.onclick = async () => {
-            const to = (toEmail.value || '').trim();
-            if (!to) { msg.textContent = 'Please enter a recipient email.'; return; }
-            msg.textContent = 'Sending email…';
-            const r = await postForm('emailPhoto');
-            if (r.ok) {
-                msg.textContent = `✅ Email sent from ${r.json.from} to ${r.json.to}`;
-            } else {
-                msg.textContent = `Email failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
-            }
+        downloadBtn.onclick = () => {
+            if (!imageDataURL) { msg.textContent = 'No image to download yet.'; return; }
+            const a = document.createElement('a');
+            a.href = imageDataURL;
+            a.download = `qcpd_${Date.now()}.jpg`;
+            a.click();
         };
     </script>
 </body>

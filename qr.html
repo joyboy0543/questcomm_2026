@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>QuestComm QR Generator</title>
+    <style>
+        body {
+            font-family: system-ui, Segoe UI, Roboto, Arial;
+            background: #0b1218;
+            color: #cfe6f7;
+            margin: 0;
+            padding: 20px
+        }
+
+        .wrap {
+            max-width: 820px;
+            margin: 0 auto
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .card {
+            background: #0d1a24;
+            border: 1px solid #243546;
+            border-radius: 12px;
+            padding: 14px;
+            margin: 12px 0
+        }
+
+        canvas {
+            background: #fff;
+            border-radius: 10px
+        }
+
+        label {
+            font-size: .95rem
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 520px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #243546;
+            background: #0d1a24;
+            color: #cfe6f7
+        }
+
+        input[type="color"] {
+            height: 32px;
+            border: none;
+            background: transparent
+        }
+
+        button {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #243546;
+            background: #102536;
+            color: #fff;
+            cursor: pointer
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 16px;
+            background: #102536;
+            border: 1px solid #243546;
+            padding: 10px 14px;
+            border-radius: 8px;
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h2>QuestComm QR Generator</h2>
+
+        <div class="card">
+            <h3>Main game QR</h3>
+            <div class="row">
+                <label>URL</label>
+                <input id="url1" type="text" value="https://joyboy0543.github.io/questcomm_2026/">
+            </div>
+            <div class="row">
+                <label>Dark color</label><input id="dark1" type="color" value="#29d49a">
+                <label>Light color</label><input id="light1" type="color" value="#ffffff">
+                <button id="gen1">Generate</button>
+                <button id="save1">Save PNG</button>
+            </div>
+            <canvas id="qr1" width="300" height="300" aria-label="Main QR"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Photo Booth QR</h3>
+            <div class="row">
+                <label>URL</label>
+                <input id="url2" type="text" value="https://joyboy0543.github.io/questcomm_2026/photo.html">
+            </div>
+            <div class="row">
+                <label>Dark color</label><input id="dark2" type="color" value="#2ea8ff">
+                <label>Light color</label><input id="light2" type="color" value="#ffffff">
+                <button id="gen2">Generate</button>
+                <button id="save2">Save PNG</button>
+            </div>
+            <canvas id="qr2" width="300" height="300" aria-label="Photo Booth QR"></canvas>
+        </div>
+    </div>
+
+    <!-- Load QRCode library with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="
+    (function(){
+      var s=document.createElement('script');
+      s.src='https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js';
+      s.onload=function() { window.__qrLibLoaded = true; };
+      s.onerror=function(){ console.error('QR lib failed to load'); };
+      document.head.appendChild(s);
+    })();
+  "></script>
+
+    <script>
+        const toast = (msg) => {
+            const t = document.getElementById('toast') || (() => {
+                const d = document.createElement('div'); d.id = 'toast'; document.body.appendChild(d); return d;
+            })();
+            t.textContent = msg; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2200);
+        };
+
+        function renderQR(canvasId, text, colorDark, colorLight) {
+            const canvas = document.getElementById(canvasId);
+            if (!text) { toast('URL is empty'); return; }
+            if (typeof QRCode === 'undefined') { toast('QR library not loaded'); return; }
+            try {
+                QRCode.toCanvas(canvas, text, {
+                    errorCorrectionLevel: 'M',
+                    margin: 1,
+                    width: 300,
+                    color: { dark: colorDark, light: colorLight }
+                }, (err) => { if (err) { console.error(err); toast('QR render failed'); } });
+            } catch (e) {
+                console.error(e); toast('QR render error');
+            }
+        }
+
+        function saveCanvas(canvasId, filename) {
+            const a = document.createElement('a');
+            a.href = document.getElementById(canvasId).toDataURL('image/png');
+            a.download = filename || 'qr.png';
+            a.click();
+        }
+
+        // Wire buttons
+        window.addEventListener('DOMContentLoaded', () => {
+            const gen1 = () => renderQR('qr1',
+                document.getElementById('url1').value,
+                document.getElementById('dark1').value,
+                document.getElementById('light1').value);
+
+            const gen2 = () => renderQR('qr2',
+                document.getElementById('url2').value,
+                document.getElementById('dark2').value,
+                document.getElementById('light2').value);
+
+            document.getElementById('gen1').onclick = gen1;
+            document.getElementById('save1').onclick = () => saveCanvas('qr1', 'questcomm_main_qr.png');
+
+            document.getElementById('gen2').onclick = gen2;
+            document.getElementById('save2').onclick = () => saveCanvas('qr2', 'questcomm_photo_qr.png');
+
+            // Auto-generate once on load (after a tiny delay so the lib loads)
+            setTimeout(() => { gen1(); gen2(); }, 150);
+        });
+    </script>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+</body>
+
+</html>

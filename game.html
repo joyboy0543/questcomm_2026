@@ -258,7 +258,64 @@
   <script type="module" src="modules/telemetry.js?v=20260116"></script>
 
   <!-- Telemetry wiring -->
+
   <script type="module">
+    import { startSession, appendAttempt } from './modules/telemetry.js';
+
+    function getIdentity() {
+      return {
+        name: localStorage.getItem('qcpd.name') || '',
+        codename: localStorage.getItem('qcpd.codename') || '',
+        department: localStorage.getItem('qcpd.department') || ''
+      };
+    }
+
+    // 1) Start the session on Agree
+    document.getElementById('agreeBtn')?.addEventListener('click', async () => {
+      const { name, codename, department } = getIdentity();
+      await startSession({ name, codename, department });
+    });
+
+    // 2) Append attempts on each Confirm
+    document.getElementById('cipherConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('cipherInput')?.value?.trim();
+      if (v) await appendAttempt('photo puzzle', v);
+    });
+
+    document.getElementById('riddle1Confirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('riddle1Input')?.value?.trim();
+      if (v) await appendAttempt('riddle 1', v);
+    });
+
+    document.getElementById('potionConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('potionInput')?.value?.trim();
+      if (v) await appendAttempt('potion riddle', v);
+    });
+
+    // Corridor uses original IDs (rings*)
+    document.getElementById('ringsConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('ringsInput')?.value?.trim();
+      if (v) await appendAttempt('corridor riddle', v);
+    });
+
+    // 3) Doorway logging: watch for a success banner with id="doors-complete"
+    const doorsObs = new MutationObserver(async () => {
+      const banner = document.getElementById('doors-complete');
+      if (banner) {
+        await appendAttempt('doorway sequence', '367');
+        doorsObs.disconnect();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      doorsObs.observe(document.body, { childList: true, subtree: true });
+      // If already present (e.g., SPA nav), log immediately
+      const banner = document.getElementById('doors-complete');
+      if (banner) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
+    });
+  </script>
+
+  <!-- <script type="module">
     import { startSession, appendAttempt } from './modules/telemetry.js';
 
     // Read identity only from localStorage (landing page sets these)
@@ -304,7 +361,7 @@
       const already = document.getElementById('doors-complete');
       if (already) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
     });
-  </script>
+  </script> -->
 </body>
 
 </html>

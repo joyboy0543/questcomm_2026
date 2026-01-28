@@ -177,16 +177,22 @@
             return { ok: res.ok && json && json.ok, status: res.status, json };
         }
 
-        uploadBtn.onclick = async () => {
-            msg.textContent = 'Uploading…';
-            const r = await postForm();
-            if (r.ok) {
-                const url = r.json.url || '';
-                msg.innerHTML = `✅ Uploaded to Drive. ${url}Open file</a>`;
-            } else {
-                msg.textContent = `Upload failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
-            }
+        uploadBtn.onclick = () => {
+            // Open your shared folder in a new tab
+            const folderUrl = 'https://drive.google.com/drive/folders/1uSNnX4Mpic3IHEfjuy6QVXdFTm52AIWm?usp=sharing';
+            window.open(folderUrl, '_blank', 'noopener');
         };
+
+        // uploadBtn.onclick = async () => {
+        //     msg.textContent = 'Uploading…';
+        //     const r = await postForm();
+        //     if (r.ok) {
+        //         const url = r.json.url || '';
+        //         msg.innerHTML = `✅ Uploaded to Drive. ${url}Open file</a>`;
+        //     } else {
+        //         msg.textContent = `Upload failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
+        //     }
+        // };
 
         downloadBtn.onclick = () => {
             if (!imageDataURL) { msg.textContent = 'No image to download yet.'; return; }

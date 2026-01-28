@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>QCPD Photo Booth — The Sapphire Heist</title>
     <style>
         :root {
@@ -45,8 +45,7 @@
         }
 
         input,
-        button,
-        select {
+        button {
             padding: 10px 12px;
             border-radius: 10px;
             border: 1px solid var(--edge);
@@ -68,32 +67,8 @@
         }
 
         .hint {
-            opacity: .8;
+            opacity: .9;
             font-size: .95rem
-        }
-
-        .badge {
-            display: inline-flex;
-            gap: 6px;
-            align-items: center;
-            background: #102536;
-            border: 1px solid var(--edge);
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: .9rem
-        }
-
-        .pill {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            border: 1px solid var(--ok);
-            color: var(--ok);
-            background: rgba(41, 212, 154, .12)
-        }
-
-        #msg {
-            min-height: 1.2rem
         }
     </style>
 </head>
@@ -101,10 +76,6 @@
 <body>
     <div class="wrap">
         <h2>QCPD Photo Booth — The Sapphire Heist</h2>
-
-        <div class="row">
-            <span class="badge">🎥 Camera • 📸 Evidence Shot • 👑 Sapphire Case</span>
-        </div>
 
         <div class="row">
             <input id="agent" placeholder="Detective name (caption)">
@@ -117,25 +88,16 @@
         <canvas id="can" style="display:none"></canvas>
 
         <div class="row">
+            <input id="toEmail" type="email" placeholder="Recipient email (for Send via email)">
             <button id="upload" disabled>Upload to database</button>
             <button id="email" disabled>Send via email</button>
         </div>
 
-        <p id="msg" class="hint"></p>
+        <p id="msg" class="hint">By taking a photo you consent to uploading/emailing this image for event purposes.</p>
     </div>
 
     <script>
-        // === CONFIG ===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDra52zJTHmD2Ed0R2ouGebHNy3rqlhnpuKMqBBMIm02OCi4X2KBf1IavHAz-5CUQrMQ/exec';
-
-        // Optional local stickers (drop files into /assets/, or leave as-is to load emojis only)
-        // PNG/GIF are fine; GIF animation is not preserved in the final still (canvas draws current frame).
-        const STICKERS = [
-            { src: 'assets/police_tape.png', x: 0.00, y: 0.78, w: 1.00, alpha: 0.90 }, // full-width tape near bottom
-            { src: 'assets/sparkle.gif', x: 0.82, y: 0.06, w: 0.12, alpha: 0.85 }, // sparkle top-right
-            { src: 'assets/badge_star.png', x: 0.03, y: 0.04, w: 0.14, alpha: 0.95 }, // star badge top-left
-        ];
-        // If you don’t have these files yet, we’ll still add emoji overlays below.
 
         const vid = document.getElementById('vid');
         const can = document.getElementById('can');
@@ -147,121 +109,64 @@
         const emailBtn = document.getElementById('email');
         const msg = document.getElementById('msg');
         const agent = document.getElementById('agent');
+        const toEmail = document.getElementById('toEmail');
 
-        // Prefill agent from landing page identity if available
+        // Prefill agent from landing page
         (() => {
             const stored = localStorage.getItem('qcpd.name');
             if (stored) agent.value = stored;
         })();
 
-        let stream;
-        let imageDataURL;
-        let lastUploadURL = '';
+        let stream, imageDataURL, lastUploadURL = '';
 
         openBtn.onclick = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                vid.srcObject = stream;
-                await vid.play();
-                capBtn.disabled = false;
-                msg.textContent = 'Camera ready — align your shot and press “Capture”.';
-            } catch (e) {
-                console.error(e);
-                msg.textContent = 'Camera permission denied. Please allow camera access.';
-            }
+                vid.srcObject = stream; await vid.play();
+                capBtn.disabled = false; msg.textContent = 'Camera ready — align your shot and press “Capture”.';
+            } catch (e) { console.error(e); msg.textContent = 'Camera permission denied.'; }
         };
 
-        // Load optional sticker images
-        async function loadStickers(w, h) {
-            const images = [];
-            for (const s of STICKERS) {
-                try {
-                    const img = await new Promise((res, rej) => {
-                        const i = new Image();
-                        i.onload = () => res(i);
-                        i.onerror = () => rej(new Error('sticker failed ' + s.src));
-                        i.src = s.src;
-                    });
-                    images.push({ img, ...s });
-                } catch (_) { /* ignore missing stickers */ }
-            }
-            return images;
-        }
-
-        // Draw cool frame + stickers + caption
-        async function drawFrame(w, h, name) {
-            // Background is already drawn (photo). Now add frame elements.
-            // Top banner gradient
+        function drawFrame(w, h, name) {
+            // Background photo already drawn
+            // Top banner
             const grad = ctx.createLinearGradient(0, 0, w, 0);
             grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
-
-            // Title row with crown + police dot (emoji are widely supported)
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
+            // Title
             ctx.fillStyle = '#cfe6f7';
             ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
             ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
-
             // Bottom ribbon
             ctx.fillStyle = 'rgba(16,37,54,0.92)';
             ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
-
             // Caption
             ctx.fillStyle = '#29d49a';
             ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-            ctx.fillText(`Detective ${name || '—'} • Case Solved`, Math.floor(w * 0.035), Math.floor(h * 0.92));
-
-            // Emoji corner accents (fallback if assets missing)
-            ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
-            ctx.fillText('🔷', Math.floor(w * 0.90), Math.floor(h * 0.11)); // Sapphire
-            ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87)); // Car
-            ctx.fillText('✨', Math.floor(w * 0.82), Math.floor(h * 0.16)); // Sparkle
-
-            // Stickers (if files exist)
-            const stickers = await loadStickers(w, h);
-            for (const s of stickers) {
-                const sw = Math.floor(w * s.w);
-                const sh = Math.floor((s.img.height / s.img.width) * sw);
-                const sx = Math.floor(w * s.x);
-                const sy = Math.floor(h * s.y);
-                const prev = ctx.globalAlpha;
-                ctx.globalAlpha = s.alpha ?? 1;
-                ctx.drawImage(s.img, sx, sy, sw, sh);
-                ctx.globalAlpha = prev;
-            }
+            ctx.fillText(`Detective ${name} • Case Solved`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+            // Fun emoji accents
+            ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+            ctx.fillText('🔷', Math.floor(w * 0.90), Math.floor(h * 0.11));
+            ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
+            ctx.fillText('✨', Math.floor(w * 0.82), Math.floor(h * 0.16));
         }
 
-        capBtn.onclick = async () => {
+        capBtn.onclick = () => {
             const w = vid.videoWidth, h = vid.videoHeight;
             if (!w || !h) { msg.textContent = 'Video not ready.'; return; }
-
-            // Set canvas & draw frame
-            can.width = w; can.height = h;
-            ctx.drawImage(vid, 0, 0, w, h);
-
-            // Decorate image
+            can.width = w; can.height = h; ctx.drawImage(vid, 0, 0, w, h);
             const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
-            await drawFrame(w, h, name);
-
-            // Stop preview and show canvas
+            drawFrame(w, h, name);
             if (stream) { stream.getTracks().forEach(t => t.stop()); }
-            vid.style.display = 'none';
-            can.style.display = 'block';
-            retakeBtn.disabled = false;
-            uploadBtn.disabled = false;
-            emailBtn.disabled = false;
-
+            vid.style.display = 'none'; can.style.display = 'block';
+            retakeBtn.disabled = false; uploadBtn.disabled = false; emailBtn.disabled = false;
             imageDataURL = can.toDataURL('image/jpeg', 0.92);
             msg.textContent = 'Review the shot. You can retake or upload/email.';
         };
 
         retakeBtn.onclick = async () => {
-            can.style.display = 'none';
-            vid.style.display = 'block';
-            uploadBtn.disabled = true;
-            emailBtn.disabled = true;
-            retakeBtn.disabled = true;
-            capBtn.disabled = false;
+            can.style.display = 'none'; vid.style.display = 'block';
+            uploadBtn.disabled = true; emailBtn.disabled = true; retakeBtn.disabled = true; capBtn.disabled = false;
             await openBtn.onclick();
         };
 
@@ -271,10 +176,10 @@
             fd.append('agentName', agent.value.trim());
             fd.append('imageBase64', imageDataURL);
             fd.append('filename', `qcpd_${Date.now()}.jpg`);
-
+            if (op === 'emailPhoto') fd.append('toEmail', (toEmail.value || '').trim());
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd });
             let json = null;
-            try { json = await res.json(); } catch (e) { /* non-JSON error from Apps Script */ }
+            try { json = await res.json(); } catch (e) { }
             return { ok: res.ok && json && json.ok, status: res.status, json };
         }
 
@@ -283,20 +188,20 @@
             const r = await postForm('uploadPhoto');
             if (r.ok) {
                 lastUploadURL = r.json.url || '';
-                msg.innerHTML = `✅ Uploaded: <a href="${lastUploadURL}" target="_blank" style="color:${getComputedStyle(document.body).getPropertyValue('--accent').trim()}">open file</a>`;
+                msg.innerHTML = `✅ Uploaded to Drive. ${lastUploadURL}Open file</a>`;
             } else {
-                console.error('Upload error', r);
                 msg.textContent = `Upload failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
             }
         };
 
         emailBtn.onclick = async () => {
+            const to = (toEmail.value || '').trim();
+            if (!to) { msg.textContent = 'Please enter a recipient email.'; return; }
             msg.textContent = 'Sending email…';
             const r = await postForm('emailPhoto');
             if (r.ok) {
-                msg.textContent = '✅ Sent via email.';
+                msg.textContent = `✅ Email sent from ${r.json.from} to ${r.json.to}`;
             } else {
-                console.error('Email error', r);
                 msg.textContent = `Email failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
             }
         };

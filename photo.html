@@ -49,14 +49,10 @@
             border-radius: 10px;
             border: 1px solid var(--edge);
             background: #102536;
-            color: #fff
+            color: #fff;
+            cursor: pointer;
         }
 
-        button {
-            cursor: pointer
-        }
-
-        /* Mobile-friendly preview: no cropping, letterboxed if needed */
         video,
         canvas {
             display: block;
@@ -77,8 +73,8 @@
         }
 
         .notice {
+            width: 100%;
             max-width: 760px;
-            margin: 12px auto;
             padding: 12px;
             border-radius: 10px;
             border: 1px solid #8a4;
@@ -91,6 +87,50 @@
             background: #2a1111;
             color: #ffdede;
         }
+
+        .notice small {
+            opacity: 0.95;
+        }
+
+        /* Simple modal for help */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal {
+            background: #0d1a24;
+            border: 1px solid var(--edge);
+            color: var(--ink);
+            border-radius: 12px;
+            max-width: 760px;
+            width: calc(100% - 24px);
+            padding: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .modal h3 {
+            margin-top: 0;
+        }
+
+        .modal .close {
+            float: right;
+            background: #173247;
+            border: 1px solid #27475f;
+        }
+
+        .modal ol {
+            padding-left: 20px;
+        }
+
+        .modal a {
+            color: #8bd1ff;
+        }
     </style>
 </head>
 
@@ -98,7 +138,7 @@
     <div class="wrap">
         <h2>QCPD Photo Booth — The Sapphire Heist</h2>
 
-        <div id="env-notice" style="width:100%"></div>
+        <div id="env-notice"></div>
 
         <div class="row">
             <input id="agent" placeholder="Detective name (caption)">
@@ -106,6 +146,8 @@
             <button id="capture" disabled>Capture</button>
             <button id="retake" disabled>Retake</button>
             <button id="flip" disabled>Flip to Front</button>
+            <button id="hats" disabled>Hats: 0</button>
+            <button id="help">How to enable camera</button>
         </div>
 
         <video id="vid" playsinline></video>
@@ -117,12 +159,23 @@
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
-        <p id="msg2" class="hint">Uploading the photo gives consent to share this image for event purposes.
-            Downloading the photo will be private to your device.</p>
+        <p id="msg2" class="hint">Uploading the photo gives consent to share this image for event purposes. Downloading
+            the photo will be private to your device.</p>
+    </div>
+
+    <!-- Help modal -->
+    <div id="help-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal">
+            <button class="close" id="help-close">Close</button>
+            <h3>Enable camera permission</h3>
+            <div id="help-body">
+                <!-- Filled dynamically based on platform -->
+            </div>
+        </div>
     </div>
 
     <script>
-        // Your latest Web App (must end with /exec) — kept for future use
+        // Keep your Apps Script constant (unused in this flow, but preserved)
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1b9kKnbDFRd4jP_n05Brj6RrDoWWisZsHAAOOC7BMa9psy8iQPevc9Uk7XJwCZZBdQ/exec';
 
         const vid = document.getElementById('vid');
@@ -132,22 +185,28 @@
         const capBtn = document.getElementById('capture');
         const retakeBtn = document.getElementById('retake');
         const flipBtn = document.getElementById('flip');
+        const hatsBtn = document.getElementById('hats');
         const uploadBtn = document.getElementById('upload');
         const downloadBtn = document.getElementById('download');
+        const helpBtn = document.getElementById('help');
         const msg = document.getElementById('msg');
         const agent = document.getElementById('agent');
         const envNotice = document.getElementById('env-notice');
 
-        // Prefill agent from localStorage
+        // Prefill agent
         (() => {
             const stored = localStorage.getItem('qcpd.name');
             if (stored) agent.value = stored;
         })();
 
-        // ---- Environment checks (HTTPS, in-app browsers) ----
-        function isSecureContextOk() {
-            return (window.isSecureContext === true);
+        // ----- Environment checks and notices -----
+        function addNotice(html, warn = false) {
+            const div = document.createElement('div');
+            div.className = 'notice' + (warn ? ' warn' : '');
+            div.innerHTML = html;
+            envNotice.appendChild(div);
         }
+
         function isInAppBrowser() {
             const ua = navigator.userAgent || '';
             const isInstagram = ua.includes('Instagram');
@@ -158,39 +217,102 @@
             const isDrive = ua.includes('Drive');
             return isInstagram || isFB || isLine || isWeChat || isGmail || isDrive;
         }
-        function addNotice(html, warn = false) {
-            const div = document.createElement('div');
-            div.className = 'notice' + (warn ? ' warn' : '');
-            div.innerHTML = html;
-            envNotice.appendChild(div);
-        }
+
         (function startupChecks() {
-            if (!isSecureContextOk()) {
-                addNotice(
-                    `<b>Camera requires HTTPS.</b><br/>
-           Open this page over <code>https://</code> (e.g., GitHub Pages / Netlify).`,
-                    true
-                );
-            }
-            if (isInAppBrowser()) {
-                addNotice(
-                    `<b>Camera may be blocked by this in‑app browser.</b><br/>
-           Tap the ••• or share icon, then <b>Open in Safari/Chrome</b> for camera access.`
-                );
+            if (!window.isSecureContext) {
+                addNotice(`<b>Camera requires HTTPS.</b><br/>Open this page over <code>https://</code>.`, true);
             }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                addNotice(
-                    `<b>Camera API unavailable in this browser.</b><br/>
-           Try updating your browser or opening in Safari/Chrome on this device.`,
-                    true
-                );
+                addNotice(`<b>Camera API unavailable in this browser.</b><br/>Open in Safari/Chrome or try updating your browser.`, true);
             }
+            if (isInAppBrowser()) {
+                addNotice(`<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.`);
+            }
+            // Persistent reminder (as you requested)
+            addNotice(`<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.`, false);
         })();
 
-        // ---- Camera state ----
+        // ----- Modal help content -----
+        const helpBackdrop = document.getElementById('help-backdrop');
+        const helpClose = document.getElementById('help-close');
+        const helpBody = document.getElementById('help-body');
+
+        function platformHelpHtml() {
+            const ua = navigator.userAgent || '';
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+            const isAndroid = /Android/i.test(ua);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+            const isChrome = /Chrome/i.test(ua);
+
+            const common = `
+        <p><small>Why this happens: If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>
+      `;
+
+            if (isIOS) {
+                return `
+          ${common}
+          <h4>iPhone / iPad (Safari)</h4>
+          <ol>
+            <li>Open the page in <b>Safari</b> (not inside another app’s browser).</li>
+            <li>In Safari, tap the <b>aA</b> icon in the address bar → <b>Website Settings</b> → <b>Camera</b> → set to <b>Allow</b>.</li>
+            <li>Or go to <b>Settings</b> → <b>Safari</b> → <b>Camera</b> → choose <b>Allow</b>.</li>
+            <li>Reload this page and tap <b>Open Camera</b> again.</li>
+          </ol>
+          <h4>iPhone / iPad (Chrome)</h4>
+          <ol>
+            <li>Open in the <b>Chrome</b> app directly.</li>
+            <li>Chrome menu (⋮) → <b>Settings</b> → <b>Site Settings</b> → <b>Camera</b> → Allow.</li>
+            <li>Reload this page and tap <b>Open Camera</b>.</li>
+          </ol>
+        `;
+            } else if (isAndroid) {
+                return `
+          ${common}
+          <h4>Android (Chrome)</h4>
+          <ol>
+            <li>Open in the <b>Chrome</b> app directly.</li>
+            <li>Tap the <b>lock</b> icon in the address bar → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Or Chrome <b>⋮</b> → <b>Settings</b> → <b>Site settings</b> → <b>Camera</b> → set to <b>Allowed</b> and allow this site.</li>
+            <li>Reload this page and tap <b>Open Camera</b>.</li>
+          </ol>
+        `;
+            } else {
+                // Desktop
+                return `
+          ${common}
+          <h4>Desktop (Chrome/Edge)</h4>
+          <ol>
+            <li>Click the <b>camera</b> or <b>lock</b> icon in the address bar.</li>
+            <li>Set <b>Camera</b> permission to <b>Allow</b> for this site.</li>
+            <li>Reload the page and click <b>Open Camera</b>.</li>
+          </ol>
+          <h4>Desktop (Safari)</h4>
+          <ol>
+            <li>Safari → <b>Settings for This Website…</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Reload and click <b>Open Camera</b>.</li>
+          </ol>
+        `;
+            }
+        }
+
+        function openHelp() {
+            helpBody.innerHTML = platformHelpHtml();
+            helpBackdrop.style.display = 'flex';
+            helpBackdrop.setAttribute('aria-hidden', 'false');
+        }
+        function closeHelp() {
+            helpBackdrop.style.display = 'none';
+            helpBackdrop.setAttribute('aria-hidden', 'true');
+        }
+        helpBtn.onclick = openHelp;
+        helpClose.onclick = closeHelp;
+        helpBackdrop.addEventListener('click', (e) => { if (e.target === helpBackdrop) closeHelp(); });
+
+        // ----- Camera state -----
         let stream, imageDataURL;
         let facing = 'environment'; // or 'user'
-        let mirror = false;         // true for front camera (selfie)
+        let mirror = false;
+        let hatCount = 0;
 
         function applyPreviewTransforms() {
             const mirrorScale = mirror ? -1 : 1;
@@ -198,6 +320,7 @@
             vid.style.transform = t;
             can.style.transform = t;
             flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
+            hatsBtn.textContent = `Hats: ${hatCount}`;
         }
 
         async function stopStream() {
@@ -207,29 +330,19 @@
             }
         }
 
-        async function getBestStream(desiredFacing /* 'environment' | 'user' */) {
-            // 1) Try by facingMode
+        async function getBestStream(desiredFacing) {
+            // Try facingMode first
             try {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: desiredFacing,
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    },
+                    video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } },
                     audio: false
                 });
-            } catch (e) {
-                // continue to fallback
-            }
+            } catch (e) { /* fallback next */ }
 
-            // 2) Fallback: enumerate devices and pick by label or position
+            // Fallback: enumerate devices (helps on iOS)
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videos = devices.filter(d => d.kind === 'videoinput');
-
-            if (!videos.length) {
-                throw new Error('No camera device found');
-            }
-
+            if (!videos.length) throw new Error('No camera device found');
             const norm = s => (s || '').toLowerCase();
             let pick;
             if (desiredFacing === 'environment') {
@@ -237,33 +350,51 @@
             } else {
                 pick = videos.find(d => norm(d.label).includes('front')) || videos[0];
             }
+            return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId } }, audio: false });
+        }
 
-            return await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: pick.deviceId } },
-                audio: false
-            });
+        // *** NEW: permission probing ***
+        async function checkCameraPermissionState() {
+            // Not all browsers support Permissions API for 'camera'
+            if (!navigator.permissions || !navigator.permissions.query) return null;
+            try {
+                const status = await navigator.permissions.query({ name: 'camera' });
+                return status.state; // 'granted' | 'denied' | 'prompt'
+            } catch {
+                return null;
+            }
+        }
+
+        function showDeniedNoticeInline() {
+            addNotice(
+                `<b>Camera permission is blocked for this site.</b><br/>
+         You must allow it in your <b>browser settings</b>, then reload and tap <b>Open Camera</b>.`,
+                true
+            );
         }
 
         async function openCamera() {
             try {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    msg.textContent = 'Camera API unavailable in this browser.';
-                    return;
+                // Probe permission if possible and pre-warn
+                const state = await checkCameraPermissionState();
+                if (state === 'denied') {
+                    showDeniedNoticeInline();
+                    // We still attempt getUserMedia in case the site was just changed to allowed without reload
                 }
 
                 await stopStream();
                 stream = await getBestStream(facing);
                 vid.srcObject = stream;
 
-                // Wait metadata so videoWidth/Height are known
                 await vid.play();
-                capBtn.disabled = true; // enable after metadata
+                capBtn.disabled = true;
                 flipBtn.disabled = false;
+                hatsBtn.disabled = false;
 
                 await new Promise(res => {
                     if (vid.readyState >= 2) return res();
                     vid.onloadedmetadata = () => res();
-                    setTimeout(res, 800); // safety
+                    setTimeout(res, 800);
                 });
 
                 capBtn.disabled = false;
@@ -277,12 +408,16 @@
                     return;
                 }
                 if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
-                    msg.innerHTML = 'Camera permission denied.<br/>On iPhone: Settings → Safari/Chrome → Camera → Allow.';
-                } else if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
-                    msg.textContent = 'No camera device found.';
-                } else {
-                    msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
+                    // This is the key case: user or browser setting says “Not allowed”
+                    showDeniedNoticeInline();
+                    msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
+                    return;
                 }
+                if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
+                    msg.textContent = 'No camera device found.';
+                    return;
+                }
+                msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
             }
         }
 
@@ -293,7 +428,12 @@
             await openCamera();
         };
 
-        // ---- Frame overlay ----
+        hatsBtn.onclick = () => {
+            hatCount = (hatCount + 1) % 5;
+            hatsBtn.textContent = `Hats: ${hatCount}`;
+        };
+
+        // ----- Frame + Hats (unchanged from previous version) -----
         function drawFrame(w, h, name) {
             // Top banner
             const grad = ctx.createLinearGradient(0, 0, w, 0);
@@ -320,142 +460,119 @@
             ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
         }
 
+        function drawRoundedRectPath(ctx, x, y, w, h, r) {
+            const rr = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + rr, y);
+            ctx.arcTo(x + w, y, x + w, y + h, rr);
+            ctx.arcTo(x + w, y + h, x, y + h, rr);
+            ctx.arcTo(x, y + h, x, y, rr);
+            ctx.arcTo(x, y, x + w, y, rr);
+            ctx.closePath();
+        }
+        function drawHat(ctx, cx, cy, size, rotRad = 0) {
+            const brimW = size * 1.1, brimH = size * 0.22, crownW = size * 0.62, crownH = size * 0.38, bandH = crownH * 0.22;
+            ctx.save(); ctx.translate(cx, cy); ctx.rotate(rotRad);
+            ctx.save(); ctx.globalAlpha = 0.25; ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.ellipse(0, brimH * 0.55, brimW * 0.55, brimH * 0.35, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            ctx.fillStyle = '#2b2b2f'; ctx.strokeStyle = '#1e1e22'; ctx.lineWidth = Math.max(2, size * 0.02);
+            ctx.beginPath(); ctx.ellipse(0, 0, brimW / 2, brimH / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            const cx0 = -crownW / 2, cy0 = -brimH * 0.75 - crownH * 0.5;
+            drawRoundedRectPath(ctx, cx0, cy0, crownW, crownH, size * 0.06); ctx.fillStyle = '#35353b'; ctx.fill(); ctx.strokeStyle = '#222228'; ctx.stroke();
+            ctx.fillStyle = '#c9853a'; ctx.fillRect(cx0, cy0 + crownH * 0.45, crownW, bandH);
+            ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'; drawRoundedRectPath(ctx, cx0 + 3, cy0 + 3, crownW - 6, bandH * 0.6, size * 0.03); ctx.fill();
+            ctx.restore();
+        }
+        function computeHatPlacements(w, h, count) {
+            const s = Math.min(w, h) * 0.22, yTop = h * 0.22, arr = [];
+            if (count <= 0) return arr;
+            if (count === 1) arr.push({ x: w * 0.50, y: yTop, s, r: 0 });
+            else if (count === 2) { arr.push({ x: w * 0.28, y: yTop, s, r: -0.14 }); arr.push({ x: w * 0.72, y: yTop, s, r: 0.14 }); }
+            else if (count === 3) {
+                arr.push({ x: w * 0.22, y: yTop * 1.04, s: s * 0.95, r: -0.16 });
+                arr.push({ x: w * 0.50, y: yTop * 0.95, s, r: 0 });
+                arr.push({ x: w * 0.78, y: yTop * 1.04, s: s * 0.95, r: 0.16 });
+            } else {
+                arr.push({ x: w * 0.20, y: yTop * 1.08, s: s * 0.92, r: -0.18 });
+                arr.push({ x: w * 0.42, y: yTop * 0.98, s: s * 0.95, r: -0.06 });
+                arr.push({ x: w * 0.64, y: yTop * 1.00, s: s * 0.95, r: 0.06 });
+                arr.push({ x: w * 0.82, y: yTop * 1.10, s: s * 0.90, r: 0.18 });
+            }
+            return arr;
+        }
+        function drawHatsOverlay(w, h, count) {
+            if (!count) return;
+            for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
+        }
+
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;
             if (!vw || !vh) return false;
-
-            can.width = vw;
-            can.height = vh;
-
+            can.width = vw; can.height = vh;
             ctx.save();
-            // Mirror horizontally if front camera
-            if (mirror) {
-                ctx.translate(vw, 0);
-                ctx.scale(-1, 1);
-            }
+            if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
             ctx.drawImage(vid, 0, 0, vw, vh);
             ctx.restore();
-
             const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
             drawFrame(vw, vh, name);
+            drawHatsOverlay(vw, vh, hatCount);
             return true;
         }
 
         capBtn.onclick = () => {
-            const vw = vid.videoWidth, vh = vid.videoHeight;
-            if (!vw || !vh) { msg.textContent = 'Video not ready.'; return; }
-
             const ok = drawVideoToCanvas();
             if (!ok) { msg.textContent = 'Video not ready.'; return; }
-
             stopStream();
-            vid.style.display = 'none';
-            can.style.display = 'block';
-
-            // Review state
-            uploadBtn.disabled = false;
-            downloadBtn.disabled = false;
-            retakeBtn.disabled = false;
-            capBtn.disabled = true;
-            flipBtn.disabled = true;
-
+            vid.style.display = 'none'; can.style.display = 'block';
+            uploadBtn.disabled = false; downloadBtn.disabled = false; retakeBtn.disabled = false;
+            capBtn.disabled = true; flipBtn.disabled = true; hatsBtn.disabled = true;
             imageDataURL = can.toDataURL('image/jpeg', 0.92);
             msg.textContent = 'Review the shot. You can retake or upload / download.';
         };
 
         retakeBtn.onclick = async () => {
-            can.style.display = 'none';
-            vid.style.display = 'block';
-
-            uploadBtn.disabled = true;
-            downloadBtn.disabled = true;
-            retakeBtn.disabled = true;
-            capBtn.disabled = false;
-            flipBtn.disabled = false;
-
+            can.style.display = 'none'; vid.style.display = 'block';
+            uploadBtn.disabled = true; downloadBtn.disabled = true; retakeBtn.disabled = true;
+            capBtn.disabled = false; flipBtn.disabled = false; hatsBtn.disabled = false;
             await openCamera();
         };
 
-        // ---- Upload flow: open Drive folder + save/share with friendly filename ----
+        // Upload flow (open Drive + save/share)
         function dataURLToBlob(dataURL) {
             const [hdr, b64] = dataURL.split(',');
             const mime = (hdr.match(/data:([^;]+);base64/) || [, 'application/octet-stream'])[1];
-            const bin = atob(b64);
-            const len = bin.length;
-            const u8 = new Uint8Array(len);
+            const bin = atob(b64); const len = bin.length; const u8 = new Uint8Array(len);
             for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
             return new Blob([u8], { type: mime });
         }
         function buildSafeFilename(agentName) {
             const base = (agentName || '').trim() || localStorage.getItem('qcpd.name') || 'detective';
-            const safe = base
-                .normalize('NFKD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9_-]+/gi, '_')
-                .replace(/^_+|_+$/g, '')
-                .toLowerCase() || 'detective';
+            const safe = base.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'detective';
             return `detective_${safe}.jpg`;
         }
 
-        // (Kept for future: Apps Script direct upload)
-        async function postForm() {
-            const fd = new FormData();
-            fd.append('op', 'uploadPhoto');
-            fd.append('agentName', agent.value.trim());
-            fd.append('imageBase64', imageDataURL);
-            fd.append('filename', `qcpd_${Date.now()}.jpg`);
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd });
-            let json = null; try { json = await res.json(); } catch (e) { }
-            return { ok: res.ok && json && json.ok, status: res.status, json };
-        }
-
         uploadBtn.onclick = async () => {
-            if (!imageDataURL) {
-                msg.textContent = 'Capture a photo first, then upload.';
-                return;
-            }
-
-            // 1) Open your shared Drive folder
+            if (!imageDataURL) { msg.textContent = 'Capture a photo first, then upload.'; return; }
             const folderUrl = 'https://drive.google.com/drive/folders/1uSNnX4Mpic3IHEfjuy6QVXdFTm52AIWm?usp=sharing';
             window.open(folderUrl, '_blank', 'noopener');
-
-            // 2) Prompt to save/share with a friendly filename
             const filename = buildSafeFilename(agent.value);
-
             try {
                 const blob = dataURLToBlob(imageDataURL);
                 const file = new File([blob], filename, { type: 'image/jpeg' });
-
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Detective Photo',
-                        text: 'Upload to Drive folder'
-                    });
+                    await navigator.share({ files: [file], title: 'Detective Photo', text: 'Upload to Drive folder' });
                     msg.textContent = 'Shared successfully. If you opened Drive, you can also upload there.';
                     return;
                 }
-            } catch (e) {
-                console.debug('Share failed or not supported; falling back to download.', e);
-            }
-
-            // Fallback: trigger a save dialog
-            const a = document.createElement('a');
-            a.href = imageDataURL;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-
+            } catch { }
+            const a = document.createElement('a'); a.href = imageDataURL; a.download = filename;
+            document.body.appendChild(a); a.click(); a.remove();
             msg.textContent = 'Photo saved. Drag & drop into the opened Drive tab to upload.';
         };
 
         downloadBtn.onclick = () => {
             if (!imageDataURL) { msg.textContent = 'No image to download yet.'; return; }
-            const a = document.createElement('a');
-            a.href = imageDataURL;
-            a.download = `qcpd_${Date.now()}.jpg`;
-            a.click();
+            const a = document.createElement('a'); a.href = imageDataURL; a.download = `qcpd_${Date.now()}.jpg`; a.click();
         };
     </script>
 </body>

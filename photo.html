@@ -56,13 +56,19 @@
             cursor: pointer
         }
 
+        /* Mobile-friendly preview: no cropping, letterboxed if needed */
         video,
         canvas {
+            display: block;
             width: 100%;
+            height: auto;
             max-width: 660px;
+            max-height: 70vh;
+            object-fit: contain;
             border: 1px solid var(--edge);
             border-radius: 16px;
-            background: var(--panel)
+            background: var(--panel);
+            transform-origin: center center;
         }
 
         .hint {
@@ -81,6 +87,7 @@
             <button id="open">Open Camera</button>
             <button id="capture" disabled>Capture</button>
             <button id="retake" disabled>Retake</button>
+            <button id="flip" disabled>Flip to Front</button>
         </div>
 
         <video id="vid" playsinline></video>
@@ -92,7 +99,7 @@
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
-        <p id="msg" class="hint">Uploading the photo gives consent to share this image for event purposes.
+        <p id="msg2" class="hint">Uploading the photo gives consent to share this image for event purposes.
             Downloading the photo will be private to your device.</p>
     </div>
 
@@ -106,6 +113,7 @@
         const openBtn = document.getElementById('open');
         const capBtn = document.getElementById('capture');
         const retakeBtn = document.getElementById('retake');
+        const flipBtn = document.getElementById('flip');
         const uploadBtn = document.getElementById('upload');
         const downloadBtn = document.getElementById('download');
         const msg = document.getElementById('msg');
@@ -118,15 +126,58 @@
         })();
 
         let stream, imageDataURL;
+        let facing = 'environment'; // 'environment' (back) or 'user' (front)
+        let mirror = false;         // true for front camera (selfie preview & capture)
 
-        openBtn.onclick = async () => {
+        function applyPreviewTransforms() {
+            // Mirror when using front camera (selfie-style)
+            const mirrorScale = mirror ? -1 : 1;
+            const t = `scaleX(${mirrorScale})`;
+            vid.style.transform = t;
+            can.style.transform = t;
+            flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
+        }
+
+        async function stopStream() {
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+        }
+
+        async function openCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                vid.srcObject = stream; await vid.play();
-                capBtn.disabled = false; msg.textContent = 'Camera ready — align and Capture.';
-            } catch (e) { console.error(e); msg.textContent = 'Camera permission denied.'; }
+                await stopStream();
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: facing,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                });
+                vid.srcObject = stream;
+                await vid.play();
+                capBtn.disabled = false;
+                flipBtn.disabled = false;
+                msg.textContent = 'Camera ready — align and Capture.';
+                mirror = (facing === 'user');
+                applyPreviewTransforms();
+            } catch (e) {
+                console.error(e);
+                msg.textContent = 'Camera permission denied or unavailable.';
+            }
+        }
+
+        openBtn.onclick = openCamera;
+
+        flipBtn.onclick = async () => {
+            // Toggle between back and front
+            facing = (facing === 'environment') ? 'user' : 'environment';
+            await openCamera();
         };
 
+        // Frame overlay
         function drawFrame(w, h, name) {
             // Top banner
             const grad = ctx.createLinearGradient(0, 0, w, 0);
@@ -141,36 +192,98 @@
             // Caption
             ctx.fillStyle = '#29d49a';
             ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-            ctx.fillText(`Detective ${name} • Case Solved`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+            ctx.fillText(`Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
             // Fun accents
             ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-            ctx.fillText('🔷', Math.floor(w * 0.90), Math.floor(h * 0.11));
-            ctx.fillText('♦️', Math.floor(w * 0.82), Math.floor(h * 0.16));
-            ctx.fillText('📿', Math.floor(w * 0.82), Math.floor(h * 0.16));
-            ctx.fillText('💍', Math.floor(w * 0.82), Math.floor(h * 0.16));
+            ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
+            ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
+            ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
+            ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
+            ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
             ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
-            ctx.fillText('✨', Math.floor(w * 0.82), Math.floor(h * 0.16));
+            ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
+        }
+
+        // Draw with mirror consideration (no rotation now)
+        function drawVideoToCanvas() {
+            const vw = vid.videoWidth, vh = vid.videoHeight;
+            if (!vw || !vh) return false;
+
+            can.width = vw;
+            can.height = vh;
+
+            ctx.save();
+            // Mirror horizontally around the center if needed
+            if (mirror) {
+                ctx.translate(vw, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(vid, 0, 0, vw, vh);
+            ctx.restore();
+
+            const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
+            drawFrame(vw, vh, name);
+            return true;
         }
 
         capBtn.onclick = () => {
-            const w = vid.videoWidth, h = vid.videoHeight;
-            if (!w || !h) { msg.textContent = 'Video not ready.'; return; }
-            can.width = w; can.height = h; ctx.drawImage(vid, 0, 0, w, h);
-            const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
-            drawFrame(w, h, name);
-            if (stream) { stream.getTracks().forEach(t => t.stop()); }
-            vid.style.display = 'none'; can.style.display = 'block';
-            retakeBtn.disabled = false; uploadBtn.disabled = false; downloadBtn.disabled = false;
+            const vw = vid.videoWidth, vh = vid.videoHeight;
+            if (!vw || !vh) { msg.textContent = 'Video not ready.'; return; }
+
+            const ok = drawVideoToCanvas();
+            if (!ok) { msg.textContent = 'Video not ready.'; return; }
+
+            stopStream();
+            vid.style.display = 'none';
+            can.style.display = 'block';
+
+            // Review state
+            uploadBtn.disabled = false;
+            downloadBtn.disabled = false;
+            retakeBtn.disabled = false;
+            capBtn.disabled = true;
+            flipBtn.disabled = true;
+
             imageDataURL = can.toDataURL('image/jpeg', 0.92);
             msg.textContent = 'Review the shot. You can retake or upload / download.';
         };
 
         retakeBtn.onclick = async () => {
-            can.style.display = 'none'; vid.style.display = 'block';
-            uploadBtn.disabled = true; downloadBtn.disabled = true; retakeBtn.disabled = true; capBtn.disabled = false;
-            await openBtn.onclick();
+            can.style.display = 'none';
+            vid.style.display = 'block';
+
+            uploadBtn.disabled = true;
+            downloadBtn.disabled = true;
+            retakeBtn.disabled = true;
+            capBtn.disabled = false;
+            flipBtn.disabled = false;
+
+            await openCamera();
         };
 
+        // --- Share/Save helpers for Upload button ---
+        function dataURLToBlob(dataURL) {
+            const [hdr, b64] = dataURL.split(',');
+            const mime = (hdr.match(/data:([^;]+);base64/) || [, 'application/octet-stream'])[1];
+            const bin = atob(b64);
+            const len = bin.length;
+            const u8 = new Uint8Array(len);
+            for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+            return new Blob([u8], { type: mime });
+        }
+
+        function buildSafeFilename(agentName) {
+            const base = (agentName || '').trim() || localStorage.getItem('qcpd.name') || 'detective';
+            const safe = base
+                .normalize('NFKD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9_-]+/gi, '_')
+                .replace(/^_+|_+$/g, '')
+                .toLowerCase() || 'detective';
+            return `detective_${safe}.jpg`;
+        }
+
+        // Keep Apps Script function in case you switch back later
         async function postForm() {
             const fd = new FormData();
             fd.append('op', 'uploadPhoto');
@@ -182,22 +295,46 @@
             return { ok: res.ok && json && json.ok, status: res.status, json };
         }
 
-        uploadBtn.onclick = () => {
-            // Open your shared folder in a new tab
+        uploadBtn.onclick = async () => {
+            if (!imageDataURL) {
+                msg.textContent = 'Capture a photo first, then upload.';
+                return;
+            }
+
+            // 1) Open the Drive folder
             const folderUrl = 'https://drive.google.com/drive/folders/1uSNnX4Mpic3IHEfjuy6QVXdFTm52AIWm?usp=sharing';
             window.open(folderUrl, '_blank', 'noopener');
-        };
 
-        // uploadBtn.onclick = async () => {
-        //     msg.textContent = 'Uploading…';
-        //     const r = await postForm();
-        //     if (r.ok) {
-        //         const url = r.json.url || '';
-        //         msg.innerHTML = `✅ Uploaded to Drive. ${url}Open file</a>`;
-        //     } else {
-        //         msg.textContent = `Upload failed (${r.status})${r.json && r.json.error ? ': ' + r.json.error : ''}`;
-        //     }
-        // };
+            // 2) Prompt to save/share with friendly filename
+            const filename = buildSafeFilename(agent.value);
+
+            try {
+                const blob = dataURLToBlob(imageDataURL);
+                const file = new File([blob], filename, { type: 'image/jpeg' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Detective Photo',
+                        text: 'Upload to Drive folder'
+                    });
+                    msg.textContent = 'Shared successfully. If you opened Drive, you can also upload there.';
+                    return;
+                }
+            } catch (e) {
+                console.debug('Share failed or not supported; falling back to download.', e);
+            }
+
+            // Fallback: trigger a save dialog
+            const a = document.createElement('a');
+            a.href = imageDataURL;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            msg.textContent = 'Photo saved. Drag & drop into the opened Drive tab to upload.';
+        };
 
         downloadBtn.onclick = () => {
             if (!imageDataURL) { msg.textContent = 'No image to download yet.'; return; }

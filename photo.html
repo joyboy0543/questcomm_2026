@@ -75,12 +75,30 @@
             opacity: .9;
             font-size: .95rem
         }
+
+        .notice {
+            max-width: 760px;
+            margin: 12px auto;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #8a4;
+            background: #0d1a24;
+            color: #cfe6f7;
+        }
+
+        .warn {
+            border-color: #a44;
+            background: #2a1111;
+            color: #ffdede;
+        }
     </style>
 </head>
 
 <body>
     <div class="wrap">
         <h2>QCPD Photo Booth — The Sapphire Heist</h2>
+
+        <div id="env-notice" style="width:100%"></div>
 
         <div class="row">
             <input id="agent" placeholder="Detective name (caption)">
@@ -104,7 +122,7 @@
     </div>
 
     <script>
-        // Your latest Web App (must end with /exec)
+        // Your latest Web App (must end with /exec) — kept for future use
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1b9kKnbDFRd4jP_n05Brj6RrDoWWisZsHAAOOC7BMa9psy8iQPevc9Uk7XJwCZZBdQ/exec';
 
         const vid = document.getElementById('vid');
@@ -118,19 +136,63 @@
         const downloadBtn = document.getElementById('download');
         const msg = document.getElementById('msg');
         const agent = document.getElementById('agent');
+        const envNotice = document.getElementById('env-notice');
 
-        // Prefill agent from landing page
+        // Prefill agent from localStorage
         (() => {
             const stored = localStorage.getItem('qcpd.name');
             if (stored) agent.value = stored;
         })();
 
+        // ---- Environment checks (HTTPS, in-app browsers) ----
+        function isSecureContextOk() {
+            return (window.isSecureContext === true);
+        }
+        function isInAppBrowser() {
+            const ua = navigator.userAgent || '';
+            const isInstagram = ua.includes('Instagram');
+            const isFB = ua.includes('FBAN') || ua.includes('FBAV');
+            const isLine = ua.includes(' Line/');
+            const isWeChat = ua.includes('MicroMessenger');
+            const isGmail = ua.includes('Gmail');
+            const isDrive = ua.includes('Drive');
+            return isInstagram || isFB || isLine || isWeChat || isGmail || isDrive;
+        }
+        function addNotice(html, warn = false) {
+            const div = document.createElement('div');
+            div.className = 'notice' + (warn ? ' warn' : '');
+            div.innerHTML = html;
+            envNotice.appendChild(div);
+        }
+        (function startupChecks() {
+            if (!isSecureContextOk()) {
+                addNotice(
+                    `<b>Camera requires HTTPS.</b><br/>
+           Open this page over <code>https://</code> (e.g., GitHub Pages / Netlify).`,
+                    true
+                );
+            }
+            if (isInAppBrowser()) {
+                addNotice(
+                    `<b>Camera may be blocked by this in‑app browser.</b><br/>
+           Tap the ••• or share icon, then <b>Open in Safari/Chrome</b> for camera access.`
+                );
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                addNotice(
+                    `<b>Camera API unavailable in this browser.</b><br/>
+           Try updating your browser or opening in Safari/Chrome on this device.`,
+                    true
+                );
+            }
+        })();
+
+        // ---- Camera state ----
         let stream, imageDataURL;
-        let facing = 'environment'; // 'environment' (back) or 'user' (front)
-        let mirror = false;         // true for front camera (selfie preview & capture)
+        let facing = 'environment'; // or 'user'
+        let mirror = false;         // true for front camera (selfie)
 
         function applyPreviewTransforms() {
-            // Mirror when using front camera (selfie-style)
             const mirrorScale = mirror ? -1 : 1;
             const t = `scaleX(${mirrorScale})`;
             vid.style.transform = t;
@@ -145,39 +207,93 @@
             }
         }
 
-        async function openCamera() {
+        async function getBestStream(desiredFacing /* 'environment' | 'user' */) {
+            // 1) Try by facingMode
             try {
-                await stopStream();
-                stream = await navigator.mediaDevices.getUserMedia({
+                return await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: facing,
+                        facingMode: desiredFacing,
                         width: { ideal: 1920 },
                         height: { ideal: 1080 }
                     },
                     audio: false
                 });
+            } catch (e) {
+                // continue to fallback
+            }
+
+            // 2) Fallback: enumerate devices and pick by label or position
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videos = devices.filter(d => d.kind === 'videoinput');
+
+            if (!videos.length) {
+                throw new Error('No camera device found');
+            }
+
+            const norm = s => (s || '').toLowerCase();
+            let pick;
+            if (desiredFacing === 'environment') {
+                pick = videos.find(d => norm(d.label).includes('back')) || videos.slice(-1)[0];
+            } else {
+                pick = videos.find(d => norm(d.label).includes('front')) || videos[0];
+            }
+
+            return await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: pick.deviceId } },
+                audio: false
+            });
+        }
+
+        async function openCamera() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    msg.textContent = 'Camera API unavailable in this browser.';
+                    return;
+                }
+
+                await stopStream();
+                stream = await getBestStream(facing);
                 vid.srcObject = stream;
+
+                // Wait metadata so videoWidth/Height are known
                 await vid.play();
-                capBtn.disabled = false;
+                capBtn.disabled = true; // enable after metadata
                 flipBtn.disabled = false;
-                msg.textContent = 'Camera ready — align and Capture.';
+
+                await new Promise(res => {
+                    if (vid.readyState >= 2) return res();
+                    vid.onloadedmetadata = () => res();
+                    setTimeout(res, 800); // safety
+                });
+
+                capBtn.disabled = false;
                 mirror = (facing === 'user');
                 applyPreviewTransforms();
+                msg.textContent = 'Camera ready — align and Capture.';
             } catch (e) {
-                console.error(e);
-                msg.textContent = 'Camera permission denied or unavailable.';
+                console.error('openCamera failed:', e);
+                if (!window.isSecureContext) {
+                    msg.textContent = 'Camera requires HTTPS. Open this page over https://';
+                    return;
+                }
+                if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+                    msg.innerHTML = 'Camera permission denied.<br/>On iPhone: Settings → Safari/Chrome → Camera → Allow.';
+                } else if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
+                    msg.textContent = 'No camera device found.';
+                } else {
+                    msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
+                }
             }
         }
 
         openBtn.onclick = openCamera;
 
         flipBtn.onclick = async () => {
-            // Toggle between back and front
             facing = (facing === 'environment') ? 'user' : 'environment';
             await openCamera();
         };
 
-        // Frame overlay
+        // ---- Frame overlay ----
         function drawFrame(w, h, name) {
             // Top banner
             const grad = ctx.createLinearGradient(0, 0, w, 0);
@@ -204,7 +320,6 @@
             ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
         }
 
-        // Draw with mirror consideration (no rotation now)
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;
             if (!vw || !vh) return false;
@@ -213,7 +328,7 @@
             can.height = vh;
 
             ctx.save();
-            // Mirror horizontally around the center if needed
+            // Mirror horizontally if front camera
             if (mirror) {
                 ctx.translate(vw, 0);
                 ctx.scale(-1, 1);
@@ -261,7 +376,7 @@
             await openCamera();
         };
 
-        // --- Share/Save helpers for Upload button ---
+        // ---- Upload flow: open Drive folder + save/share with friendly filename ----
         function dataURLToBlob(dataURL) {
             const [hdr, b64] = dataURL.split(',');
             const mime = (hdr.match(/data:([^;]+);base64/) || [, 'application/octet-stream'])[1];
@@ -271,7 +386,6 @@
             for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
             return new Blob([u8], { type: mime });
         }
-
         function buildSafeFilename(agentName) {
             const base = (agentName || '').trim() || localStorage.getItem('qcpd.name') || 'detective';
             const safe = base
@@ -283,7 +397,7 @@
             return `detective_${safe}.jpg`;
         }
 
-        // Keep Apps Script function in case you switch back later
+        // (Kept for future: Apps Script direct upload)
         async function postForm() {
             const fd = new FormData();
             fd.append('op', 'uploadPhoto');
@@ -301,11 +415,11 @@
                 return;
             }
 
-            // 1) Open the Drive folder
+            // 1) Open your shared Drive folder
             const folderUrl = 'https://drive.google.com/drive/folders/1uSNnX4Mpic3IHEfjuy6QVXdFTm52AIWm?usp=sharing';
             window.open(folderUrl, '_blank', 'noopener');
 
-            // 2) Prompt to save/share with friendly filename
+            // 2) Prompt to save/share with a friendly filename
             const filename = buildSafeFilename(agent.value);
 
             try {

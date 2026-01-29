@@ -5,12 +5,157 @@
   <meta charset="utf-8" />
   <!-- Allow pinch zoom for accessibility on phones -->
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+  <!-- Strong no-cache hints (best-effort without server headers) -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Evidence - QCPD</title>
+
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="doors.css" />
 
-  <!-- Minimal, additive styles for Doorway zoom + fullscreen (no conflicts) -->
+  <!-- Minimal, additive styles (no conflicts) -->
   <style>
+    /* ===== Highlight the "I agree..." CTA ===== */
+    #agreeBtn {
+      position: relative;
+      font-weight: 600;
+      border: 1px solid #2ea8ff;
+      background: linear-gradient(180deg, #0f2a3f, #10324a);
+      color: #e9f6ff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      box-shadow: 0 0 0 0 rgba(46, 168, 255, 0.45);
+      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+      outline-offset: 3px;
+    }
+
+    #agreeBtn:hover {
+      transform: translateY(-1px);
+    }
+
+    #agreeBtn:active {
+      transform: translateY(0);
+    }
+
+    #agreeBtn:focus-visible {
+      outline: 2px solid #2ea8ff;
+    }
+
+    .cta-pulse {
+      animation: ctaPulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes ctaPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46, 168, 255, 0.55);
+      }
+
+      70% {
+        box-shadow: 0 0 0 14px rgba(46, 168, 255, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 168, 255, 0);
+      }
+    }
+
+    /* Tab pulse (used by auto-advance script) */
+    @keyframes qcpdPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46, 168, 255, 0.65);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(46, 168, 255, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 168, 255, 0);
+      }
+    }
+
+    .qcpd-pulse {
+      position: relative;
+      animation: qcpdPulse 1.2s ease-out 2;
+      outline: 2px solid var(--accent);
+    }
+
+    /* ===== Cipher lightbox overlay (pinch-zoomable image) ===== */
+    .photo-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      /* toggled via JS */
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .photo-overlay[aria-hidden="false"] {
+      display: flex;
+    }
+
+    .photo-frame {
+      background: #0b1218;
+      border: 1px solid #243546;
+      border-radius: 12px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .photo-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-bottom: 1px solid #243546;
+    }
+
+    .photo-bar button {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #243546;
+      background: #102536;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .photo-vp {
+      flex: 1 1 auto;
+      overflow: auto;
+      /* pan when zoomed */
+      -webkit-overflow-scrolling: touch;
+      touch-action: none;
+      /* allow custom pinch-zoom handling */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #09131a;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .photo-img {
+      transform-origin: center center;
+      /* scale around center */
+      max-width: 100%;
+      max-height: 100%;
+      /* We scale via transform; natural size used as baseline */
+    }
+
+    .photo-open-hint {
+      text-align: center;
+      font-size: .92rem;
+      opacity: .9;
+      margin-top: 6px;
+    }
+
     /* ===== Doorway: responsive zoom wrapper & fullscreen overlay ===== */
     .zoom-shell {
       --bg: #0d1a24;
@@ -27,14 +172,11 @@
     .zoom-viewport {
       position: relative;
       overflow: auto;
-      /* allow panning when zoomed in */
       touch-action: pan-x pan-y;
-      /* enable browser panning + pinch-zoom */
       -webkit-overflow-scrolling: touch;
       background: #09131a;
       border-radius: 10px;
       min-height: 240px;
-      /* prevents collapsing */
     }
 
     /* Ensure center panel doesn't clip scaled Doorway content */
@@ -65,14 +207,12 @@
       color: var(--ink);
     }
 
-    /* The injected games will be scaled; lock transform origin */
     #doorsHost {
       transform-origin: top center;
       will-change: transform;
       margin: 0 auto;
     }
 
-    /* Optional hint */
     .orient-hint {
       margin-top: 8px;
       padding: 8px 10px;
@@ -84,7 +224,6 @@
       font-size: 0.95rem;
     }
 
-    /* In case modules force their own max-width rules */
     #doorsHost canvas,
     #doorsHost svg,
     #doorsHost .door-game-root {
@@ -92,17 +231,20 @@
       display: block;
     }
 
-    /* ===== Fullscreen overlay ===== */
+    /* Fullscreen overlay for Doorway */
     .zoom-overlay {
       position: fixed;
       inset: 0;
       z-index: 9999;
       background: #000c;
       display: none;
-      /* toggled via JS */
       align-items: center;
       justify-content: center;
       padding: 10px;
+    }
+
+    .zoom-overlay[aria-hidden="false"] {
+      display: flex;
     }
 
     .zoom-overlay .overlay-inner {
@@ -136,6 +278,28 @@
 </head>
 
 <body>
+  <!-- HARD RESET: clear stored answers/progress & caches on every open -->
+  <script>
+    (function hardResetOnOpen() {
+      try {
+        const toRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && /^qcpd\./i.test(k)) toRemove.push(k);
+        }
+        toRemove.forEach(k => localStorage.removeItem(k));
+      } catch (e) { }
+      try { sessionStorage.clear(); } catch (e) { }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations?.().then(regs => regs.forEach(r => r.unregister())).catch(() => { });
+      }
+      if (window.caches?.keys) {
+        caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).catch(() => { });
+      }
+      window.addEventListener('pageshow', (e) => { if (e.persisted) { try { location.reload(); } catch (err) { } } });
+    })();
+  </script>
+
   <div class="app">
     <!-- Left panel: Database / Cases -->
     <aside class="panel" id="dbPanel">
@@ -173,8 +337,9 @@
         <h3>Case: The Sapphire Heist</h3>
         <p>Welcome, Detective. Great to hear that you have uncovered the hidden clues. Congratulations on your findings
           so far. </p>
-        <ol>A 3 digit code, that might hopefully be helpful later. (black)</ol>
-        <ol>2 single digits, supposedly a part of a code. (i gold)(ii gold)</ol>
+        <ol>A 3 digit code, that might hopefully be helpful later.</ol>
+        <ol>A single digit, supposedly a part of a code.</ol>
+        <ol>A single digit, supposedly a part of a code.</ol>
 
         <p>
           In the Evidence panel, each station contains information extracted from the burglar's phone. Some notes are
@@ -183,13 +348,18 @@
         </p>
         <p class="status">And one more thing detective! Don't forget to keep the findings confidential and handle the
           evidence with care.</p>
-        <button id="agreeBtn">I agree to investigate the evidence as per the QCPD regulations.</button>
+        <button id="agreeBtn" aria-describedby="agreeHelp">I agree to investigate the evidence as per the QCPD
+          regulations.</button>
+        <p id="agreeHelp" class="hint photo-open-hint">Tap the button above to begin.</p>
       </section>
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal - Photo Forensics</h3>
         <p class="status">Click the photo to open it. Zoom and pan if needed. Record the code that you decipher.</p>
+
+        <!-- The module injects the thumbnail into this figure -->
         <figure class="photo-thumb"></figure>
+        <p class="hint photo-open-hint">Tip: tap the image to open fullscreen with pinch‑zoom.</p>
 
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="cipherInput" placeholder="Enter code" inputmode="numeric" />
@@ -269,7 +439,7 @@
             <span id="zoomLabel" aria-live="polite">100%</span>
             <button id="zoomIn" title="Zoom in">+</button>
             <button id="zoomReset" title="Reset zoom">Reset</button>
-            <button id="zoomFullscreen" title="Fullscreen (phone-friendly)">Fullscreen</button>
+            <button id="zoomFullscreen" title="Use entire screen (best on phones)">Fullscreen</button>
           </div>
         </div>
 
@@ -304,38 +474,39 @@
 
         <ol class="corridor-hints">
           <li><strong>
-              I keep a key to connect something, a scale that weighs nothing.
-              I have many legends that tells no tale, but find in me the help to your ail.
-              You see in me what you seek, but I am not what you need.
-              You have me everywhere, but don't always need me!
+              I keep a key to connect something, a scale that weighs nothing.<br>
+              I have many legends that tells no tale, but find in me the help to your ail.<br>
+              You see in me what you seek, but I am not what you need.<br>
+              You have me everywhere, but don't always need me!<br>
             </strong> What am I?
           </li>
           <br>
           <li><strong>
-              I am single, sometimes many. In a place of common, I choose only me.
-              I make you feel special in every other way; I am always before you, yet you never let me stay.
+              I am single, sometimes many. In a place of common, I choose only me.<br>
+              I make you feel special in every other way; I am always before you, yet you never let me stay.<br>
             </strong> What am I?
           </li>
           <br>
           <li><strong>
-              I hold many havens, yet never drop them.
-              I run in circles, but never feel dizzy.
-              I have my own ups and downs, and among my beings I wear the crown.
+              I hold many havens, yet never drop them.<br>
+              I run in circles, but never feel dizzy.<br>
+              I have my own ups and downs, but keep everything stable.<br>
+              I am one of many, but among my beings I wear the crown.<br>
             </strong> What am I?
           </li>
           <br>
           <li>
-            What comes first sets the tone, what surrounds gives it meaning,
-            and what follows reveals the way forward.
-            Assemble them in an order, a sentence that places you in the corridor.
-            I await your arrival - your destination is near.
+            What comes first sets the tone, what surrounds gives it meaning,<br>
+            and what follows reveals the way forward.<br>
+            Assemble them in an order, a sentence that places you in the corridor.<br>
+            I await your arrival - your destination is near.<br>
           </li>
         </ol>
 
         <!-- Grid injected by module -->
         <div id="corridorGrid" class="corridor-grid" aria-label="Select one word from each column"></div>
 
-        <!-- RESTORED: IDs expected by the corridor module -->
+        <!-- IDs expected by the corridor module -->
         <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
           <input id="ringsInput" placeholder="Enter one word from each column" />
           <button id="ringsConfirm">Confirm</button>
@@ -438,6 +609,8 @@
     document.getElementById('agreeBtn')?.addEventListener('click', async () => {
       const { name, codename, department } = getIdentity();
       await startSession({ name, codename, department });
+      // Stop the CTA pulsing once clicked
+      document.getElementById('agreeBtn')?.classList.remove('cta-pulse');
     });
 
     // 2) Append attempts on each Confirm
@@ -472,6 +645,10 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
+      // Highlight CTA on first paint
+      const agree = document.getElementById('agreeBtn');
+      if (agree) agree.classList.add('cta-pulse');
+
       doorsObs.observe(document.body, { childList: true, subtree: true });
       // If already present (e.g., SPA nav), log immediately
       const banner = document.getElementById('doors-complete');
@@ -512,17 +689,6 @@
           setTimeout(() => next.classList.remove('qcpd-pulse'), 3000);
         }
       }
-      (function injectPulseStyle() {
-        if (document.getElementById('qcpd-pulse-style')) return;
-        const css = `
-          @keyframes qcpdPulse { 0%{box-shadow:0 0 0 0 rgba(46,168,255,0.65);} 70%{box-shadow:0 0 0 10px rgba(46,168,255,0);} 100%{box-shadow:0 0 0 0 rgba(46,168,255,0);} }
-          .qcpd-pulse { position:relative; animation:qcpdPulse 1.2s ease-out 2; outline:2px solid var(--accent); }
-        `;
-        const style = document.createElement('style');
-        style.id = 'qcpd-pulse-style';
-        style.textContent = css;
-        document.head.appendChild(style);
-      })();
 
       const SUCCESS_PATTERNS = [/✅/, /\bcorrect\b/i, /\bdecoded\b/i, /\bsuccess\b/i, /\bunlocked\b/i, /\bcomplete(d)?\b/i, /\bsolved\b/i];
       function looksSuccessful(el) {
@@ -581,42 +747,20 @@
         obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
       }
 
-      function watchDoorwayHost() {
-        const host = document.getElementById('doorsHost'); if (!host) return;
-        const obs = new MutationObserver(() => {
-          if (reactedTabs.has('doors')) return;
-          const text = host.innerText || '';
-          if (SUCCESS_PATTERNS.some(r => r.test(text))) onSuccess('doors');
-          const nextTab = getNextTab('doors');
-          if (nextTab && !nextTab.classList.contains('disabled')) onSuccess('doors');
-        });
-        obs.observe(host, { childList: true, subtree: true, characterData: true });
-      }
-
-      function watchTabUnlocks() {
-        const row = document.getElementById('tabs'); if (!row) return;
-        const obs = new MutationObserver(() => {
-          const afterDoors = getNextTab('doors');
-          if (afterDoors && !afterDoors.classList.contains('disabled') && !reactedTabs.has('doors')) onSuccess('doors');
-          const afterCorridor = getNextTab('colorcode');
-          if (afterCorridor && !afterCorridor.classList.contains('disabled') && !reactedTabs.has('colorcode')) onSuccess('colorcode');
-        });
-        obs.observe(row, { childList: false, subtree: true, attributes: true, attributeFilter: ['class'] });
-      }
-
+      // Also detect Doorway completion banner if modules inject it
       function watchDoorsCompleteBanner() {
         const obs = new MutationObserver(() => {
-          if (document.getElementById('doors-complete') && !reactedTabs.has('doors')) onSuccess('doors');
+          const banner = document.getElementById('doors-complete');
+          if (banner && !reactedTabs.has('doors')) { onSuccess('doors'); obs.disconnect(); }
         });
         obs.observe(document.body, { childList: true, subtree: true });
-        if (document.getElementById('doors-complete') && !reactedTabs.has('doors')) onSuccess('doors');
+        const banner = document.getElementById('doors-complete');
+        if (banner && !reactedTabs.has('doors')) { onSuccess('doors'); }
       }
 
       window.addEventListener('DOMContentLoaded', () => {
         STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
         wireCancelOnTabChange();
-        watchDoorwayHost();
-        watchTabUnlocks();
         watchDoorsCompleteBanner();
       });
     })();
@@ -626,10 +770,8 @@
   <script>
     (function () {
       // Natural design size; auto-measured from first child if unknown
-      let DESIGN_W = null;
-      let DESIGN_H = null;
+      let DESIGN_W = null, DESIGN_H = null;
 
-      const shell = document.getElementById('doorsZoomShell');
       const viewport = document.getElementById('doorsZoomViewport');
       const host = document.getElementById('doorsHost');
       const zoomInBtn = document.getElementById('zoomIn');
@@ -647,15 +789,11 @@
       const fsClose = document.getElementById('fsClose');
       const fsLabel = document.getElementById('fsLabel');
 
-      let currentScale = 1;
-      let fitScale = 1;
-      const MIN_SCALE = 0.45;  // allow smaller fit on tiny phones
-      const MAX_SCALE = 3.0;
-      const STEP = 0.15;
+      let currentScale = 1, fitScale = 1;
+      const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
 
       function measureDesignSize() {
-        const child = host.firstElementChild;
-        if (!child) return;
+        const child = host.firstElementChild; if (!child) return;
         const rect = child.getBoundingClientRect();
         const cssW = child.offsetWidth || rect.width;
         const cssH = child.offsetHeight || rect.height;
@@ -684,7 +822,6 @@
         (labelElem || zoomLabel).textContent = pct;
 
         host.style.marginLeft = host.style.marginRight = 'auto';
-
         const desiredH = DESIGN_H * currentScale + 16;
         const maxH = Math.max(260, Math.min(window.innerHeight * 0.72, desiredH));
         viewport.style.height = maxH + 'px';
@@ -706,19 +843,16 @@
         if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
       }
 
-      // ---- Normal controls
+      // Normal controls
       zoomInBtn.addEventListener('click', () => zoomBy(STEP, zoomLabel));
       zoomOutBtn.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
       zoomResetBtn.addEventListener('click', () => resetZoom(zoomLabel));
 
-      // ---- Pinch-to-zoom in normal viewport
+      // Pinch-to-zoom in normal viewport
       let lastTouchDist = null;
       viewport.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-          lastTouchDist = distance(e.touches[0], e.touches[1]);
-        }
+        if (e.touches.length === 2) lastTouchDist = distance(e.touches[0], e.touches[1]);
       }, { passive: true });
-
       viewport.addEventListener('touchmove', (e) => {
         if (e.touches.length === 2 && lastTouchDist) {
           const d = distance(e.touches[0], e.touches[1]);
@@ -728,44 +862,34 @@
           e.preventDefault();
         }
       }, { passive: false });
-
-      viewport.addEventListener('touchend', () => {
-        if (event.touches && event.touches.length < 2) lastTouchDist = null;
-      });
+      viewport.addEventListener('touchend', () => { if (event.touches && event.touches.length < 2) lastTouchDist = null; });
 
       function distance(a, b) {
-        const dx = a.clientX - b.clientX;
-        const dy = a.clientY - b.clientY;
+        const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY;
         return Math.hypot(dx, dy);
       }
 
-      // ---- Fullscreen overlay
-      let inFullscreen = false;
-      let placeholder = null;
-
+      // Fullscreen overlay (for phones)
+      let inFullscreen = false, placeholder = null;
       function openFullscreen() {
         if (inFullscreen) return;
         inFullscreen = true;
         placeholder = document.createElement('div');
         host.parentNode.insertBefore(placeholder, host);
         fsVp.appendChild(host);
-        fs.style.display = 'flex';
         fs.setAttribute('aria-hidden', 'false');
 
         fitScale = computeFitScale(fsVp);
         applyScale(fitScale, fsLabel);
         bindFsGestures();
       }
-
       function closeFullscreen() {
         if (!inFullscreen) return;
         inFullscreen = false;
-        fs.style.display = 'none';
         fs.setAttribute('aria-hidden', 'true');
         if (placeholder && placeholder.parentNode) {
           placeholder.parentNode.insertBefore(host, placeholder);
-          placeholder.remove();
-          placeholder = null;
+          placeholder.remove(); placeholder = null;
         }
         fitScale = computeFitScale(viewport);
         applyScale(fitScale, zoomLabel);
@@ -774,8 +898,6 @@
 
       document.getElementById('zoomFullscreen').addEventListener('click', openFullscreen);
       fsClose.addEventListener('click', closeFullscreen);
-
-      // FS controls
       fsIn.addEventListener('click', () => zoomBy(STEP, fsLabel));
       fsOut.addEventListener('click', () => zoomBy(-STEP, fsLabel));
       fsReset.addEventListener('click', () => resetZoom(fsLabel));
@@ -806,43 +928,163 @@
       }
       function fsEnd() { fsLastTouchDist = null; }
 
-      // ---- Refit on resize/orientation
-      window.addEventListener('resize', () => {
-        if (inFullscreen) {
-          fitScale = computeFitScale(fsVp);
-          applyScale(fitScale, fsLabel);
-        } else {
-          fitToViewport();
-        }
-      });
-      window.addEventListener('orientationchange', () => setTimeout(() => {
-        if (inFullscreen) {
-          fitScale = computeFitScale(fsVp);
-          applyScale(fitScale, fsLabel);
-        } else {
-          fitToViewport();
-        }
-      }, 200));
+      // Auto-enter fullscreen when Doorway tab is opened on small phones (optional)
+      (function autoEnterFsOnSmallPhone() {
+        const tabs = document.getElementById('tabs');
+        if (!tabs) return;
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('button.tab');
+          if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
+            // Delay to let content render if needed
+            setTimeout(() => {
+              if (!host.firstElementChild) return;
+              openFullscreen();
+            }, 200);
+          }
+        });
+      })();
 
-      // ---- Observe when modules inject content into #doorsHost
+      // Refit on resize/orientation
+      window.addEventListener('resize', () => { inFullscreen ? (fitScale = computeFitScale(fsVp), applyScale(fitScale, fsLabel)) : fitToViewport(); });
+      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? (fitScale = computeFitScale(fsVp), applyScale(fitScale, fsLabel)) : fitToViewport(); }, 200));
+
+      // Observe when modules inject content into #doorsHost, then fit
       const observer = new MutationObserver(() => {
         if (host.firstElementChild) {
-          setTimeout(() => {
-            measureDesignSize();
-            fitToViewport();
-          }, 50);
+          setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
           observer.disconnect();
         }
       });
       observer.observe(host, { childList: true, subtree: true });
 
-      // If already present on load
-      if (host.firstElementChild) {
-        setTimeout(() => {
-          measureDesignSize();
-          fitToViewport();
-        }, 50);
+      if (host.firstElementChild) setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
+
+      // Expose for debugging if needed
+      window.__qcpd_openDoorFullscreen = openFullscreen;
+      window.__qcpd_closeDoorFullscreen = closeFullscreen;
+    })();
+  </script>
+
+  <!-- Cipher photo lightbox with pinch-zoom -->
+  <script>
+    (function () {
+      const thumb = document.querySelector('#cipher .photo-thumb');
+
+      // Build overlay once
+      const overlay = document.createElement('div');
+      overlay.className = 'photo-overlay';
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.innerHTML = `
+        <div class="photo-frame">
+          <div class="photo-bar">
+            <button id="phOut">−</button>
+            <span id="phLabel">100%</span>
+            <button id="phIn">+</button>
+            <button id="phReset">Reset</button>
+            <button id="phOpenTab" title="Open image in new tab">Open</button>
+            <button id="phClose" title="Close">Close</button>
+          </div>
+          <div class="photo-vp" id="phViewport">
+            <img id="phImg" class="photo-img" alt="Evidence photo">
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const phVp = overlay.querySelector('#phViewport');
+      const phImg = overlay.querySelector('#phImg');
+      const phIn = overlay.querySelector('#phIn');
+      const phOut = overlay.querySelector('#phOut');
+      const phReset = overlay.querySelector('#phReset');
+      const phClose = overlay.querySelector('#phClose');
+      const phOpenTab = overlay.querySelector('#phOpenTab');
+      const phLabel = overlay.querySelector('#phLabel');
+
+      let scale = 1;
+      const MIN = 0.5, MAX = 5, STEP = 0.2;
+
+      function setScale(s) {
+        scale = Math.max(MIN, Math.min(MAX, s));
+        phImg.style.transform = `scale(${scale})`;
+        phLabel.textContent = `${Math.round(scale * 100)}%`;
       }
+      function open(src) {
+        phImg.src = src;
+        setScale(1);
+        overlay.setAttribute('aria-hidden', 'false');
+      }
+      function close() { overlay.setAttribute('aria-hidden', 'true'); }
+
+      phIn.addEventListener('click', () => setScale(scale + STEP));
+      phOut.addEventListener('click', () => setScale(scale - STEP));
+      phReset.addEventListener('click', () => setScale(1));
+      phClose.addEventListener('click', close);
+      phOpenTab.addEventListener('click', () => { if (phImg.src) window.open(phImg.src, '_blank', 'noopener'); });
+
+      // Pinch-zoom for the photo
+      let lastDist = null;
+      phVp.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) lastDist = dist(e.touches[0], e.touches[1]);
+      }, { passive: true });
+      phVp.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && lastDist) {
+          const d = dist(e.touches[0], e.touches[1]);
+          const factor = d / lastDist;
+          lastDist = d;
+          setScale(scale * factor);
+          e.preventDefault();
+        }
+      }, { passive: false });
+      phVp.addEventListener('touchend', () => { lastDist = null; });
+      function dist(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
+
+      // Click handler for the thumbnail (handles both <img> and background-image)
+      function extractImageURL(fig) {
+        // Prefer an <img> inside the figure
+        const img = fig.querySelector('img');
+        if (img?.src) return img.src;
+
+        // Else try background-image on the figure
+        const cs = getComputedStyle(fig);
+        const bg = cs.backgroundImage || '';
+        const m = bg.match(/url\(["']?(.*?)["']?\)/);
+        if (m && m[1]) return m[1];
+
+        return null;
+      }
+
+      function wireThumb() {
+        if (!thumb) return;
+        thumb.style.cursor = 'zoom-in';
+        thumb.addEventListener('click', () => {
+          const src = extractImageURL(thumb);
+          if (src) {
+            open(src);
+          } else {
+            // Fallback: let the module add an <img>, or open a help note
+            alert('Photo not loaded yet. Please wait a moment and try again.');
+          }
+        });
+      }
+
+      // If the module injects content later, observe and wire after it appears
+      const obs = new MutationObserver(() => { wireThumb(); });
+      if (thumb) {
+        obs.observe(thumb, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+        // Also try immediately
+        wireThumb();
+      }
+
+      // Close overlay on backdrop tap (outside the image area)
+      overlay.addEventListener('click', (e) => {
+        // avoid closing when clicking inside controls or viewport scrollbars
+        if (e.target === overlay) close();
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') close();
+      });
     })();
   </script>
 

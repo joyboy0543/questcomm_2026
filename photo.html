@@ -64,7 +64,8 @@
             border: 1px solid var(--edge);
             border-radius: 16px;
             background: var(--panel);
-            transform-origin: center center;
+            /* IMPORTANT: keep visual transforms off so preview & saved pixels are not rotated/mirrored */
+            transform: none !important;
         }
 
         .hint {
@@ -228,7 +229,7 @@
             if (isInAppBrowser()) {
                 addNotice(`<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.`);
             }
-            // Persistent reminder (as you requested)
+            // Persistent reminder
             addNotice(`<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.`, false);
         })();
 
@@ -241,8 +242,6 @@
             const ua = navigator.userAgent || '';
             const isIOS = /iPhone|iPad|iPod/i.test(ua);
             const isAndroid = /Android/i.test(ua);
-            const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
-            const isChrome = /Chrome/i.test(ua);
 
             const common = `
         <p><small>Why this happens: If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>
@@ -311,14 +310,14 @@
         // ----- Camera state -----
         let stream, imageDataURL;
         let facing = 'environment'; // or 'user'
-        let mirror = false;
+        let mirror = false;         // <<— FORCE NO MIRROR (preview & capture) per your request
         let hatCount = 0;
 
+        // FORCE preview transform = none (no rotation/mirroring on phone)
         function applyPreviewTransforms() {
-            const mirrorScale = mirror ? -1 : 1;
-            const t = `scaleX(${mirrorScale})`;
-            vid.style.transform = t;
-            can.style.transform = t;
+            mirror = false; // ensure no mirror even on front camera
+            vid.style.transform = 'none';
+            can.style.transform = 'none';
             flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
             hatsBtn.textContent = `Hats: ${hatCount}`;
         }
@@ -353,9 +352,8 @@
             return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId } }, audio: false });
         }
 
-        // *** NEW: permission probing ***
+        // Permission probing (unchanged)
         async function checkCameraPermissionState() {
-            // Not all browsers support Permissions API for 'camera'
             if (!navigator.permissions || !navigator.permissions.query) return null;
             try {
                 const status = await navigator.permissions.query({ name: 'camera' });
@@ -375,11 +373,9 @@
 
         async function openCamera() {
             try {
-                // Probe permission if possible and pre-warn
                 const state = await checkCameraPermissionState();
                 if (state === 'denied') {
                     showDeniedNoticeInline();
-                    // We still attempt getUserMedia in case the site was just changed to allowed without reload
                 }
 
                 await stopStream();
@@ -398,7 +394,8 @@
                 });
 
                 capBtn.disabled = false;
-                mirror = (facing === 'user');
+                // DO NOT mirror on front camera
+                mirror = false;
                 applyPreviewTransforms();
                 msg.textContent = 'Camera ready — align and Capture.';
             } catch (e) {
@@ -408,7 +405,6 @@
                     return;
                 }
                 if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
-                    // This is the key case: user or browser setting says “Not allowed”
                     showDeniedNoticeInline();
                     msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
                     return;
@@ -433,31 +429,68 @@
             hatsBtn.textContent = `Hats: ${hatCount}`;
         };
 
-        // ----- Frame + Hats (unchanged from previous version) -----
+        // ----- Frame + Hats (refined to auto-fit text; no rotation/mirroring) -----
+
+        // Helper: fit font size so text fits in a given width
+        function fitFontSize(text, basePx, maxWidth, fontStack) {
+            let size = Math.max(12, basePx);
+            ctx.font = `${size}px ${fontStack}`;
+            while (ctx.measureText(text).width > maxWidth && size > 12) {
+                size -= 1;
+                ctx.font = `${size}px ${fontStack}`;
+            }
+            return size;
+        }
+
         function drawFrame(w, h, name) {
+            ctx.save();
+
+            const lm = Math.floor(w * 0.035);
+            const rm = lm;
+            const innerW = w - lm - rm;
+
             // Top banner
+            const topH = Math.floor(h * 0.13);
             const grad = ctx.createLinearGradient(0, 0, w, 0);
             grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
+
+            // Title (auto-fit to inner width)
+            const title = '👑 QCPD — The Sapphire Heist';
+            const titleFontStack = `"Segoe UI", system-ui, Arial`;
+            const titleBase = Math.floor(h * 0.055);
+            const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+            ctx.font = `${titleSize}px ${titleFontStack}`;
             ctx.fillStyle = '#cfe6f7';
-            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
-            ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'left';
+            ctx.fillText(title, lm, Math.floor(topH * 0.60));
+
             // Bottom ribbon
+            const botY = Math.floor(h * 0.80);
+            const botH = Math.floor(h * 0.20);
             ctx.fillStyle = 'rgba(16,37,54,0.92)';
-            ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
-            // Caption
+            ctx.fillRect(0, botY, w, botH);
+
+            // Caption (auto-fit to inner width)
+            const caption = `Detective ${name} • Case Solved! The Evidence will be sent to Archives`;
+            const capFontStack = `"Segoe UI", system-ui, Arial`;
+            const capBase = Math.floor(h * 0.05);
+            const capSize = fitFontSize(caption, capBase, innerW, capFontStack);
+            ctx.font = `${capSize}px ${capFontStack}`;
             ctx.fillStyle = '#29d49a';
-            ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-            ctx.fillText(`Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
-            // Fun accents
+            ctx.textBaseline = 'alphabetic';
+            ctx.textAlign = 'left';
+            const capY = Math.floor(botY + botH * 0.60);
+            ctx.fillText(caption, lm, capY);
+
+            // Decorative marks (kept sparse to avoid overlap)
             ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-            ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
-            ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
-            ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
-            ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
-            ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
-            ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
-            ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
+            ctx.fillText('🔷', Math.floor(w - rm - h * 0.06), Math.floor(topH * 0.55));
+            ctx.fillText('🚔', Math.floor(lm + h * 0.02), Math.floor(botY + botH * 0.72));
+            ctx.fillText('✨', Math.floor(lm + h * 0.08), Math.floor(botY + botH * 0.72));
+
+            ctx.restore();
         }
 
         function drawRoundedRectPath(ctx, x, y, w, h, r) {
@@ -505,14 +538,18 @@
             for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
         }
 
+        // CAPTURE: draw video pixels as-is (no rotation, no mirror)
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;
             if (!vw || !vh) return false;
             can.width = vw; can.height = vh;
+
             ctx.save();
+            // mirror is forced false; keep for future toggles if ever needed
             if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
             ctx.drawImage(vid, 0, 0, vw, vh);
             ctx.restore();
+
             const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
             drawFrame(vw, vh, name);
             drawHatsOverlay(vw, vh, hatCount);

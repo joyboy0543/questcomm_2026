@@ -146,7 +146,6 @@
       /* scale around center */
       max-width: 100%;
       max-height: 100%;
-      /* We scale via transform; natural size used as baseline */
     }
 
     .photo-open-hint {
@@ -207,10 +206,20 @@
       color: var(--ink);
     }
 
+    /* Critical: avoid clipping inside Doorway content */
     #doorsHost {
       transform-origin: top center;
       will-change: transform;
       margin: 0 auto;
+      overflow: visible !important;
+    }
+
+    /* Make *all* inner roots/grids visible and not constrained */
+    #doorsHost *,
+    #doorsHost *::before,
+    #doorsHost *::after {
+      overflow: visible !important;
+      max-width: none !important;
     }
 
     .orient-hint {
@@ -227,8 +236,9 @@
     #doorsHost canvas,
     #doorsHost svg,
     #doorsHost .door-game-root {
-      max-width: none;
+      max-width: none !important;
       display: block;
+      overflow: visible !important;
     }
 
     /* Fullscreen overlay for Doorway */
@@ -766,7 +776,7 @@
     })();
   </script>
 
-  <!-- Doorway scaler + pinch zoom + Fullscreen overlay -->
+  <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit -->
   <script>
     (function () {
       // Natural design size; auto-measured from first child if unknown
@@ -799,8 +809,9 @@
         const cssH = child.offsetHeight || rect.height;
         const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
         const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
-        DESIGN_W = attrW || cssW || 720;
-        DESIGN_H = attrH || cssH || 540;
+        // Use the larger of attribute/CSS if content grows after initial layout
+        DESIGN_W = Math.max(attrW || 0, cssW || 0, 720) || 720;
+        DESIGN_H = Math.max(attrH || 0, cssH || 0, 540) || 540;
       }
 
       function computeFitScale(vpElem) {
@@ -823,14 +834,14 @@
 
         host.style.marginLeft = host.style.marginRight = 'auto';
         const desiredH = DESIGN_H * currentScale + 16;
-        const maxH = Math.max(260, Math.min(window.innerHeight * 0.72, desiredH));
+        const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
         viewport.style.height = maxH + 'px';
       }
 
-      function fitToViewport() {
+      function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
         if (!DESIGN_W || !DESIGN_H) measureDesignSize();
-        fitScale = computeFitScale(viewport);
-        applyScale(fitScale, zoomLabel);
+        fitScale = computeFitScale(targetVp);
+        applyScale(fitScale, labelElem);
         maybeShowOrientHint();
       }
 
@@ -862,14 +873,13 @@
           e.preventDefault();
         }
       }, { passive: false });
-      viewport.addEventListener('touchend', () => { if (event.touches && event.touches.length < 2) lastTouchDist = null; });
+      viewport.addEventListener('touchend', (event) => {
+        if (event.touches && event.touches.length < 2) lastTouchDist = null;
+      });
 
-      function distance(a, b) {
-        const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY;
-        return Math.hypot(dx, dy);
-      }
+      function distance(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
 
-      // Fullscreen overlay (for phones)
+      /* --- Fullscreen overlay (for phones) --- */
       let inFullscreen = false, placeholder = null;
       function openFullscreen() {
         if (inFullscreen) return;
@@ -879,8 +889,7 @@
         fsVp.appendChild(host);
         fs.setAttribute('aria-hidden', 'false');
 
-        fitScale = computeFitScale(fsVp);
-        applyScale(fitScale, fsLabel);
+        fitToViewport(fsVp, fsLabel);
         bindFsGestures();
       }
       function closeFullscreen() {
@@ -891,8 +900,7 @@
           placeholder.parentNode.insertBefore(host, placeholder);
           placeholder.remove(); placeholder = null;
         }
-        fitScale = computeFitScale(viewport);
-        applyScale(fitScale, zoomLabel);
+        fitToViewport(viewport, zoomLabel);
         unbindFsGestures();
       }
 
@@ -935,7 +943,6 @@
         tabs.addEventListener('click', (e) => {
           const btn = e.target.closest('button.tab');
           if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
-            // Delay to let content render if needed
             setTimeout(() => {
               if (!host.firstElementChild) return;
               openFullscreen();
@@ -945,19 +952,41 @@
       })();
 
       // Refit on resize/orientation
-      window.addEventListener('resize', () => { inFullscreen ? (fitScale = computeFitScale(fsVp), applyScale(fitScale, fsLabel)) : fitToViewport(); });
-      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? (fitScale = computeFitScale(fsVp), applyScale(fitScale, fsLabel)) : fitToViewport(); }, 200));
+      window.addEventListener('resize', () => {
+        if (inFullscreen) fitToViewport(fsVp, fsLabel);
+        else fitToViewport(viewport, zoomLabel);
+      });
+      window.addEventListener('orientationchange', () => setTimeout(() => {
+        if (inFullscreen) fitToViewport(fsVp, fsLabel);
+        else fitToViewport(viewport, zoomLabel);
+      }, 200));
 
       // Observe when modules inject content into #doorsHost, then fit
-      const observer = new MutationObserver(() => {
+      const injectObs = new MutationObserver(() => {
         if (host.firstElementChild) {
           setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
-          observer.disconnect();
+          injectObs.disconnect();
         }
       });
-      observer.observe(host, { childList: true, subtree: true });
+      injectObs.observe(host, { childList: true, subtree: true });
 
-      if (host.firstElementChild) setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
+      // NEW: Observe size/layout changes to inner content and re-fit (fixes cropped columns)
+      let ro = null;
+      function attachResizeObserver() {
+        if (!host.firstElementChild || ro) return;
+        ro = new ResizeObserver(() => {
+          measureDesignSize();
+          if (inFullscreen) fitToViewport(fsVp, fsLabel);
+          else fitToViewport(viewport, zoomLabel);
+        });
+        ro.observe(host.firstElementChild);
+      }
+      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); if (inFullscreen) fitToViewport(fsVp, fsLabel); else fitToViewport(viewport, zoomLabel); });
+      subtreeObs.observe(host, { childList: true, subtree: true });
+
+      if (host.firstElementChild) {
+        setTimeout(() => { measureDesignSize(); fitToViewport(); attachResizeObserver(); }, 50);
+      }
 
       // Expose for debugging if needed
       window.__qcpd_openDoorFullscreen = openFullscreen;
@@ -965,7 +994,7 @@
     })();
   </script>
 
-  <!-- Cipher photo lightbox with pinch-zoom -->
+  <!-- Cipher photo lightbox with pinch-zoom (with safe Open debounce) -->
   <script>
     (function () {
       const thumb = document.querySelector('#cipher .photo-thumb');
@@ -1002,24 +1031,38 @@
 
       let scale = 1;
       const MIN = 0.5, MAX = 5, STEP = 0.2;
+      let lastOpenTs = 0; // debounce guard
 
       function setScale(s) {
         scale = Math.max(MIN, Math.min(MAX, s));
         phImg.style.transform = `scale(${scale})`;
         phLabel.textContent = `${Math.round(scale * 100)}%`;
       }
-      function open(src) {
+      function openOverlay(src) {
         phImg.src = src;
         setScale(1);
         overlay.setAttribute('aria-hidden', 'false');
       }
-      function close() { overlay.setAttribute('aria-hidden', 'true'); }
+      function closeOverlay() { overlay.setAttribute('aria-hidden', 'true'); }
 
       phIn.addEventListener('click', () => setScale(scale + STEP));
       phOut.addEventListener('click', () => setScale(scale - STEP));
       phReset.addEventListener('click', () => setScale(1));
-      phClose.addEventListener('click', close);
-      phOpenTab.addEventListener('click', () => { if (phImg.src) window.open(phImg.src, '_blank', 'noopener'); });
+      phClose.addEventListener('click', closeOverlay);
+
+      // Open in new tab — debounced & button temporarily disabled
+      phOpenTab.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const now = Date.now();
+        if (now - lastOpenTs < 600) return; // ignore rapid double clicks
+        lastOpenTs = now;
+        if (phImg.src) {
+          phOpenTab.disabled = true;
+          window.open(phImg.src, '_blank', 'noopener');
+          setTimeout(() => { phOpenTab.disabled = false; }, 800);
+        }
+      });
 
       // Pinch-zoom for the photo
       let lastDist = null;
@@ -1040,16 +1083,12 @@
 
       // Click handler for the thumbnail (handles both <img> and background-image)
       function extractImageURL(fig) {
-        // Prefer an <img> inside the figure
         const img = fig.querySelector('img');
         if (img?.src) return img.src;
-
-        // Else try background-image on the figure
         const cs = getComputedStyle(fig);
         const bg = cs.backgroundImage || '';
         const m = bg.match(/url\(["']?(.*?)["']?\)/);
         if (m && m[1]) return m[1];
-
         return null;
       }
 
@@ -1058,33 +1097,22 @@
         thumb.style.cursor = 'zoom-in';
         thumb.addEventListener('click', () => {
           const src = extractImageURL(thumb);
-          if (src) {
-            open(src);
-          } else {
-            // Fallback: let the module add an <img>, or open a help note
-            alert('Photo not loaded yet. Please wait a moment and try again.');
-          }
-        });
+          if (src) openOverlay(src);
+          else alert('Photo not loaded yet. Please wait a moment and try again.');
+        }, { once: false });
       }
 
-      // If the module injects content later, observe and wire after it appears
+      // Observe and wire after content appears
       const obs = new MutationObserver(() => { wireThumb(); });
       if (thumb) {
-        obs.observe(thumb, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
-        // Also try immediately
+        obs.observe(thumb, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
         wireThumb();
       }
 
-      // Close overlay on backdrop tap (outside the image area)
-      overlay.addEventListener('click', (e) => {
-        // avoid closing when clicking inside controls or viewport scrollbars
-        if (e.target === overlay) close();
-      });
-
+      // Close overlay when clicking backdrop (but not inner UI)
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
       // Escape key to close
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') close();
-      });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') closeOverlay(); });
     })();
   </script>
 

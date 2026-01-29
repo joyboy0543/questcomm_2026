@@ -627,3 +627,78 @@ summary {
     color: #ffd768;
     font-weight: 700;
 }
+
+/* ===== Doorway: responsive zoom wrapper ===== */
+.zoom-shell {
+    --bg: #0d1a24;
+    --edge: #243546;
+    --ink: #cfe6f7;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.zoom-viewport {
+    position: relative;
+    overflow: auto;
+    /* allow panning when zoomed in */
+    touch-action: pan-x pan-y;
+    /* enable browser gesture handling */
+    -webkit-overflow-scrolling: touch;
+    background: #09131a;
+    border-radius: 10px;
+    min-height: 240px;
+    /* prevents collapsing */
+}
+
+.zoom-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.zoom-controls button {
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: #102536;
+    color: #fff;
+    cursor: pointer;
+}
+
+.zoom-controls span {
+    min-width: 56px;
+    text-align: center;
+    color: var(--ink);
+}
+
+/* The injected games will be scaled; lock transform origin */
+#doorsHost {
+    transform-origin: top center;
+    will-change: transform;
+    margin: 0 auto;
+}
+
+/* Optional hint */
+.orient-hint {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px dashed var(--edge);
+    color: var(--ink);
+    background: #0b1822;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+/* (Optional) In case modules force their own max-width rules */
+#doorsHost canvas,
+#doorsHost svg,
+#doorsHost .door-game-root {
+    max-width: none;
+}

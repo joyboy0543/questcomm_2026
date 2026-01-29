@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1" /> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
   <title>Evidence - QCPD</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="doors.css" />
@@ -133,9 +134,38 @@
           investigate on what they do!</p>
         <p class="status">Click on each door and solve the encryptions. The messages could hint to some code that might
           be useful.</p>
+
+        <!-- NEW: responsive zoom container -->
+        <div class="zoom-shell" id="doorsZoomShell" aria-label="Zoomable container">
+          <div class="zoom-viewport" id="doorsZoomViewport">
+            <div id="doorsHost"></div>
+          </div>
+          <div class="zoom-controls" aria-label="Zoom controls">
+            <button id="zoomOut" title="Zoom out">−</button>
+            <span id="zoomLabel" aria-live="polite">100%</span>
+            <button id="zoomIn" title="Zoom in">+</button>
+            <button id="zoomReset" title="Reset zoom">Reset</button>
+          </div>
+        </div>
+
+        <p id="doorwayStatus" class="status"></p>
+
+        <!-- Optional: hint for very small screens -->
+        <div id="orientHint" class="orient-hint" role="note" aria-live="polite" style="display:none">
+          Tip: rotate your phone to landscape for a wider view.
+        </div>
+      </section>
+
+      <!-- <section id="doors" class="section">
+        <h3>Doorway Sequence</h3>
+        <p>Great work detective! We have entered the burglar's phone and it only has these three doors. Let's
+          investigate on what they do!</p>
+        <p class="status">Click on each door and solve the encryptions. The messages could hint to some code that might
+          be useful.</p>
         <div id="doorsHost"></div>
         <p id="doorwayStatus" class="status"></p>
-      </section>
+      </section> -->
+
 
       <section id="colorcode" class="section">
         <h3>Corridor Clue</h3>
@@ -188,16 +218,21 @@
         <p>Impressive! I have gathered the decoded information and codes here.</p>
         <ul class="findings-list">
           <br>
-          <li><strong>243</strong> - Decoded from the Encrypted image.</li>
+          <li><strong>243</strong> - Decoded from the Encrypted image. Looks like the other 3 digit codes, probably to
+            open a lock. (military pattern)</li>
           <br>
-          <li><strong>1</strong> - Decoded from the lock-screen of the phone.</li>
+          <li><strong>1</strong> - Decoded from the lock-screen of the phone. Looks like this digit is a part of a
+            bigger code. (iii gold) </li>
           <br>
           <li><strong>928</strong> - Decoded from evidence found on the home-screen of the phone, The Padlock potion.
+            This can only be for one strange lock. (silver)
           </li>
           <br>
-          <li><strong>367</strong> - Decoded from the Doorway Sequence</li>
+          <li><strong>367</strong> - Decoded from the Doorway Sequence. This code is still unclear to me. What do you
+            think this would be?</li>
           <br>
-          <li><strong>THE WORLD MAP</strong> - Decoded from the Corridor Clue</li>
+          <li><strong>THE WORLD MAP</strong> - Decoded from the Corridor Clue. This does not seem the end of this clue.
+            Could it be a part of the larger picture? Have you recognized this from elsewhere? (iv gold)</li>
           <br>
         </ul>
         <p class="status">Amazing! Let's proceed to the next place based on the collected evidence. It feels like we are
@@ -362,6 +397,349 @@
       if (already) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
     });
   </script> -->
+
+
+  <script>
+    /**
+     * QCPD: Auto-scroll to top on puzzle success + next-tab hint + auto-advance (mobile friendly)
+     * Works by observing status elements' text/class changes after Confirm.
+     * No changes required in the individual puzzle modules.
+     */
+
+    (function () {
+      // 1) Helpers: smooth scroll with safe fallback
+      function scrollToTop() {
+        try {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch {
+          // Older browsers: fallback
+          window.scrollTo(0, 0);
+        }
+      }
+
+      // 2) Show a brief message near top
+      function showTopMessage(html) {
+        let box = document.getElementById('caseMsg');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'caseMsg';
+          box.className = 'msg';
+          const host = document.getElementById('evidencePanel') || document.body;
+          host.prepend(box);
+        }
+        box.style.display = 'block';
+        box.innerHTML = html;
+        clearTimeout(showTopMessage._t);
+        showTopMessage._t = setTimeout(() => {
+          box.style.display = '';
+          box.textContent = '';
+        }, 2500);
+      }
+
+      // 3) Pulse the next tab to guide the user
+      function pulseNextTab(currentTabId) {
+        const next = getNextTab(currentTabId);
+        if (next && !next.classList.contains('disabled')) {
+          next.classList.add('qcpd-pulse');
+          setTimeout(() => next.classList.remove('qcpd-pulse'), 3000);
+        }
+      }
+
+      // 4) Bring focus to top heading (accessibility & small screens)
+      function focusTopHeading() {
+        const topTitle = document.querySelector('#evidencePanel .title') || document.querySelector('h2');
+        if (topTitle) {
+          topTitle.setAttribute('tabindex', '-1');
+          topTitle.focus({ preventScroll: true });
+        }
+      }
+
+      // 5) Minimal CSS for pulsing tab
+      (function injectPulseStyle() {
+        if (document.getElementById('qcpd-pulse-style')) return;
+        const css = `
+      @keyframes qcpdPulse {
+        0% { box-shadow: 0 0 0 0 rgba(46,168,255,0.65); }
+        70% { box-shadow: 0 0 0 10px rgba(46,168,255,0); }
+        100% { box-shadow: 0 0 0 0 rgba(46,168,255,0); }
+      }
+      .qcpd-pulse {
+        position: relative;
+        animation: qcpdPulse 1.2s ease-out 2;
+        outline: 2px solid var(--accent);
+      }
+    `;
+        const style = document.createElement('style');
+        style.id = 'qcpd-pulse-style';
+        style.textContent = css;
+        document.head.appendChild(style);
+      })();
+
+      // Utility: get next tab button
+      function getNextTab(currentTabId) {
+        const tabsRow = document.getElementById('tabs');
+        if (!tabsRow) return null;
+        const tabs = Array.from(tabsRow.querySelectorAll('button.tab'));
+        const idx = tabs.findIndex(btn => btn.dataset.tab === currentTabId);
+        return (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+      }
+
+      // Auto-advance controller (prevents double-triggers, cancels if user navigates)
+      const autoAdvance = {
+        timer: null,
+        pendingForTab: null,
+        schedule(currentTabId) {
+          // Clear previous
+          this.cancel();
+          const next = getNextTab(currentTabId);
+          if (!next || next.classList.contains('disabled')) return;
+
+          this.pendingForTab = currentTabId;
+          this.timer = setTimeout(() => {
+            // Only advance if still pending and user didn't navigate away
+            try {
+              next.click();
+            } catch {
+              // If tabs use custom handlers, fallback: dispatch event
+              next.dispatchEvent(new Event('click', { bubbles: true }));
+            }
+            this.cancel();
+          }, 7000); // 7 seconds
+        },
+        cancel() {
+          if (this.timer) clearTimeout(this.timer);
+          this.timer = null;
+          this.pendingForTab = null;
+        }
+      };
+
+      // Cancel auto-advance if the user manually changes tabs
+      function wireCancelOnTabChange() {
+        const tabsRow = document.getElementById('tabs');
+        if (!tabsRow) return;
+        tabsRow.addEventListener('click', (e) => {
+          const btn = e.target.closest('button.tab');
+          if (btn) autoAdvance.cancel();
+        });
+      }
+
+      // 6) Success detection
+      // We listen to these status elements; each module writes results there:
+      const STATUS_TARGETS = [
+        { tab: 'cipher', el: () => document.getElementById('cipherStatus') },
+        { tab: 'riddle1', el: () => document.getElementById('riddle1Status') },
+        { tab: 'potion', el: () => document.getElementById('potionStatus') },
+        { tab: 'doors', el: () => document.getElementById('doorwayStatus') },
+        { tab: 'colorcode', el: () => document.getElementById('ringsStatus') },
+      ];
+
+      // Heuristics for detecting success without changing modules:
+      // - presence of ✅
+      // - text containing 'correct', 'decoded', 'success', 'unlocked'
+      // - element gains class 'ok' or 'success'
+      const SUCCESS_PATTERNS = [/✅/, /\bcorrect\b/i, /\bdecoded\b/i, /\bsuccess\b/i, /\bunlocked\b/i];
+
+      function looksSuccessful(el) {
+        if (!el) return false;
+        const txt = (el.textContent || '').trim();
+        const cls = el.className || '';
+        if (/(\bok\b|\bsuccess\b)/i.test(cls)) return true;
+        return SUCCESS_PATTERNS.some(r => r.test(txt));
+      }
+
+      // Keep track so we only react once per tab success
+      const reactedTabs = new Set();
+
+      // 7) Observe changes to each status element
+      function watchStatus(targetGetter, tabId) {
+        const el = targetGetter();
+        if (!el) return;
+        const obs = new MutationObserver(() => {
+          if (reactedTabs.has(tabId)) return; // already handled
+          if (looksSuccessful(el)) {
+            reactedTabs.add(tabId);
+            scrollToTop();
+            showTopMessage('✅ Correct! <strong>Proceed to the next puzzle</strong> from the tabs above.');
+            focusTopHeading();
+            pulseNextTab(tabId);
+            autoAdvance.schedule(tabId);
+          }
+        });
+        obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      }
+
+      // 8) Setup on DOM ready
+      window.addEventListener('DOMContentLoaded', () => {
+        STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
+        wireCancelOnTabChange();
+
+        // SPECIAL CASE: the Doorway sequence inserts a success banner with id="doors-complete".
+        const doorsCompleteObs = new MutationObserver(() => {
+          const banner = document.getElementById('doors-complete');
+          if (banner && !reactedTabs.has('doors')) {
+            reactedTabs.add('doors');
+            scrollToTop();
+            showTopMessage('✅ Correct! <strong>Proceed to the next puzzle</strong> from the tabs above.');
+            focusTopHeading();
+            pulseNextTab('doors');
+            autoAdvance.schedule('doors');
+            doorsCompleteObs.disconnect();
+          }
+        });
+        doorsCompleteObs.observe(document.body, { childList: true, subtree: true });
+
+        // If already present (SPA), handle immediately
+        const banner = document.getElementById('doors-complete');
+        if (banner && !reactedTabs.has('doors')) {
+          reactedTabs.add('doors');
+          scrollToTop();
+          showTopMessage('✅ Correct! <strong>Proceed to the next puzzle</strong> from the tabs above.');
+          focusTopHeading();
+          pulseNextTab('doors');
+          autoAdvance.schedule('doors');
+          doorsCompleteObs.disconnect();
+        }
+      });
+
+    })();
+  </script>
+
+  <script>
+    (function () {
+      // If you know the natural design size, you can set DESIGN_W/H to fixed values (e.g., 720x540).
+      // Otherwise we'll measure the first child injected into #doorsHost.
+      let DESIGN_W = null;
+      let DESIGN_H = null;
+
+      const shell = document.getElementById('doorsZoomShell');
+      const viewport = document.getElementById('doorsZoomViewport');
+      const host = document.getElementById('doorsHost');
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      const zoomResetBtn = document.getElementById('zoomReset');
+      const zoomLabel = document.getElementById('zoomLabel');
+      const orientHint = document.getElementById('orientHint');
+
+      let currentScale = 1;
+      let fitScale = 1;
+      const MIN_SCALE = 0.5;
+      const MAX_SCALE = 3.0;
+      const STEP = 0.15;
+
+      function measureDesignSize() {
+        const child = host.firstElementChild;
+        if (!child) return;
+        const rect = child.getBoundingClientRect();
+        const cssW = child.offsetWidth || rect.width;
+        const cssH = child.offsetHeight || rect.height;
+        const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
+        const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
+        DESIGN_W = attrW || cssW || 720;
+        DESIGN_H = attrH || cssH || 540;
+      }
+
+      function computeFitScale() {
+        const vpW = viewport.clientWidth;
+        const vpH = viewport.clientHeight || Math.floor(window.innerHeight * 0.6);
+        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
+        if (!DESIGN_W || !DESIGN_H) return 1;
+        const scaleW = vpW / DESIGN_W;
+        const scaleH = (vpH - 20) / DESIGN_H;
+        return Math.max(0.3, Math.min(scaleW, (scaleH || scaleW)));
+      }
+
+      function applyScale(scale) {
+        currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+        host.style.transform = `scale(${currentScale})`;
+        host.style.width = `${DESIGN_W}px`;
+        host.style.height = `${DESIGN_H}px`;
+        zoomLabel.textContent = `${Math.round(currentScale * 100)}%`;
+        host.style.marginLeft = host.style.marginRight = 'auto';
+        // Set viewport height to provide comfortable scroll space on phones
+        const desiredH = DESIGN_H * currentScale + 16;
+        const maxH = Math.max(240, Math.min(window.innerHeight * 0.7, desiredH));
+        viewport.style.height = maxH + 'px';
+      }
+
+      function fitToViewport() {
+        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
+        fitScale = computeFitScale();
+        applyScale(fitScale);
+        maybeShowOrientHint();
+      }
+
+      function zoomBy(delta) {
+        applyScale(currentScale + delta);
+      }
+
+      function resetZoom() {
+        applyScale(fitScale);
+      }
+
+      function maybeShowOrientHint() {
+        const isNarrow = window.innerWidth < 420;
+        const tight = fitScale < 0.75;
+        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
+      }
+
+      // Controls
+      zoomInBtn.addEventListener('click', () => zoomBy(STEP));
+      zoomOutBtn.addEventListener('click', () => zoomBy(-STEP));
+      zoomResetBtn.addEventListener('click', resetZoom);
+
+      // Pinch-to-zoom
+      let lastTouchDist = null;
+      viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          lastTouchDist = distance(e.touches[0], e.touches[1]);
+        }
+      }, { passive: true });
+
+      viewport.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && lastTouchDist) {
+          const d = distance(e.touches[0], e.touches[1]);
+          const factor = d / lastTouchDist;
+          lastTouchDist = d;
+          applyScale(currentScale * factor);
+          e.preventDefault(); // keep zoom inside viewport instead of page zoom
+        }
+      }, { passive: false });
+
+      viewport.addEventListener('touchend', () => {
+        if (event.touches && event.touches.length < 2) lastTouchDist = null;
+      });
+
+      function distance(a, b) {
+        const dx = a.clientX - b.clientX;
+        const dy = a.clientY - b.clientY;
+        return Math.hypot(dx, dy);
+      }
+
+      window.addEventListener('resize', fitToViewport);
+      window.addEventListener('orientationchange', () => setTimeout(fitToViewport, 200));
+
+      // Observe when modules inject content into #doorsHost, then fit
+      const observer = new MutationObserver(() => {
+        if (host.firstElementChild) {
+          setTimeout(() => {
+            measureDesignSize();
+            fitToViewport();
+          }, 50);
+          observer.disconnect();
+        }
+      });
+      observer.observe(host, { childList: true, subtree: true });
+
+      // If already present on load (e.g., hot reload)
+      if (host.firstElementChild) {
+        setTimeout(() => {
+          measureDesignSize();
+          fitToViewport();
+        }, 50);
+      }
+    })();
+  </script>
+
 </body>
 
 </html>

@@ -53,6 +53,7 @@
             cursor: pointer;
         }
 
+        /* Keep preview & output untransformed; we adapt the frame layout instead */
         video,
         canvas {
             display: block;
@@ -64,7 +65,6 @@
             border: 1px solid var(--edge);
             border-radius: 16px;
             background: var(--panel);
-            /* IMPORTANT: keep visual transforms off so preview & saved pixels are not rotated/mirrored */
             transform: none !important;
         }
 
@@ -160,8 +160,8 @@
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
-        <p id="msg2" class="hint">Uploading the photo gives consent to share this image for event purposes. Downloading
-            the photo will be private to your device.</p>
+        <p id="msg2" class="hint">Uploading the photo gives consent to share this image for event purposes.
+            Downloading the photo will be private to your device.</p>
     </div>
 
     <!-- Help modal -->
@@ -169,9 +169,7 @@
         <div class="modal">
             <button class="close" id="help-close">Close</button>
             <h3>Enable camera permission</h3>
-            <div id="help-body">
-                <!-- Filled dynamically based on platform -->
-            </div>
+            <div id="help-body"><!-- Filled dynamically --></div>
         </div>
     </div>
 
@@ -207,7 +205,6 @@
             div.innerHTML = html;
             envNotice.appendChild(div);
         }
-
         function isInAppBrowser() {
             const ua = navigator.userAgent || '';
             const isInstagram = ua.includes('Instagram');
@@ -218,7 +215,6 @@
             const isDrive = ua.includes('Drive');
             return isInstagram || isFB || isLine || isWeChat || isGmail || isDrive;
         }
-
         (function startupChecks() {
             if (!window.isSecureContext) {
                 addNotice(`<b>Camera requires HTTPS.</b><br/>Open this page over <code>https://</code>.`, true);
@@ -229,7 +225,6 @@
             if (isInAppBrowser()) {
                 addNotice(`<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.`);
             }
-            // Persistent reminder
             addNotice(`<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.`, false);
         })();
 
@@ -242,26 +237,24 @@
             const ua = navigator.userAgent || '';
             const isIOS = /iPhone|iPad|iPod/i.test(ua);
             const isAndroid = /Android/i.test(ua);
-
             const common = `
         <p><small>Why this happens: If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>
       `;
-
             if (isIOS) {
                 return `
           ${common}
           <h4>iPhone / iPad (Safari)</h4>
           <ol>
             <li>Open the page in <b>Safari</b> (not inside another app’s browser).</li>
-            <li>In Safari, tap the <b>aA</b> icon in the address bar → <b>Website Settings</b> → <b>Camera</b> → set to <b>Allow</b>.</li>
-            <li>Or go to <b>Settings</b> → <b>Safari</b> → <b>Camera</b> → choose <b>Allow</b>.</li>
-            <li>Reload this page and tap <b>Open Camera</b> again.</li>
+            <li>In Safari, tap the <b>aA</b> icon → <b>Website Settings</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Or Settings → <b>Safari</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Reload and tap <b>Open Camera</b>.</li>
           </ol>
           <h4>iPhone / iPad (Chrome)</h4>
           <ol>
-            <li>Open in the <b>Chrome</b> app directly.</li>
-            <li>Chrome menu (⋮) → <b>Settings</b> → <b>Site Settings</b> → <b>Camera</b> → Allow.</li>
-            <li>Reload this page and tap <b>Open Camera</b>.</li>
+            <li>Use the <b>Chrome</b> app directly.</li>
+            <li>⋮ → <b>Settings</b> → <b>Site Settings</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Reload and tap <b>Open Camera</b>.</li>
           </ol>
         `;
             } else if (isAndroid) {
@@ -270,20 +263,19 @@
           <h4>Android (Chrome)</h4>
           <ol>
             <li>Open in the <b>Chrome</b> app directly.</li>
-            <li>Tap the <b>lock</b> icon in the address bar → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li>
-            <li>Or Chrome <b>⋮</b> → <b>Settings</b> → <b>Site settings</b> → <b>Camera</b> → set to <b>Allowed</b> and allow this site.</li>
-            <li>Reload this page and tap <b>Open Camera</b>.</li>
+            <li>Tap the <b>lock</b> icon → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Or ⋮ → <b>Settings</b> → <b>Site settings</b> → <b>Camera</b> → <b>Allowed</b>.</li>
+            <li>Reload and tap <b>Open Camera</b>.</li>
           </ol>
         `;
             } else {
-                // Desktop
                 return `
           ${common}
           <h4>Desktop (Chrome/Edge)</h4>
           <ol>
-            <li>Click the <b>camera</b> or <b>lock</b> icon in the address bar.</li>
+            <li>Click the <b>camera</b>/<b>lock</b> icon in the address bar.</li>
             <li>Set <b>Camera</b> permission to <b>Allow</b> for this site.</li>
-            <li>Reload the page and click <b>Open Camera</b>.</li>
+            <li>Reload and click <b>Open Camera</b>.</li>
           </ol>
           <h4>Desktop (Safari)</h4>
           <ol>
@@ -310,12 +302,11 @@
         // ----- Camera state -----
         let stream, imageDataURL;
         let facing = 'environment'; // or 'user'
-        let mirror = false;         // <<— FORCE NO MIRROR (preview & capture) per your request
+        let mirror = false;         // FORCE NO MIRROR
         let hatCount = 0;
 
-        // FORCE preview transform = none (no rotation/mirroring on phone)
         function applyPreviewTransforms() {
-            mirror = false; // ensure no mirror even on front camera
+            mirror = false;
             vid.style.transform = 'none';
             can.style.transform = 'none';
             flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
@@ -330,7 +321,6 @@
         }
 
         async function getBestStream(desiredFacing) {
-            // Try facingMode first
             try {
                 return await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } },
@@ -338,7 +328,6 @@
                 });
             } catch (e) { /* fallback next */ }
 
-            // Fallback: enumerate devices (helps on iOS)
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videos = devices.filter(d => d.kind === 'videoinput');
             if (!videos.length) throw new Error('No camera device found');
@@ -352,12 +341,11 @@
             return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId } }, audio: false });
         }
 
-        // Permission probing (unchanged)
         async function checkCameraPermissionState() {
             if (!navigator.permissions || !navigator.permissions.query) return null;
             try {
                 const status = await navigator.permissions.query({ name: 'camera' });
-                return status.state; // 'granted' | 'denied' | 'prompt'
+                return status.state;
             } catch {
                 return null;
             }
@@ -374,9 +362,7 @@
         async function openCamera() {
             try {
                 const state = await checkCameraPermissionState();
-                if (state === 'denied') {
-                    showDeniedNoticeInline();
-                }
+                if (state === 'denied') showDeniedNoticeInline();
 
                 await stopStream();
                 stream = await getBestStream(facing);
@@ -394,7 +380,6 @@
                 });
 
                 capBtn.disabled = false;
-                // DO NOT mirror on front camera
                 mirror = false;
                 applyPreviewTransforms();
                 msg.textContent = 'Camera ready — align and Capture.';
@@ -418,33 +403,49 @@
         }
 
         openBtn.onclick = openCamera;
-
         flipBtn.onclick = async () => {
             facing = (facing === 'environment') ? 'user' : 'environment';
             await openCamera();
         };
-
         hatsBtn.onclick = () => {
             hatCount = (hatCount + 1) % 5;
             hatsBtn.textContent = `Hats: ${hatCount}`;
         };
 
-        // ----- Frame + Hats (refined to auto-fit text; no rotation/mirroring) -----
+        /* ---------- FRAME: Orientation-aware drawing ---------- */
 
-        // Helper: fit font size so text fits in a given width
+        // Helpers
         function fitFontSize(text, basePx, maxWidth, fontStack) {
-            let size = Math.max(12, basePx);
+            let size = Math.max(10, basePx);
             ctx.font = `${size}px ${fontStack}`;
-            while (ctx.measureText(text).width > maxWidth && size > 12) {
+            while (ctx.measureText(text).width > maxWidth && size > 10) {
                 size -= 1;
                 ctx.font = `${size}px ${fontStack}`;
             }
             return size;
         }
 
-        function drawFrame(w, h, name) {
-            ctx.save();
+        // Wrap a sentence into at most 2 lines that fit maxWidth
+        function wrapTwoLines(text, maxWidth) {
+            const words = text.split(/\s+/);
+            let line1 = '';
+            let i = 0;
+            for (; i < words.length; i++) {
+                const test = line1 ? (line1 + ' ' + words[i]) : words[i];
+                if (ctx.measureText(test).width <= maxWidth) line1 = test;
+                else break;
+            }
+            const line2 = words.slice(i).join(' ');
+            return [line1, line2];
+        }
 
+        function isPortrait(w, h) {
+            // Treat near-square as portrait to favor safe text on phones
+            return w / h < 0.9;
+        }
+
+        // Landscape layout (your original style, refined)
+        function drawFrameLandscape(w, h, name) {
             const lm = Math.floor(w * 0.035);
             const rm = lm;
             const innerW = w - lm - rm;
@@ -455,7 +456,7 @@
             grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
 
-            // Title (auto-fit to inner width)
+            // Title
             const title = '👑 QCPD — The Sapphire Heist';
             const titleFontStack = `"Segoe UI", system-ui, Arial`;
             const titleBase = Math.floor(h * 0.055);
@@ -467,12 +468,12 @@
             ctx.fillText(title, lm, Math.floor(topH * 0.60));
 
             // Bottom ribbon
-            const botY = Math.floor(h * 0.80);
             const botH = Math.floor(h * 0.20);
+            const botY = h - botH;
             ctx.fillStyle = 'rgba(16,37,54,0.92)';
             ctx.fillRect(0, botY, w, botH);
 
-            // Caption (auto-fit to inner width)
+            // Caption
             const caption = `Detective ${name} • Case Solved! The Evidence will be sent to Archives`;
             const capFontStack = `"Segoe UI", system-ui, Arial`;
             const capBase = Math.floor(h * 0.05);
@@ -484,12 +485,105 @@
             const capY = Math.floor(botY + botH * 0.60);
             ctx.fillText(caption, lm, capY);
 
-            // Decorative marks (kept sparse to avoid overlap)
+            // Emojis
             ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
             ctx.fillText('🔷', Math.floor(w - rm - h * 0.06), Math.floor(topH * 0.55));
             ctx.fillText('🚔', Math.floor(lm + h * 0.02), Math.floor(botY + botH * 0.72));
             ctx.fillText('✨', Math.floor(lm + h * 0.08), Math.floor(botY + botH * 0.72));
+        }
 
+        // Portrait layout (phone‑safe: reduced banners + two-line caption)
+        function drawFramePortrait(w, h, name) {
+            const sideM = Math.floor(w * 0.04);
+            const innerW = w - sideM * 2;
+
+            // Smaller top banner (so it never covers faces)
+            const topH = Math.floor(h * 0.10);
+            const grad = ctx.createLinearGradient(0, 0, w, 0);
+            grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
+
+            // Title (smaller)
+            const title = '👑 QCPD — The Sapphire Heist';
+            const titleFontStack = `"Segoe UI", system-ui, Arial`;
+            const titleBase = Math.floor(h * 0.045);
+            const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+            ctx.font = `${titleSize}px ${titleFontStack}`;
+            ctx.fillStyle = '#cfe6f7';
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'left';
+            ctx.fillText(title, sideM, Math.floor(topH * 0.58));
+
+            // Bottom ribbon (slimmer than landscape)
+            const botH = Math.floor(h * 0.16);
+            const botY = h - botH;
+            ctx.fillStyle = 'rgba(16,37,54,0.92)';
+            ctx.fillRect(0, botY, w, botH);
+
+            // Caption (two lines if needed)
+            const baseCaption = `Detective ${name} • Case Solved`;
+            const extra = `The Evidence will be sent to Archives`;
+            const capFontStack = `"Segoe UI", system-ui, Arial`;
+            const maxCaptionWidth = innerW;
+            // Start with slightly larger, then shrink
+            let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), maxCaptionWidth, capFontStack);
+            ctx.font = `${capSize}px ${capFontStack}`;
+            // Try to place both parts; if too long, wrap the first
+            let line1 = baseCaption, line2 = extra;
+            if (ctx.measureText(baseCaption).width > maxCaptionWidth) {
+                // Wrap the base caption into two lines; push extra into second line if it still fits, otherwise drop extra
+                const [l1, l2] = wrapTwoLines(baseCaption, maxCaptionWidth);
+                line1 = l1;
+                if (l2) {
+                    // Try to append a separator then extra if room allows
+                    const join = l2 + ' — ' + extra;
+                    if (ctx.measureText(join).width <= maxCaptionWidth) {
+                        line2 = join;
+                    } else if (ctx.measureText(l2).width <= maxCaptionWidth) {
+                        line2 = l2;
+                    } else {
+                        line2 = ''; // fallback to one extra line only for l2
+                    }
+                } else {
+                    // no second half, keep 'extra' as line2 if it fits
+                    if (ctx.measureText(extra).width > maxCaptionWidth) {
+                        // shrink a bit more for portrait narrow cases
+                        capSize = fitFontSize(extra, capSize, maxCaptionWidth, capFontStack);
+                        ctx.font = `${capSize}px ${capFontStack}`;
+                    }
+                    line2 = extra;
+                }
+            } else {
+                // The base caption fits. Try to fit extra on same second line; if too long, it will be own line.
+                if (ctx.measureText(extra).width > maxCaptionWidth) {
+                    const newSize = fitFontSize(extra, capSize, maxCaptionWidth, capFontStack);
+                    if (newSize < capSize) {
+                        capSize = newSize;
+                        ctx.font = `${capSize}px ${capFontStack}`;
+                    }
+                }
+            }
+
+            ctx.fillStyle = '#29d49a';
+            ctx.textBaseline = 'alphabetic';
+            ctx.textAlign = 'left';
+            const lineGap = Math.max(4, Math.floor(capSize * 0.28));
+            const firstY = Math.floor(botY + botH * 0.45);
+            ctx.fillText(line1, sideM, firstY);
+            if (line2) {
+                ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+            }
+
+            // Emojis moved to upper-right to avoid faces
+            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+            ctx.fillText('🔷', Math.floor(w - sideM - h * 0.05), Math.floor(topH * 0.62));
+            ctx.fillText('✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
+        }
+
+        function drawFrame(w, h, name) {
+            ctx.save();
+            if (isPortrait(w, h)) drawFramePortrait(w, h, name);
+            else drawFrameLandscape(w, h, name);
             ctx.restore();
         }
 
@@ -538,15 +632,18 @@
             for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
         }
 
-        // CAPTURE: draw video pixels as-is (no rotation, no mirror)
+        // CAPTURE: draw video pixels as-is (no rotation, no mirror), then orientation-aware frame
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;
             if (!vw || !vh) return false;
+
             can.width = vw; can.height = vh;
 
             ctx.save();
-            // mirror is forced false; keep for future toggles if ever needed
-            if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
+            if (mirror) {
+                ctx.translate(vw, 0);
+                ctx.scale(-1, 1);
+            }
             ctx.drawImage(vid, 0, 0, vw, vh);
             ctx.restore();
 
@@ -584,7 +681,8 @@
         }
         function buildSafeFilename(agentName) {
             const base = (agentName || '').trim() || localStorage.getItem('qcpd.name') || 'detective';
-            const safe = base.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'detective';
+            const safe = base.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'detective';
             return `detective_${safe}.jpg`;
         }
 
@@ -611,6 +709,11 @@
             if (!imageDataURL) { msg.textContent = 'No image to download yet.'; return; }
             const a = document.createElement('a'); a.href = imageDataURL; a.download = `qcpd_${Date.now()}.jpg`; a.click();
         };
+
+        // Keep preview transforms neutral on orientation change; overlay adapts at capture time.
+        window.addEventListener('orientationchange', () => {
+            applyPreviewTransforms();
+        });
     </script>
 </body>
 

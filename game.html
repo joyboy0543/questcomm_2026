@@ -61,6 +61,21 @@
       }
     }
 
+    /* Align "I agree" with helper note in one centered row */
+    .agree-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .agree-note {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
     /* Tab pulse (used by auto-advance script) */
     @keyframes qcpdPulse {
       0% {
@@ -82,7 +97,7 @@
       outline: 2px solid var(--accent);
     }
 
-    /* ===== Cipher lightbox overlay (pinch-zoomable image) ===== */
+    /* ===== Cipher: (overlay CSS retained but not used anymore) ===== */
     .photo-overlay {
       position: fixed;
       inset: 0;
@@ -340,19 +355,21 @@
       color: #fff;
     }
 
-    /* Portrait: gallery visible; combined view hidden */
+    /* IMPORTANT:
+       Only when gallery is READY (html.dg-ready) do we switch portrait layout.
+       This prevents "blank Doorway" on phones while gallery is still empty.
+    */
     @media (orientation: portrait) {
-      #doorsZoomShell {
+      html.dg-ready #doorsZoomShell {
         display: none;
       }
 
-      .door-gallery {
+      html.dg-ready .door-gallery {
         display: grid;
         grid-template-columns: 1fr;
       }
     }
 
-    /* Landscape/desktop: gallery hidden; keep combined view */
     @media (orientation: landscape) {
       .door-gallery {
         display: none;
@@ -437,9 +454,14 @@
         </p>
         <p class="status">And one more thing detective! Don't forget to keep the findings confidential and handle the
           evidence with care.</p>
-        <button id="agreeBtn" aria-describedby="agreeHelp">I agree to investigate the evidence as per the QCPD
-          regulations.</button>
-        <p id="agreeHelp" class="hint photo-open-hint">Tap the button above to begin.</p>
+
+        <!-- Aligned agree row -->
+        <div class="agree-row">
+          <span class="agree-note">Click button to proceed</span>
+          <button id="agreeBtn" aria-describedby="agreeHelp">I agree to investigate the evidence as per the QCPD
+            regulations.</button>
+        </div>
+        <p id="agreeHelp" class="hint photo-open-hint" style="text-align:center">Tap the button to begin.</p>
       </section>
 
       <section id="cipher" class="section">
@@ -448,7 +470,7 @@
 
         <!-- The module injects the thumbnail into this figure -->
         <figure class="photo-thumb"></figure>
-        <p class="hint photo-open-hint">Tip: tap the image to open fullscreen with pinch‑zoom.</p>
+        <p class="hint photo-open-hint">Tip: the photo will open directly in a new tab.</p>
 
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="cipherInput" placeholder="Enter code" inputmode="numeric" />
@@ -930,8 +952,8 @@
 
       function maybeShowOrientHint() {
         const isNarrow = window.innerWidth < 420;
-        const tight = fitScale < 0.7;
-        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
+        the_tight = fitScale < 0.7;
+        if (orientHint) orientHint.style.display = (isNarrow && the_tight) ? 'block' : 'none';
       }
 
       // Normal controls
@@ -1002,9 +1024,7 @@
         fsVp.removeEventListener('touchmove', fsMove);
         fsVp.removeEventListener('touchend', fsEnd);
       }
-      function fsStart(e) {
-        if (e.touches.length === 2) fsLastTouchDist = distance(e.touches[0], e.touches[1]);
-      }
+      function fsStart(e) { if (e.touches.length === 2) fsLastTouchDist = distance(e.touches[0], e.touches[1]); }
       function fsMove(e) {
         if (e.touches.length === 2 && fsLastTouchDist) {
           const d = distance(e.touches[0], e.touches[1]);
@@ -1023,23 +1043,14 @@
         tabs.addEventListener('click', (e) => {
           const btn = e.target.closest('button.tab');
           if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
-            setTimeout(() => {
-              if (!host.firstElementChild) return;
-              openFullscreen();
-            }, 200);
+            setTimeout(() => { if (!host.firstElementChild) return; openFullscreen(); }, 200);
           }
         });
       })();
 
       // Refit on resize/orientation
-      window.addEventListener('resize', () => {
-        if (inFullscreen) fitToViewport(fsVp, fsLabel);
-        else fitToViewport(viewport, zoomLabel);
-      });
-      window.addEventListener('orientationchange', () => setTimeout(() => {
-        if (inFullscreen) fitToViewport(fsVp, fsLabel);
-        else fitToViewport(viewport, zoomLabel);
-      }, 200));
+      window.addEventListener('resize', () => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
+      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); }, 200));
 
       // Observe when modules inject content into #doorsHost, then fit
       const injectObs = new MutationObserver(() => {
@@ -1056,12 +1067,11 @@
         if (!host.firstElementChild || ro) return;
         ro = new ResizeObserver(() => {
           measureDesignSize();
-          if (inFullscreen) fitToViewport(fsVp, fsLabel);
-          else fitToViewport(viewport, zoomLabel);
+          inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel);
         });
         ro.observe(host.firstElementChild);
       }
-      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); if (inFullscreen) fitToViewport(fsVp, fsLabel); else fitToViewport(viewport, zoomLabel); });
+      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
       subtreeObs.observe(host, { childList: true, subtree: true });
 
       if (host.firstElementChild) {
@@ -1074,7 +1084,7 @@
     })();
   </script>
 
-  <!-- 🔹🔹 CLOSED DOORS GALLERY CONTROLLER (adds the missing logic) 🔹🔹 -->
+  <!-- 🔹🔹 CLOSED DOORS GALLERY CONTROLLER (ready-gated to avoid blank view) 🔹🔹 -->
   <script>
     (function () {
       const host = document.getElementById('doorsHost');
@@ -1188,14 +1198,17 @@
       function setLayout() {
         if (!gallery) return;
         if (isPortrait()) {
+          document.documentElement.classList.add('dg-ready'); // gate portrait switch
           gallery.style.display = 'grid';
           showAll();
         } else {
           gallery.style.display = 'none';
+          document.documentElement.classList.remove('dg-ready');
           showAll();
         }
       }
 
+      // Boot after host content appears
       const bootObs = new MutationObserver(() => {
         if (!host.firstElementChild) return;
         roots = findPuzzleRoots();
@@ -1223,125 +1236,76 @@
     })();
   </script>
 
-  <!-- Cipher photo lightbox with pinch-zoom (with safe Open debounce) -->
+  <!-- Cipher photo: auto-open in new tab (single step) -->
   <script>
     (function () {
       const thumb = document.querySelector('#cipher .photo-thumb');
+      const tabs = document.getElementById('tabs');
+      let autoOpenedCipher = false; // open once per visit
+      let lastOpenTs = 0;
 
-      // Build overlay once
-      const overlay = document.createElement('div');
-      overlay.className = 'photo-overlay';
-      overlay.setAttribute('aria-hidden', 'true');
-      overlay.innerHTML = `
-        <div class="photo-frame">
-          <div class="photo-bar">
-            <button id="phOut">−</button>
-            <span id="phLabel">100%</span>
-            <button id="phIn">+</button>
-            <button id="phReset">Reset</button>
-            <button id="phOpenTab" title="Open image in new tab">Open</button>
-            <button id="phClose" title="Close">Close</button>
-          </div>
-          <div class="photo-vp" id="phViewport">
-            <img id="phImg" class="photo-img" alt="Evidence photo">
-          </div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-
-      const phVp = overlay.querySelector('#phViewport');
-      const phImg = overlay.querySelector('#phImg');
-      const phIn = overlay.querySelector('#phIn');
-      const phOut = overlay.querySelector('#phOut');
-      const phReset = overlay.querySelector('#phReset');
-      const phClose = overlay.querySelector('#phClose');
-      const phOpenTab = overlay.querySelector('#phOpenTab');
-      const phLabel = overlay.querySelector('#phLabel');
-
-      let scale = 1;
-      const MIN = 0.5, MAX = 5, STEP = 0.2;
-      let lastOpenTs = 0; // debounce guard
-
-      function setScale(s) {
-        scale = Math.max(MIN, Math.min(MAX, s));
-        phImg.style.transform = `scale(${scale})`;
-        phLabel.textContent = `${Math.round(scale * 100)}%`;
-      }
-      function openOverlay(src) {
-        phImg.src = src;
-        setScale(1);
-        overlay.setAttribute('aria-hidden', 'false');
-      }
-      function closeOverlay() { overlay.setAttribute('aria-hidden', 'true'); }
-
-      phIn.addEventListener('click', () => setScale(scale + STEP));
-      phOut.addEventListener('click', () => setScale(scale - STEP));
-      phReset.addEventListener('click', () => setScale(1));
-      phClose.addEventListener('click', closeOverlay);
-
-      // Open in new tab — debounced & button temporarily disabled
-      phOpenTab.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const now = Date.now();
-        if (now - lastOpenTs < 600) return; // ignore rapid double clicks
-        lastOpenTs = now;
-        if (phImg.src) {
-          phOpenTab.disabled = true;
-          window.open(phImg.src, '_blank', 'noopener');
-          setTimeout(() => { phOpenTab.disabled = false; }, 800);
-        }
-      });
-
-      // Pinch-zoom for the photo
-      let lastDist = null;
-      phVp.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) lastDist = dist(e.touches[0], e.touches[1]);
-      }, { passive: true });
-      phVp.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2 && lastDist) {
-          const d = dist(e.touches[0], e.touches[1]);
-          const factor = d / lastDist;
-          lastDist = d;
-          setScale(scale * factor);
-          e.preventDefault();
-        }
-      }, { passive: false });
-      phVp.addEventListener('touchend', () => { lastDist = null; });
-      function dist(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
-
-      // Click handler for the thumbnail (handles both <img> and background-image)
+      // Extract image URL from <img> or background-image
       function extractImageURL(fig) {
+        if (!fig) return null;
         const img = fig.querySelector('img');
         if (img?.src) return img.src;
         const cs = getComputedStyle(fig);
         const bg = cs.backgroundImage || '';
         const m = bg.match(/url\(["']?(.*?)["']?\)/);
-        if (m && m[1]) return m[1];
-        return null;
+        return (m && m[1]) ? m[1] : null;
       }
 
+      function openImageInNewTab(src) {
+        const now = Date.now();
+        if (!src) return;
+        if (now - lastOpenTs < 500) return; // debounce
+        lastOpenTs = now;
+        try { window.open(src, '_blank', 'noopener'); } catch { }
+      }
+
+      function tryOpenCipherOnce() {
+        if (autoOpenedCipher) return;
+        const src = extractImageURL(thumb);
+        if (src) {
+          autoOpenedCipher = true;
+          openImageInNewTab(src);
+        }
+      }
+
+      // When thumbnail is clicked — open directly in new tab
       function wireThumb() {
         if (!thumb) return;
         thumb.style.cursor = 'zoom-in';
         thumb.addEventListener('click', () => {
           const src = extractImageURL(thumb);
-          if (src) openOverlay(src);
-          else alert('Photo not loaded yet. Please wait a moment and try again.');
+          openImageInNewTab(src);
         }, { once: false });
       }
 
-      // Observe and wire after content appears
+      // If module injects later, observe and wire
       const obs = new MutationObserver(() => { wireThumb(); });
       if (thumb) {
         obs.observe(thumb, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
         wireThumb();
       }
 
-      // Close overlay when clicking backdrop (but not inner UI)
-      overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
-      // Escape key to close
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') closeOverlay(); });
+      // Auto-open when the Cipher tab is activated (only once)
+      if (tabs) {
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('button.tab');
+          if (btn?.dataset.tab === 'cipher') {
+            // Delay a tick so the module can inject the image
+            setTimeout(tryOpenCipherOnce, 120);
+          }
+        });
+      }
+
+      // Also handle SPA programmatic activation if any
+      document.addEventListener('DOMContentLoaded', () => {
+        // If cipher already active at load (unlikely), try open
+        const active = document.querySelector('.tab.active');
+        if (active?.dataset.tab === 'cipher') setTimeout(tryOpenCipherOnce, 150);
+      });
     })();
   </script>
 

@@ -89,7 +89,6 @@
       z-index: 9998;
       background: rgba(0, 0, 0, 0.75);
       display: none;
-      /* toggled via JS */
       align-items: center;
       justify-content: center;
       padding: 10px;
@@ -130,10 +129,8 @@
     .photo-vp {
       flex: 1 1 auto;
       overflow: auto;
-      /* pan when zoomed */
       -webkit-overflow-scrolling: touch;
       touch-action: none;
-      /* allow custom pinch-zoom handling */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -143,7 +140,6 @@
 
     .photo-img {
       transform-origin: center center;
-      /* scale around center */
       max-width: 100%;
       max-height: 100%;
     }
@@ -178,7 +174,6 @@
       min-height: 240px;
     }
 
-    /* Ensure center panel doesn't clip scaled Doorway content */
     #evidencePanel {
       overflow: visible;
     }
@@ -214,7 +209,6 @@
       overflow: visible !important;
     }
 
-    /* Make *all* inner roots/grids visible and not constrained */
     #doorsHost *,
     #doorsHost *::before,
     #doorsHost *::after {
@@ -230,7 +224,7 @@
       color: var(--ink);
       background: #0b1822;
       text-align: center;
-      font-size: 0.95rem;
+      font-size: .95rem;
     }
 
     #doorsHost canvas,
@@ -241,7 +235,6 @@
       overflow: visible !important;
     }
 
-    /* Fullscreen overlay for Doorway */
     .zoom-overlay {
       position: fixed;
       inset: 0;
@@ -285,6 +278,92 @@
       border-radius: 0 0 12px 12px;
     }
   </style>
+
+  <style>
+    /* ===== Closed Doors gallery (portrait-first) ===== */
+    .door-gallery {
+      display: none;
+      /* JS toggles this */
+      margin-top: 8px;
+      gap: 10px;
+    }
+
+    .door-card {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--edge);
+      background: #0d1a24;
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .door-card:hover {
+      transform: translateY(-1px);
+      background: #0f2636;
+    }
+
+    .door-card:active {
+      transform: translateY(0);
+    }
+
+    .door-card .door-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #09131a;
+      border: 1px solid #243546;
+      font-size: 28px;
+    }
+
+    .door-card .door-title {
+      font-weight: 600;
+    }
+
+    .door-card .door-sub {
+      opacity: .8;
+      font-size: .9rem;
+    }
+
+    .door-card .door-go {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #243546;
+      background: #102536;
+      color: #fff;
+    }
+
+    /* Portrait: gallery visible; combined view hidden */
+    @media (orientation: portrait) {
+      #doorsZoomShell {
+        display: none;
+      }
+
+      .door-gallery {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Landscape/desktop: gallery hidden; keep combined view */
+    @media (orientation: landscape) {
+      .door-gallery {
+        display: none;
+      }
+
+      #doorsZoomShell {
+        display: block;
+      }
+    }
+  </style>
+
 </head>
 
 <body>
@@ -438,6 +517,11 @@
           investigate on what they do!</p>
         <p class="status">Click on each door and solve the encryptions. The messages could hint to some code that might
           be useful.</p>
+
+        <!-- Closed Doors gallery (portrait-friendly) -->
+        <div id="doorGallery" class="door-gallery" aria-label="Choose a door">
+          <!-- Cards inserted by JS after the puzzles are detected -->
+        </div>
 
         <!-- Responsive zoom container + fullscreen -->
         <div class="zoom-shell" id="doorsZoomShell" aria-label="Zoomable container">
@@ -675,14 +759,10 @@
       function showTopMessage(html) {
         let box = document.getElementById('caseMsg');
         if (!box) {
-          box = document.createElement('div');
-          box.id = 'caseMsg';
-          box.className = 'msg';
-          const host = document.getElementById('evidencePanel') || document.body;
-          host.prepend(box);
+          box = document.createElement('div'); box.id = 'caseMsg'; box.className = 'msg';
+          const host = document.getElementById('evidencePanel') || document.body; host.prepend(box);
         }
-        box.style.display = 'block';
-        box.innerHTML = html;
+        box.style.display = 'block'; box.innerHTML = html;
         clearTimeout(showTopMessage._t);
         showTopMessage._t = setTimeout(() => { box.style.display = ''; box.textContent = ''; }, 2500);
       }
@@ -991,6 +1071,155 @@
       // Expose for debugging if needed
       window.__qcpd_openDoorFullscreen = openFullscreen;
       window.__qcpd_closeDoorFullscreen = closeFullscreen;
+    })();
+  </script>
+
+  <!-- 🔹🔹 CLOSED DOORS GALLERY CONTROLLER (adds the missing logic) 🔹🔹 -->
+  <script>
+    (function () {
+      const host = document.getElementById('doorsHost');
+      const gallery = document.getElementById('doorGallery');
+      let roots = [];
+      const originalDisplay = new WeakMap();
+
+      function isPortrait() {
+        return window.matchMedia('(orientation: portrait)').matches;
+      }
+
+      function findPuzzleRoots() {
+        if (!host) return [];
+        // 1) Try direct children with meaningful size
+        let kids = Array.from(host.children).filter(el => el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
+        kids = kids.filter(el => {
+          const r = el.getBoundingClientRect();
+          return (r.width * r.height) > 2000;
+        });
+        if (kids.length >= 3) return kids.slice(0, 3);
+
+        // 2) Known selectors
+        const guesses = host.querySelectorAll('.door-game-root, [data-door], [data-game], #door-mines, #door-composite, #door-path');
+        const uniq = [];
+        guesses.forEach(el => {
+          const root = el.closest('#doorsHost > *') || el;
+          if (root && !uniq.includes(root)) uniq.push(root);
+        });
+        if (uniq.length >= 3) return uniq.slice(0, 3);
+
+        // 3) Fallback: pick three largest blocks
+        const blocks = Array.from(host.querySelectorAll(':scope *'))
+          .filter(el => el.parentElement && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
+        const ranked = blocks
+          .map(el => ({ el, area: el.getBoundingClientRect().width * el.getBoundingClientRect().height }))
+          .sort((a, b) => b.area - a.area)
+          .map(x => x.el);
+        const chosen = [];
+        for (const el of ranked) {
+          const top = el.closest('#doorsHost > *') || el;
+          if (top && !chosen.includes(top)) chosen.push(top);
+          if (chosen.length === 3) break;
+        }
+        return chosen.length === 3 ? chosen : kids.slice(0, 3);
+      }
+
+      function ensureOriginalDisplaySaved() {
+        roots.forEach(el => {
+          if (!originalDisplay.has(el)) originalDisplay.set(el, el.style.display || '');
+        });
+      }
+
+      function showOnly(index) {
+        ensureOriginalDisplaySaved();
+        roots.forEach((el, i) => {
+          el.style.display = (i === index) ? (originalDisplay.get(el) || '') : 'none';
+        });
+      }
+      function showAll() {
+        roots.forEach(el => {
+          const d = originalDisplay.get(el);
+          el.style.display = (d == null ? '' : d);
+        });
+      }
+
+      function buildGallery() {
+        if (!gallery) return;
+        gallery.innerHTML = '';
+        const labels = [
+          { icon: '🔒', title: 'Door A', sub: 'Jewel Latin' },
+          { icon: '🧨', title: 'Door B', sub: 'Defuser Protocol' },
+          { icon: '🗺️', title: 'Door C', sub: 'Path Sequence' },
+        ];
+        labels.forEach((info, idx) => {
+          const card = document.createElement('button');
+          card.className = 'door-card';
+          card.type = 'button';
+          card.setAttribute('data-door', String(idx));
+          card.innerHTML = `
+            <div class="door-icon" aria-hidden="true">${info.icon}</div>
+            <div>
+              <div class="door-title">${info.title}</div>
+              <div class="door-sub">${info.sub}</div>
+            </div>
+            <div><span class="door-go">Open</span></div>
+          `;
+          card.addEventListener('click', () => openDoor(idx));
+          gallery.appendChild(card);
+        });
+      }
+
+      function openDoor(idx) {
+        if (!roots.length) return;
+        if (isPortrait() && typeof window.__qcpd_openDoorFullscreen === 'function') {
+          window.__qcpd_openDoorFullscreen();
+          setTimeout(() => { showOnly(idx); }, 30);
+        } else {
+          showOnly(idx);
+          try { document.getElementById('doors').scrollIntoView({ behavior: 'smooth' }); } catch { }
+        }
+      }
+
+      function onCloseFullscreen() {
+        if (isPortrait()) showAll();
+      }
+      (function hookCloseFS() {
+        const fsClose = document.getElementById('fsClose');
+        if (fsClose) fsClose.addEventListener('click', onCloseFullscreen);
+      })();
+
+      function setLayout() {
+        if (!gallery) return;
+        if (isPortrait()) {
+          gallery.style.display = 'grid';
+          showAll();
+        } else {
+          gallery.style.display = 'none';
+          showAll();
+        }
+      }
+
+      const bootObs = new MutationObserver(() => {
+        if (!host.firstElementChild) return;
+        roots = findPuzzleRoots();
+        if (roots.length === 3) {
+          ensureOriginalDisplaySaved();
+          buildGallery();
+          setLayout();
+          bootObs.disconnect();
+        }
+      });
+      bootObs.observe(host, { childList: true, subtree: true });
+
+      if (host.firstElementChild) {
+        roots = findPuzzleRoots();
+        if (roots.length === 3) {
+          ensureOriginalDisplaySaved();
+          buildGallery();
+          setLayout();
+          bootObs.disconnect();
+        }
+      }
+
+      window.addEventListener('resize', setLayout);
+      window.addEventListener('orientationchange', () => setTimeout(setLayout, 150));
     })();
   </script>
 

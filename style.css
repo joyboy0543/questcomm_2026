@@ -644,14 +644,11 @@ summary {
 .zoom-viewport {
     position: relative;
     overflow: auto;
-    /* allow panning when zoomed in */
     touch-action: pan-x pan-y;
-    /* enable browser gesture handling */
     -webkit-overflow-scrolling: touch;
     background: #09131a;
     border-radius: 10px;
     min-height: 240px;
-    /* prevents collapsing */
 }
 
 .zoom-controls {

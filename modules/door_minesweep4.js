@@ -26,6 +26,9 @@
     const btnClear = wrap.querySelector('#mswClear');
     host.innerHTML = ''; host.appendChild(wrap);
 
+    // Prevent context menu (we use right-click for flags)
+    board.addEventListener('contextmenu', (e) => e.preventDefault());
+
     const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
     const cells = []; // {r,c,bomb,revealed,flag,count,el}
     const idx = (r, c) => r * SIZE + c;
@@ -45,7 +48,10 @@
 
       // Random bombs
       const pool = [...Array(SIZE * SIZE).keys()];
-      for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
       const bombs = new Set(pool.slice(0, BOMBS));
 
       // Build grid
@@ -60,23 +66,43 @@
         }
       }
       // Counts
-      for (const cell of cells) { cell.count = neighbors(cell).filter(n => n.bomb).length; }
+      for (const cell of cells) cell.count = neighbors(cell).filter(n => n.bomb).length;
 
       // Interactions
       for (const cell of cells) {
-        // Left-click/tap: reveal
+        // Click/tap: reveal (unless flagged)
         cell.el.addEventListener('click', () => { if (!cell.flag) reveal(cell); });
 
         // Right-click: toggle flag
-        cell.el.addEventListener('contextmenu', (e) => { e.preventDefault(); toggleFlag(cell); });
+        cell.el.addEventListener('mousedown', (e) => {
+          if (e.button === 2) { e.preventDefault(); toggleFlag(cell); }
+        });
 
-        // Double-click: toggle flag
+        // Double-click: toggle flag (desktop alt)
         cell.el.addEventListener('dblclick', () => { if (!cell.revealed) toggleFlag(cell); });
 
-        // Long-press (mobile): flag
-        let tId = null;
-        cell.el.addEventListener('touchstart', () => { if (cell.revealed) return; tId = setTimeout(() => { toggleFlag(cell); tId = null; }, 420); }, { passive: true });
-        cell.el.addEventListener('touchend', () => { if (tId) { clearTimeout(tId); } }, { passive: true });
+        // Long-press (mobile): robust flag toggle (hold + leeway)
+        let tId = null, sx = 0, sy = 0;
+        const HOLD_MS = 420, LEEWAY = 8;
+        const onStart = (e) => {
+          if (cell.revealed) return;
+          if (!e.touches || e.touches.length !== 1) return;
+          const t = e.touches[0]; sx = t.clientX; sy = t.clientY;
+          clearTimeout(tId);
+          tId = setTimeout(() => { toggleFlag(cell); tId = null; }, HOLD_MS);
+        };
+        const onMove = (e) => {
+          if (!tId || !e.touches || e.touches.length !== 1) return;
+          const t = e.touches[0];
+          if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) {
+            clearTimeout(tId); tId = null;
+          }
+        };
+        const onEnd = () => { if (tId) { clearTimeout(tId); tId = null; } };
+        cell.el.addEventListener('touchstart', onStart, { passive: true });
+        cell.el.addEventListener('touchmove', onMove, { passive: true });
+        cell.el.addEventListener('touchend', onEnd, { passive: true });
+        cell.el.addEventListener('touchcancel', onEnd, { passive: true });
       }
 
       status.textContent = '';
@@ -94,11 +120,10 @@
       cell.revealed = true;
 
       if (cell.bomb) {
-        // 🔴 Bomb pressed: brief feedback, then auto-reset the whole board.
+        // Bomb: feedback then reset
         cell.el.classList.add('boom');
         cell.el.style.background = '#3b0f0f';
         setTimeout(() => {
-          // Clean small effects before resetting
           cell.el.classList.remove('boom');
           cell.el.style.background = '';
           place();
@@ -106,7 +131,7 @@
         return;
       }
 
-      // Flood-reveal if zero
+      // Flood-reveal zeros
       if (cell.count === 0) {
         for (const n of neighbors(cell)) {
           if (!n.revealed && !n.flag && !n.bomb) reveal(n);
@@ -120,7 +145,6 @@
       const el = cell.el;
       el.textContent = '';
       el.classList.add('revealed');
-
       if (!cell.bomb && cell.count > 0) {
         const span = document.createElement('span');
         span.textContent = cell.count;

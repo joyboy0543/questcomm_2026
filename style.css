@@ -699,3 +699,25 @@ summary {
 #doorsHost .door-game-root {
     max-width: none;
 }
+
+/* =========================
+   DOORWAY – Centered alignment
+   ========================= */
+
+#doorsZoomShell {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.door-gallery {
+    justify-items: center;
+}
+
+.door-gallery .door-card {
+    width: min(640px, 92vw);
+}
+
+#doorsHost {
+    margin-left: auto;
+    margin-right: auto;
+}

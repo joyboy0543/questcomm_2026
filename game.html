@@ -49,7 +49,7 @@
 
     @keyframes ctaPulse {
       0% {
-        box-shadow: 0 0 0 0 rgba(46, 168, 255, 0.55);
+        box-shadow: 0 0 0 0 rgba(46, 168, 255, .55);
       }
 
       70% {
@@ -79,7 +79,7 @@
     /* Tab pulse (used by auto-advance script) */
     @keyframes qcpdPulse {
       0% {
-        box-shadow: 0 0 0 0 rgba(46, 168, 255, 0.65);
+        box-shadow: 0 0 0 0 rgba(46, 168, 255, .65);
       }
 
       70% {
@@ -97,12 +97,12 @@
       outline: 2px solid var(--accent);
     }
 
-    /* ===== Cipher: (overlay CSS retained but not used anymore) ===== */
+    /* ===== Cipher overlay (kept for reference) ===== */
     .photo-overlay {
       position: fixed;
       inset: 0;
       z-index: 9998;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, .75);
       display: none;
       align-items: center;
       justify-content: center;
@@ -216,7 +216,7 @@
       color: var(--ink);
     }
 
-    /* Critical: avoid clipping inside Doorway content */
+    /* Avoid clipping inside Doorway content */
     #doorsHost {
       transform-origin: top center;
       will-change: transform;
@@ -301,6 +301,8 @@
       /* JS toggles this */
       margin-top: 8px;
       gap: 10px;
+      justify-items: center;
+      /* center cards in portrait */
     }
 
     .door-card {
@@ -315,6 +317,8 @@
       color: var(--ink);
       cursor: pointer;
       transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      width: min(640px, 92vw);
+      /* centered readable width */
     }
 
     .door-card:hover {
@@ -355,10 +359,7 @@
       color: #fff;
     }
 
-    /* IMPORTANT:
-       Only when gallery is READY (html.dg-ready) do we switch portrait layout.
-       This prevents "blank Doorway" on phones while gallery is still empty.
-    */
+    /* Portrait gating (only when gallery is ready) */
     @media (orientation: portrait) {
       html.dg-ready #doorsZoomShell {
         display: none;
@@ -378,6 +379,21 @@
       #doorsZoomShell {
         display: block;
       }
+    }
+
+    /* Center the zoom shell in landscape as well */
+    #doorsZoomShell {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    #doorsZoomViewport {
+      min-height: 280px;
+    }
+
+    #doorsHost {
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 
@@ -559,6 +575,12 @@
           </div>
         </div>
 
+        <!-- ✅ Common Doorway code input (single place to enter 367) -->
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+          <input id="doorsCodeInput" placeholder="Enter the 3‑digit doorway code" inputmode="numeric" />
+          <button id="doorsCodeConfirm">Confirm</button>
+        </div>
+
         <p id="doorwayStatus" class="status"></p>
 
         <!-- Optional: hint for very small screens -->
@@ -725,7 +747,6 @@
     document.getElementById('agreeBtn')?.addEventListener('click', async () => {
       const { name, codename, department } = getIdentity();
       await startSession({ name, codename, department });
-      // Stop the CTA pulsing once clicked
       document.getElementById('agreeBtn')?.classList.remove('cta-pulse');
     });
 
@@ -751,7 +772,7 @@
       if (v) await appendAttempt('corridor riddle', v);
     });
 
-    // 3) Doorway logging: watch for a success banner with id="doors-complete"
+    // Doorway logging: watch for a success banner with id="doors-complete"
     const doorsObs = new MutationObserver(async () => {
       const banner = document.getElementById('doors-complete');
       if (banner) {
@@ -761,12 +782,10 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Highlight CTA on first paint
       const agree = document.getElementById('agreeBtn');
       if (agree) agree.classList.add('cta-pulse');
 
       doorsObs.observe(document.body, { childList: true, subtree: true });
-      // If already present (e.g., SPA nav), log immediately
       const banner = document.getElementById('doors-complete');
       if (banner) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
     });
@@ -860,7 +879,6 @@
       }
 
       function markDoorsCompleteBanner() {
-        // Create a hidden marker so the telemetry observer (watching '#doors-complete') fires.
         if (!document.getElementById('doors-complete')) {
           const d = document.createElement('div');
           d.id = 'doors-complete';
@@ -872,7 +890,7 @@
       function watchDoorsSignals() {
         const host = document.getElementById('doorsHost');
 
-        // 1) Listen for custom events if modules dispatch them
+        // Custom events (if any)
         ['qcpd:doorsComplete', 'doorsComplete'].forEach(evtName => {
           window.addEventListener(evtName, () => {
             if (!reactedTabs.has('doors')) {
@@ -882,7 +900,7 @@
           }, { once: true });
         });
 
-        // 2) Attribute-based signal
+        // Attribute-based signal
         const attrObs = new MutationObserver(() => {
           if (!reactedTabs.has('doors')) {
             const el = document.querySelector('[data-doors-complete="true"]');
@@ -900,7 +918,7 @@
           onSuccess('doors');
         }
 
-        // 3) Textual signal anywhere under #doorsHost (matches SUCCESS_PATTERNS)
+        // Textual signal under #doorsHost (matches SUCCESS_PATTERNS)
         if (host) {
           const hostObs = new MutationObserver(() => {
             if (reactedTabs.has('doors')) return;
@@ -912,7 +930,6 @@
             }
           });
           hostObs.observe(host, { childList: true, subtree: true, characterData: true });
-          // In case content was already stamped
           const initialTxt = (host.innerText || host.textContent || '').trim();
           if (initialTxt && SUCCESS_PATTERNS.some(r => r.test(initialTxt)) && !reactedTabs.has('doors')) {
             markDoorsCompleteBanner();
@@ -922,7 +939,6 @@
         }
       }
 
-      // Also detect Doorway completion banner if modules inject it
       function watchDoorsCompleteBanner() {
         const obs = new MutationObserver(() => {
           const banner = document.getElementById('doors-complete');
@@ -933,11 +949,38 @@
         if (banner && !reactedTabs.has('doors')) { onSuccess('doors'); }
       }
 
+      // ✅ Wire the common Doorway code box (accepts 367)
+      function wireDoorsCodeBox() {
+        const input = document.getElementById('doorsCodeInput');
+        const btn = document.getElementById('doorsCodeConfirm');
+        const status = document.getElementById('doorwayStatus');
+
+        function clean(v) { return (v || '').replace(/\D+/g, ''); }
+        function markComplete() {
+          status.textContent = '✅ Correct — proceed to the next tab.';
+          status.classList.add('ok');
+          markDoorsCompleteBanner();    // telemetry + existing observer
+        }
+
+        btn?.addEventListener('click', () => {
+          const v = clean(input?.value);
+          if (v === '367') {
+            markComplete();
+          } else {
+            status.textContent = 'Not correct — try again.';
+            status.classList.remove('ok');
+            input?.classList.add('input-bad');
+            setTimeout(() => input?.classList.remove('input-bad'), 250);
+          }
+        });
+      }
+
       window.addEventListener('DOMContentLoaded', () => {
         STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
         wireCancelOnTabChange();
         watchDoorsCompleteBanner();
         watchDoorsSignals();
+        wireDoorsCodeBox();
       });
     })();
   </script>
@@ -975,7 +1018,6 @@
         const cssH = child.offsetHeight || rect.height;
         const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
         const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
-        // Use the larger of attribute/CSS if content grows after initial layout
         DESIGN_W = Math.max(attrW || 0, cssW || 0, 720) || 720;
         DESIGN_H = Math.max(attrH || 0, cssH || 0, 540) || 540;
       }
@@ -1016,7 +1058,7 @@
 
       function maybeShowOrientHint() {
         const isNarrow = window.innerWidth < 420;
-        const tight = fitScale < 0.7;
+        const tight = fitScale < 0.7;      /* fixed var name */
         if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
       }
 
@@ -1125,7 +1167,7 @@
       });
       injectObs.observe(host, { childList: true, subtree: true });
 
-      // NEW: Observe size/layout changes to inner content and re-fit (fixes cropped columns)
+      // Observe size/layout changes to inner content and re-fit (fixes cropped columns)
       let ro = null;
       function attachResizeObserver() {
         if (!host.firstElementChild || ro) return;
@@ -1162,6 +1204,7 @@
 
       function findPuzzleRoots() {
         if (!host) return [];
+        // 1) Try direct children with meaningful size
         let kids = Array.from(host.children).filter(el => el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
         kids = kids.filter(el => {
           const r = el.getBoundingClientRect();
@@ -1169,6 +1212,7 @@
         });
         if (kids.length >= 3) return kids.slice(0, 3);
 
+        // 2) Known selectors
         const guesses = host.querySelectorAll('.door-game-root, [data-door], [data-game], #door-mines, #door-composite, #door-path');
         const uniq = [];
         guesses.forEach(el => {
@@ -1177,6 +1221,7 @@
         });
         if (uniq.length >= 3) return uniq.slice(0, 3);
 
+        // 3) Fallback: pick three largest blocks
         const blocks = Array.from(host.querySelectorAll(':scope *'))
           .filter(el => el.parentElement && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
         const ranked = blocks
@@ -1262,11 +1307,11 @@
         const galleryReady = roots && roots.length === 3 && gallery.childElementCount >= 1;
 
         if (isPortrait() && galleryReady) {
-          document.documentElement.classList.add('dg-ready');  // CSS will show cards & hide zoom shell
+          document.documentElement.classList.add('dg-ready');
           gallery.style.display = 'grid';
           showAll();
         } else {
-          document.documentElement.classList.remove('dg-ready'); // keep combined view visible
+          document.documentElement.classList.remove('dg-ready');
           gallery.style.display = galleryReady ? 'grid' : 'none';
           showAll();
         }
@@ -1305,10 +1350,9 @@
     (function () {
       const thumb = document.querySelector('#cipher .photo-thumb');
       const tabs = document.getElementById('tabs');
-      let autoOpenedCipher = false; // open once per visit
+      let autoOpenedCipher = false;
       let lastOpenTs = 0;
 
-      // Extract image URL from <img> or background-image
       function extractImageURL(fig) {
         if (!fig) return null;
         const img = fig.querySelector('img');
@@ -1322,7 +1366,7 @@
       function openImageInNewTab(src) {
         const now = Date.now();
         if (!src) return;
-        if (now - lastOpenTs < 500) return; // debounce
+        if (now - lastOpenTs < 500) return;
         lastOpenTs = now;
         try { window.open(src, '_blank', 'noopener'); } catch { }
       }
@@ -1336,7 +1380,6 @@
         }
       }
 
-      // When thumbnail is clicked — open directly in new tab
       function wireThumb() {
         if (!thumb) return;
         thumb.style.cursor = 'zoom-in';
@@ -1346,27 +1389,20 @@
         }, { once: false });
       }
 
-      // If module injects later, observe and wire
       const obs = new MutationObserver(() => { wireThumb(); });
       if (thumb) {
         obs.observe(thumb, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
         wireThumb();
       }
 
-      // Auto-open when the Cipher tab is activated (only once)
       if (tabs) {
         tabs.addEventListener('click', (e) => {
           const btn = e.target.closest('button.tab');
-          if (btn?.dataset.tab === 'cipher') {
-            // Delay a tick so the module can inject the image
-            setTimeout(tryOpenCipherOnce, 120);
-          }
+          if (btn?.dataset.tab === 'cipher') setTimeout(tryOpenCipherOnce, 120);
         });
       }
 
-      // Also handle SPA programmatic activation if any
       document.addEventListener('DOMContentLoaded', () => {
-        // If cipher already active at load (unlikely), try open
         const active = document.querySelector('.tab.active');
         if (active?.dataset.tab === 'cipher') setTimeout(tryOpenCipherOnce, 150);
       });

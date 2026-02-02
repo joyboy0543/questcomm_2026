@@ -7,6 +7,18 @@
     const JEWELS = ["emerald", "hex", "ruby", "amethyst", "star", "diamond"]; // 6 types
     const SIZE = 6;
 
+    // 🔧 Limit conflict marking to selected axes (exactly 3 rows OR 3 columns recommended)
+    // Default below: show red conflicts only on rows 0,2,4 (1st, 3rd, 5th). Change as desired.
+    const JL_HINTS = {
+      rows: [0, 2, 4],   // e.g., [0,2,4] three rows to show red; set to null to disable row hints
+      cols: null         // or set to three column indices like [1,3,5]; keep the other null
+    };
+    function canPaint(axis, idx) {
+      if (axis === 'row') return Array.isArray(JL_HINTS.rows) && JL_HINTS.rows.includes(idx);
+      if (axis === 'col') return Array.isArray(JL_HINTS.cols) && JL_HINTS.cols.includes(idx);
+      return false;
+    }
+
     const wrap = document.createElement("div");
     wrap.className = "jlatin-wrap";
     wrap.innerHTML = `
@@ -29,17 +41,12 @@
     host.innerHTML = "";
     host.appendChild(wrap);
 
-    // --- Build a simple Latin base solution (shifted rows) ---
-    // solution[r][c] = JEWELS[(r + c) % 6]
+    // --- Latin base solution (cyclic shifts) ---
     const solution = Array.from({ length: SIZE }, (_, r) =>
       Array.from({ length: SIZE }, (_, c) => JEWELS[(r + c) % SIZE])
     );
 
-    // Choose some givens (coordinates) — tweak if you want more/less
-    // Format: [r,c]
-    // const GIVENS = new Set(
-    //   ["0,0", "0,3", "1,1", "1,4", "2,2", "2,5", "3,0", "3,3", "4,2", "5,4", "4,5"]
-    // );
+    // GIVENS (coords as "r,c")
     const GIVENS = new Set([
       // Row 0
       "0,0", "0,2", "0,4",
@@ -55,7 +62,6 @@
       "5,2"
     ]);
 
-
     // --- Create cells ---
     const cells = [];
     for (let r = 0; r < SIZE; r++) {
@@ -68,17 +74,13 @@
         el.dataset.given = isGiven ? "1" : "0";
         el.dataset.value = isGiven ? solution[r][c] : "";
 
-        // Iconic look: we'll wrap <img> into a small "chip" to make it pop
-        el.onclick = () => {
-          if (el.dataset.given === "1") return;
-          cycle(el);
-        };
+        el.onclick = () => { if (el.dataset.given === "1") return; cycle(el); };
         gridEl.appendChild(el);
         cells[r][c] = el;
       }
     }
 
-    // Apply grid columns for 6x6
+    // Grid columns for 6x6
     gridEl.style.gridTemplateColumns = "repeat(6, var(--gem))";
 
     // Initial render
@@ -95,7 +97,6 @@
 
     function render(cell) {
       cell.innerHTML = "";
-      // Given cells get a subtle locked background
       cell.classList.toggle("given", cell.dataset.given === "1");
 
       const v = cell.dataset.value;
@@ -118,8 +119,8 @@
 
       // rows + cols unique (ignore blanks)
       for (let i = 0; i < SIZE; i++) {
-        ok &= uniq(cells[i]);
-        ok &= uniq(cells.map((r) => r[i]));
+        ok &= uniq(cells[i], 'row', i);
+        ok &= uniq(cells.map((r) => r[i]), 'col', i);
       }
 
       if (ok && cells.flat().every((c) => c.dataset.value)) {
@@ -131,15 +132,20 @@
       }
     }
 
-    function uniq(list) {
+    function uniq(list, axis, index) {
       const seen = {};
       let valid = true;
+      const paint = canPaint(axis, index);
+
       for (const el of list) {
         const v = el.dataset.value;
         if (!v) continue;
         if (seen[v]) {
-          el.style.boxShadow = "0 0 0 2px rgba(255,92,92,.45)";
-          seen[v].style.boxShadow = "0 0 0 2px rgba(255,92,92,.45)";
+          // Only paint conflict when allowed; still mark invalid either way
+          if (paint) {
+            el.style.boxShadow = "0 0 0 2px rgba(255,92,92,.45)";
+            seen[v].style.boxShadow = "0 0 0 2px rgba(255,92,92,.45)";
+          }
           valid = false;
         } else {
           seen[v] = el;
@@ -149,7 +155,7 @@
     }
 
     btnClear.onclick = () => {
-      cells.flat().forEach((c, i) => {
+      cells.flat().forEach((c) => {
         if (c.dataset.given === "0") {
           c.dataset.value = "";
           c.innerHTML = "";

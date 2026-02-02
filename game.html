@@ -859,6 +859,69 @@
         obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
       }
 
+      function markDoorsCompleteBanner() {
+        // Create a hidden marker so the telemetry observer (watching '#doors-complete') fires.
+        if (!document.getElementById('doors-complete')) {
+          const d = document.createElement('div');
+          d.id = 'doors-complete';
+          d.style.display = 'none';
+          document.body.appendChild(d);
+        }
+      }
+
+      function watchDoorsSignals() {
+        const host = document.getElementById('doorsHost');
+
+        // 1) Listen for custom events if modules dispatch them
+        ['qcpd:doorsComplete', 'doorsComplete'].forEach(evtName => {
+          window.addEventListener(evtName, () => {
+            if (!reactedTabs.has('doors')) {
+              markDoorsCompleteBanner();
+              onSuccess('doors');
+            }
+          }, { once: true });
+        });
+
+        // 2) Attribute-based signal
+        const attrObs = new MutationObserver(() => {
+          if (!reactedTabs.has('doors')) {
+            const el = document.querySelector('[data-doors-complete="true"]');
+            if (el) {
+              markDoorsCompleteBanner();
+              onSuccess('doors');
+              attrObs.disconnect();
+            }
+          }
+        });
+        attrObs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['data-doors-complete'] });
+        const firstAttr = document.querySelector('[data-doors-complete="true"]');
+        if (firstAttr && !reactedTabs.has('doors')) {
+          markDoorsCompleteBanner();
+          onSuccess('doors');
+        }
+
+        // 3) Textual signal anywhere under #doorsHost (matches SUCCESS_PATTERNS)
+        if (host) {
+          const hostObs = new MutationObserver(() => {
+            if (reactedTabs.has('doors')) return;
+            const txt = (host.innerText || host.textContent || '').trim();
+            if (SUCCESS_PATTERNS.some(r => r.test(txt))) {
+              markDoorsCompleteBanner();
+              onSuccess('doors');
+              hostObs.disconnect();
+            }
+          });
+          hostObs.observe(host, { childList: true, subtree: true, characterData: true });
+          // In case content was already stamped
+          const initialTxt = (host.innerText || host.textContent || '').trim();
+          if (initialTxt && SUCCESS_PATTERNS.some(r => r.test(initialTxt)) && !reactedTabs.has('doors')) {
+            markDoorsCompleteBanner();
+            onSuccess('doors');
+            hostObs.disconnect();
+          }
+        }
+      }
+
       // Also detect Doorway completion banner if modules inject it
       function watchDoorsCompleteBanner() {
         const obs = new MutationObserver(() => {
@@ -874,6 +937,7 @@
         STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
         wireCancelOnTabChange();
         watchDoorsCompleteBanner();
+        watchDoorsSignals();
       });
     })();
   </script>
@@ -952,8 +1016,8 @@
 
       function maybeShowOrientHint() {
         const isNarrow = window.innerWidth < 420;
-        the_tight = fitScale < 0.7;
-        if (orientHint) orientHint.style.display = (isNarrow && the_tight) ? 'block' : 'none';
+        const tight = fitScale < 0.7;
+        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
       }
 
       // Normal controls
@@ -1098,7 +1162,6 @@
 
       function findPuzzleRoots() {
         if (!host) return [];
-        // 1) Try direct children with meaningful size
         let kids = Array.from(host.children).filter(el => el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
         kids = kids.filter(el => {
           const r = el.getBoundingClientRect();
@@ -1106,7 +1169,6 @@
         });
         if (kids.length >= 3) return kids.slice(0, 3);
 
-        // 2) Known selectors
         const guesses = host.querySelectorAll('.door-game-root, [data-door], [data-game], #door-mines, #door-composite, #door-path');
         const uniq = [];
         guesses.forEach(el => {
@@ -1115,7 +1177,6 @@
         });
         if (uniq.length >= 3) return uniq.slice(0, 3);
 
-        // 3) Fallback: pick three largest blocks
         const blocks = Array.from(host.querySelectorAll(':scope *'))
           .filter(el => el.parentElement && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
         const ranked = blocks
@@ -1164,13 +1225,13 @@
           card.type = 'button';
           card.setAttribute('data-door', String(idx));
           card.innerHTML = `
-            <div class="door-icon" aria-hidden="true">${info.icon}</div>
-            <div>
-              <div class="door-title">${info.title}</div>
-              <div class="door-sub">${info.sub}</div>
-            </div>
-            <div><span class="door-go">Open</span></div>
-          `;
+          <div class="door-icon" aria-hidden="true">${info.icon}</div>
+          <div>
+            <div class="door-title">${info.title}</div>
+            <div class="door-sub">${info.sub}</div>
+          </div>
+          <div><span class="door-go">Open</span></div>
+        `;
           card.addEventListener('click', () => openDoor(idx));
           gallery.appendChild(card);
         });
@@ -1195,15 +1256,18 @@
         if (fsClose) fsClose.addEventListener('click', onCloseFullscreen);
       })();
 
+      // ✅ Only hide the combined view in portrait when gallery is actually ready.
       function setLayout() {
         if (!gallery) return;
-        if (isPortrait()) {
-          document.documentElement.classList.add('dg-ready'); // gate portrait switch
+        const galleryReady = roots && roots.length === 3 && gallery.childElementCount >= 1;
+
+        if (isPortrait() && galleryReady) {
+          document.documentElement.classList.add('dg-ready');  // CSS will show cards & hide zoom shell
           gallery.style.display = 'grid';
           showAll();
         } else {
-          gallery.style.display = 'none';
-          document.documentElement.classList.remove('dg-ready');
+          document.documentElement.classList.remove('dg-ready'); // keep combined view visible
+          gallery.style.display = galleryReady ? 'grid' : 'none';
           showAll();
         }
       }

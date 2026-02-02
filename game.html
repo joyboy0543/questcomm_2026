@@ -951,15 +951,34 @@
 
         function clean(v) { return (v || '').replace(/\D+/g, ''); }
 
+        function getNextTab(currentTabId) {
+          const row = document.getElementById('tabs'); if (!row) return null;
+          const tabs = Array.from(row.querySelectorAll('button.tab'));
+          const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
+          return (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        }
+        function enableTab(btn) {
+          if (!btn) return;
+          btn.classList.remove('disabled');
+          btn.removeAttribute('disabled');
+          btn.setAttribute('aria-disabled', 'false');
+        }
+
         function successUX() {
-          // status like other games + input visual
+          // 1) Enable the next tab BEFORE onSuccess so auto-advance can schedule
+          const next = getNextTab('doors');
+          enableTab(next);
+
+          // 2) Status like other games + input visuals
           status.textContent = '✅ Correct — proceed to the next tab.';
           status.classList.add('ok');
           input?.classList.remove('input-bad');
           input?.classList.add('input-ok');
-          // ensure telemetry observer sees completion
+
+          // 3) Telemetry marker so existing observer fires
           markDoorsCompleteBanner();
-          // fire the regular success flow for tabs
+
+          // 4) Shared success flow
           onSuccess('doors');
         }
 
@@ -975,12 +994,10 @@
           }
         });
 
-        // Also submit on Enter
-        input?.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') btn?.click();
-        });
+        // Enter to submit
+        input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn?.click(); });
 
-        // Remove/hide any per-game confirm boxes that modules inject into #doorsHost
+        // Hide per-game inputs inside Doorway content (safety net)
         const KILL_SELECTORS = [
           '.digit-row',
           '[id*="Confirm"]',
@@ -994,24 +1011,15 @@
         function nukePerGameInputs(root) {
           try {
             KILL_SELECTORS.forEach(sel => {
-              root.querySelectorAll(sel).forEach(el => {
-                // If it's clearly a data input or confirm in the Doorway games, hide it
-                el.style.display = 'none';
-              });
+              root.querySelectorAll(sel).forEach(el => { el.style.display = 'none'; });
             });
           } catch { }
         }
-        // Run once now
         if (host) nukePerGameInputs(host);
-        // Watch for later injections
         if (host) {
           const mo = new MutationObserver((muts) => {
             muts.forEach(m => {
-              if (m.addedNodes) {
-                m.addedNodes.forEach(n => {
-                  if (n.nodeType === 1) nukePerGameInputs(n);
-                });
-              }
+              if (m.addedNodes) m.addedNodes.forEach(n => { if (n.nodeType === 1) nukePerGameInputs(n); });
             });
           });
           mo.observe(host, { childList: true, subtree: true });
@@ -1023,7 +1031,7 @@
         wireCancelOnTabChange();
         watchDoorsCompleteBanner();
         watchDoorsSignals();
-        wireDoorsCodeBoxAndHidePerGameInputs();  // << added
+        wireDoorsCodeBoxAndHidePerGameInputs();
       });
     })();
   </script>

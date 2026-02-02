@@ -56,7 +56,7 @@
         video,
         canvas {
             display: block;
-            width: 100%;
+            width: 100;
             height: auto;
             max-width: 660px;
             max-height: 70vh;
@@ -272,7 +272,7 @@
           <ol>
             <li>Open in the <b>Chrome</b> app directly.</li>
             <li>Tap the <b>lock</b> icon in the address bar → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li>
-            <li>Or Chrome <b>⋮</b> → <b>Settings</b> → <b>Site settings</b> → <b>Camera</b> → set to <b>Allowed</b> and allow this site.</li>
+            <li>Or Chrome <b>⋮</b> → <b>Settings</b> → <b>Site settings</b> → <b>Camera</b> → <b>Allowed</b> and allow this site.</li>
             <li>Reload this page and tap <b>Open Camera</b>.</li>
           </ol>
         `;
@@ -433,7 +433,7 @@
             hatsBtn.textContent = `Hats: ${hatCount}`;
         };
 
-        // ===== Helpers for portrait-safe caption & sizing (added) =====
+        /* ===== Helpers for portrait-safe caption & sizing (added) ===== */
         function fitFontSize(text, basePx, maxWidth, fontStack) {
             let size = Math.max(10, basePx);
             ctx.font = `${size}px ${fontStack}`;
@@ -456,11 +456,12 @@
             return [line1, line2];
         }
 
-        // ----- Frame + Hats (orientation-aware frame; everything else unchanged) -----
+        // ----- Frame + Hats (landscape unchanged, portrait uses a separate layout) -----
         function drawFrame(w, h, name) {
-            const isPortrait = (w / h) < 0.9; // treat near-square as portrait for safer phones
+            const isPortrait = (w / h) < 0.9; // near-square treated as portrait (safer on phones)
 
             if (!isPortrait) {
+                // ============= LANDSCAPE (UNCHANGED) =============
                 // Top banner
                 const grad = ctx.createLinearGradient(0, 0, w, 0);
                 grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
@@ -487,11 +488,11 @@
                 return;
             }
 
-            // Portrait-safe layout
+            // ============= PORTRAIT (NEW, phone-safe) =============
             const sideM = Math.floor(w * 0.04);
             const innerW = w - sideM * 2;
 
-            // Smaller top banner (avoid faces)
+            // Smaller top banner (avoid overlapping heads)
             const topH = Math.floor(h * 0.10);
             const grad = ctx.createLinearGradient(0, 0, w, 0);
             grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
@@ -514,7 +515,7 @@
             ctx.fillStyle = 'rgba(16,37,54,0.92)';
             ctx.fillRect(0, botY, w, botH);
 
-            // Caption wrapped to 2 lines if needed
+            // Caption (wrap to 2 lines if necessary)
             const baseCaption = `Detective ${name} • Case Solved!`;
             const extra = `The Evidence will be sent to Archives`;
             const capFontStack = `"Segoe UI", system-ui, Arial`;
@@ -559,7 +560,7 @@
             ctx.fillText(line1, sideM, firstY);
             if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
 
-            // Emojis away from faces
+            // Emojis placed away from faces
             ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
             ctx.fillText('🔷', Math.floor(w - sideM - h * 0.05), Math.floor(topH * 0.62));
             ctx.fillText('✨', Math.floor(sideM), Math.floor(botY - h * 0.02));

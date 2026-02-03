@@ -3,15 +3,14 @@
 // Order hint: 2 -> 3 -> 1 => "THE WORLD MAP"
 (function () {
   const KEY = 'colorcode';
-  const ANSWER = 'THE WORLD MAP';
+  const ANSWER_CANON = 'THEWORLDMAP'; // canonical (no spaces, upper) for strict order check
+  const ANSWER_WITH_SPACES = 'THE WORLD MAP';
 
-  // Word banks with homonyms / grouped-but-different words in cols 1 & 3,
-  // and trickier selector words in col 2 (to avoid obvious "preposition" feel).
   const BANK = {
     col1: {
       target: 'MAP',
       pool: [
-        'KEY', 'SCALE', 'DIAMOND', // homonyms / map parts with other meanings
+        'KEY', 'SCALE', 'DIAMOND',
         'JEWEL', 'NOTE', 'PLAN', 'DRAW', 'DESK', 'ROAD', 'MAP'
       ]
     },
@@ -36,12 +35,31 @@
   }
 
   function solved(out, silent = false) {
+    // keep your original success line as-is
     out.textContent = 'Phrase accepted and the data from the phone is neutralized. Findings are now complete. Over!';
-    window.QCPD?.save(KEY, ANSWER);
-    window.QCPD?.unlockTab('findings', { autoSwitch: true });
+    // persist + unlock (no auto-switch)
+    window.QCPD?.save(KEY, ANSWER_WITH_SPACES);
+
+    const usedQcpd = !!(window.QCPD?.unlockTab?.('findings', { autoSwitch: false }));
+    if (!usedQcpd) {
+      try {
+        const tabsRow = document.getElementById('tabs');
+        if (tabsRow) {
+          const nextBtn = tabsRow.querySelector('button.tab[data-tab="findings"]');
+          if (nextBtn) {
+            nextBtn.classList.remove('disabled');
+            nextBtn.removeAttribute('disabled');
+            nextBtn.setAttribute('aria-disabled', 'false');
+          }
+        }
+      } catch { }
+    }
+
     if (!silent) {
       window.QCPD?.radio('These were the words from the burglar: Some references aren’t digital, they are also found on and behind the walls. Over!');
     }
+
+    try { window.dispatchEvent(new CustomEvent('qcpd:tabUnlocked', { detail: { from: 'colorcode', to: 'findings' } })); } catch { }
   }
 
   function renderColumns() {
@@ -83,10 +101,9 @@
         btn.type = 'button';
         btn.textContent = w.toUpperCase();
         btn.addEventListener('click', () => {
-          // one selection per column
+          // One selection per column; purely visual now (no auto-fill)
           [...list.querySelectorAll('.word.selected')].forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
-          autofill();
         });
         list.appendChild(btn);
       }
@@ -94,22 +111,18 @@
       col.appendChild(list);
       grid.appendChild(col);
     });
+  }
 
-    function sel(colKey) {
-      const el = grid.querySelector(`.column[data-col="${colKey}"] .word.selected`);
-      return el ? el.textContent.trim().toUpperCase() : '';
-    }
-
-    function autofill() {
-      const s1 = sel('col1'); // MAP
-      const s2 = sel('col2'); // THE
-      const s3 = sel('col3'); // WORLD
-      if (s1 && s2 && s3) {
-        // order: column 2, then 3, then 1
-        const input = document.getElementById('ringsInput');
-        if (input) input.value = `${s2} ${s3} ${s1}`;
-      }
-    }
+  // Normalize user input:
+  // - uppercase
+  // - collapse internal whitespace to single space
+  // - also compute a "compact" version with all non-letters removed to compare to THEWORLDMAP
+  function normalizeForCheck(str) {
+    const raw = (str || '').trim();
+    const upper = raw.toUpperCase();
+    const withSingleSpaces = upper.replace(/\s+/g, ' ').trim();
+    const lettersOnly = upper.replace(/[^A-Z]/g, '');
+    return { withSingleSpaces, lettersOnly };
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -122,14 +135,21 @@
     // Resume without replaying radio
     const saved = (window.QCPD?.load() || {})[KEY];
     const savedVal = (saved && typeof saved === 'object') ? saved.value : saved;
-    if (savedVal === ANSWER) {
-      if (input) input.value = ANSWER;
+    if (savedVal === ANSWER_WITH_SPACES) {
+      if (input) input.value = ANSWER_WITH_SPACES;
       solved(out, true);
     }
 
     btn?.addEventListener('click', () => {
-      const val = (input?.value || '').trim().replace(/\s+/g, ' ').toUpperCase();
-      if (val === ANSWER) {
+      const val = input?.value || '';
+      const { withSingleSpaces, lettersOnly } = normalizeForCheck(val);
+
+      // Accept "THE WORLD MAP" (any casing / extra spaces) OR "THEWORLDMAP" (no spaces, any case)
+      const ok =
+        (withSingleSpaces === 'THE WORLD MAP') ||
+        (lettersOnly === ANSWER_CANON);
+
+      if (ok) {
         solved(out);
       } else {
         out.textContent = 'Not quite. Let us try picking a different word from each column.';

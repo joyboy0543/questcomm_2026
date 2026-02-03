@@ -6,7 +6,24 @@
         out.textContent = 'Good job!. The first step is secured, let\'s carefully move to the next part.';
         window.QCPD?.save(KEY, ANSWER);
         window.QCPD?.radio('Lock screen Unlocked: Digit recorded. Over!');
-        window.QCPD?.unlockTab('potion', { autoSwitch: true });
+
+        // Unlock next without auto-switch; DOM fallback
+        const usedQcpd = !!(window.QCPD?.unlockTab?.('potion', { autoSwitch: false }));
+        if (!usedQcpd) {
+            try {
+                const tabsRow = document.getElementById('tabs');
+                if (tabsRow) {
+                    const nextBtn = tabsRow.querySelector('button.tab[data-tab="potion"]');
+                    if (nextBtn) {
+                        nextBtn.classList.remove('disabled');
+                        nextBtn.removeAttribute('disabled');
+                        nextBtn.setAttribute('aria-disabled', 'false');
+                    }
+                }
+            } catch { }
+        }
+
+        try { window.dispatchEvent(new CustomEvent('qcpd:tabUnlocked', { detail: { from: 'riddle1', to: 'potion' } })); } catch { }
     }
 
     window.addEventListener('DOMContentLoaded', () => {

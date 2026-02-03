@@ -6,7 +6,24 @@
         out.textContent = 'That\'s right Detective!. Let\'s proceed to the Doorway Sequence.';
         window.QCPD?.save(KEY, ANSWER);
         window.QCPD?.radio('Potion decoded: Code recorded. Over!');
-        window.QCPD?.unlockTab('doors', { autoSwitch: true });
+
+        // Unlock next without auto-switch; DOM fallback
+        const usedQcpd = !!(window.QCPD?.unlockTab?.('doors', { autoSwitch: false }));
+        if (!usedQcpd) {
+            try {
+                const tabsRow = document.getElementById('tabs');
+                if (tabsRow) {
+                    const nextBtn = tabsRow.querySelector('button.tab[data-tab="doors"]');
+                    if (nextBtn) {
+                        nextBtn.classList.remove('disabled');
+                        nextBtn.removeAttribute('disabled');
+                        nextBtn.setAttribute('aria-disabled', 'false');
+                    }
+                }
+            } catch { }
+        }
+
+        try { window.dispatchEvent(new CustomEvent('qcpd:tabUnlocked', { detail: { from: 'potion', to: 'doors' } })); } catch { }
     }
 
     window.addEventListener('DOMContentLoaded', () => {

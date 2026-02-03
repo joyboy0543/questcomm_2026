@@ -9,16 +9,11 @@
   function unlockNext() {
     const out = document.getElementById('cipherStatus');
     if (out) out.textContent = 'Decoded! Continue investigating the data from the phone.';
-
-    // Persist + radio as before
     window.QCPD?.save(KEY, ANSWER);
     window.QCPD?.radio('Cipher cleared: Digits recorded. Over!');
 
-    // --- Unlock next tab WITHOUT auto switching (stay on current tab)
-    // Prefer QCPD if available
+    // Unlock next without auto-switch; fallback if QCPD not available
     const usedQcpd = !!(window.QCPD?.unlockTab?.('riddle1', { autoSwitch: false }));
-
-    // DOM fallback if QCPD isn't present or didn't perform the unlock
     if (!usedQcpd) {
       try {
         const tabsRow = document.getElementById('tabs');
@@ -33,10 +28,8 @@
       } catch { /* no-op */ }
     }
 
-    // Optional: emit a lightweight signal some pages listen for (harmless if unused)
-    try {
-      window.dispatchEvent(new CustomEvent('qcpd:tabUnlocked', { detail: { from: 'cipher', to: 'riddle1' } }));
-    } catch { /* ignore */ }
+    // Optional signal
+    try { window.dispatchEvent(new CustomEvent('qcpd:tabUnlocked', { detail: { from: 'cipher', to: 'riddle1' } })); } catch { }
   }
 
   function create(el, attrs = {}, children = []) {

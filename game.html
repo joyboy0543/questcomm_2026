@@ -454,7 +454,7 @@
       <!-- Tabs -->
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
-        <button class="tab disabled" data-tab="cipher">Cipher Terminal Photo</button>
+        <button class="tab disabled" data-tab="cipher">Lindholmen River-view Photo</button>
         <button class="tab disabled" data-tab="riddle1">Lock Screen</button>
         <button class="tab disabled" data-tab="potion">Evidence Note on home-screen</button>
         <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
@@ -786,6 +786,105 @@
       const banner = document.getElementById('doors-complete');
       if (banner) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
     });
+  </script>
+
+  <!-- Manual per-tab confirm handlers: write persistent success + unlock next tab (no auto-scroll/advance) -->
+  <script>
+    (function () {
+      // Standard inline success writer
+      function writeInlineSuccess(statusEl) {
+        if (!statusEl) return;
+        statusEl.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
+        statusEl.classList.add('ok');
+      }
+
+      // Enable the next tab (direct)
+      function enableNextTab(currentTabId) {
+        const row = document.getElementById('tabs'); if (!row) return;
+        const tabs = Array.from(row.querySelectorAll('button.tab'));
+        const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
+        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        if (!next) return;
+        next.classList.remove('disabled');
+        next.removeAttribute('disabled');
+        next.setAttribute('aria-disabled', 'false');
+      }
+
+      // Generic binder
+      function bindTabConfirm({ tabId, inputId, buttonId, statusId, correctValue, normalize }) {
+        const input = document.getElementById(inputId);
+        const button = document.getElementById(buttonId);
+        const status = document.getElementById(statusId);
+
+        function clean(v) { return (v || '').trim(); }
+        function norm(v) { v = clean(v); return normalize ? normalize(v) : v; }
+
+        function onSuccess() {
+          enableNextTab(tabId);
+          writeInlineSuccess(status);
+          // also add ok style on input for UX
+          input?.classList.remove('input-bad');
+          input?.classList.add('input-ok');
+        }
+
+        function onFail() {
+          if (status) {
+            status.textContent = 'Not correct — try again.';
+            status.classList.remove('ok');
+          }
+          input?.classList.add('input-bad');
+          setTimeout(() => input?.classList.remove('input-bad'), 250);
+        }
+
+        button?.addEventListener('click', () => {
+          const v = norm(input?.value);
+          if (!v) return onFail();
+          if (Array.isArray(correctValue)) {
+            onFail(); // not used here; reserve if we later support multiple answers
+          } else {
+            if (v === correctValue) onSuccess(); else onFail();
+          }
+        });
+
+        input?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') button?.click();
+        });
+      }
+
+      // === Bind the three upstream tabs with their target answers ===
+      // Cipher Photo: expected 3-digit code '243'
+      bindTabConfirm({
+        tabId: 'cipher',
+        inputId: 'cipherInput',
+        buttonId: 'cipherConfirm',
+        statusId: 'cipherStatus',
+        correctValue: '243',
+        normalize: (v) => v.replace(/\D+/g, '') // keep digits only
+      });
+
+      // Riddle 1 (Lock Screen): expected single digit '1'
+      bindTabConfirm({
+        tabId: 'riddle1',
+        inputId: 'riddle1Input',
+        buttonId: 'riddle1Confirm',
+        statusId: 'riddle1Status',
+        correctValue: '1',
+        normalize: (v) => v.replace(/\D+/g, '')
+      });
+
+      // Potion: expected number '928'
+      bindTabConfirm({
+        tabId: 'potion',
+        inputId: 'potionInput',
+        buttonId: 'potionConfirm',
+        statusId: 'potionStatus',
+        correctValue: '928',
+        normalize: (v) => v.replace(/\D+/g, '')
+      });
+
+      // Note: Doorway is already wired elsewhere in game.html to accept '367' and keep user on the same tab.
+      // The Corridor (colorcode) uses its own module confirmation; if you want manual confirm there too, tell me the exact expected input and I’ll wire it the same way.
+    })();
   </script>
 
   <!-- MANUAL SUCCESS MODE (no auto scroll/advance; persistent inline messages) -->

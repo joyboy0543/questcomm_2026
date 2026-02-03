@@ -56,7 +56,7 @@
         video,
         canvas {
             display: block;
-            width: 100%;
+            width: 100;
             height: auto;
             max-width: 660px;
             max-height: 70vh;
@@ -154,12 +154,13 @@
         <canvas id="can" style="display:none"></canvas>
 
         <div class="row">
-            <!-- Upload removed per request -->
+            <button id="upload" disabled>Upload to database</button>
             <button id="download" disabled>Download Photo</button>
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
-        <p id="msg2" class="hint">Downloading the photo will be private to your device.</p>
+        <p id="msg2" class="hint">Uploading the photo gives consent to share this image for event purposes. Downloading
+            the photo will be private to your device.</p>
     </div>
 
     <!-- Help modal -->
@@ -174,67 +175,9 @@
     </div>
 
     <script>
-        /* =======================
-         * 1) Configure your Web App URL
-         * ======================= */
-        // Uses the web app link you provided earlier. Replace if you redeploy.
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1KMpPnw75NgX4fch9gI66LgKwqHOMEf1K5VmRtFsbZ3HbaVFpFxwfjZlxE56Tws82YA/exec';
+        // Keep your Apps Script constant (unused in this flow, but preserved)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi1b9kKnbDFRd4jP_n05Brj6RrDoWWisZsHAAOOC7BMa9psy8iQPevc9Uk7XJwCZZBdQ/exec';
 
-        /* =======================
-         * 2) Helpers: QR params, thumbnail, central log
-         * ======================= */
-        function getParams() {
-            const p = new URLSearchParams(location.search);
-            return {
-                name: (p.get('name') || '').trim(),
-                team: (p.get('team') || '').trim(),
-                event: (p.get('event') || '').trim(),
-                auto: p.get('auto') === '1'
-            };
-        }
-        const qp = getParams();
-
-        // Build a small JPEG thumbnail (base64, no prefix), ~220 px wide
-        function dataURLToThumbBase64(dataURL, targetW = 220, quality = 0.7) {
-            return new Promise((resolve) => {
-                if (!dataURL) return resolve(null);
-                const img = new Image();
-                img.onload = () => {
-                    const scale = targetW / img.width;
-                    const w = targetW;
-                    const h = Math.max(1, Math.round(img.height * scale));
-                    const off = document.createElement('canvas');
-                    off.width = w; off.height = h;
-                    const x = off.getContext('2d');
-                    x.drawImage(img, 0, 0, w, h);
-                    const out = off.toDataURL('image/jpeg', quality); // "data:image/jpeg;base64,..."
-                    resolve(out.split(',')[1] || null); // return base64 only
-                };
-                img.onerror = () => resolve(null);
-                img.src = dataURL;
-            });
-        }
-
-        // Send to Apps Script (no OAuth prompts for users)
-        async function sendCentralLog(payload) {
-            if (!SCRIPT_URL) return;
-            try {
-                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                if (navigator.sendBeacon && navigator.sendBeacon(SCRIPT_URL, blob)) return;
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    keepalive: true
-                });
-            } catch (e) {
-                console.debug('Central log failed (non-fatal):', e);
-            }
-        }
-
-        /* =======================
-         * 3) DOM refs & page wiring
-         * ======================= */
         const vid = document.getElementById('vid');
         const can = document.getElementById('can');
         const ctx = can.getContext('2d');
@@ -243,46 +186,27 @@
         const retakeBtn = document.getElementById('retake');
         const flipBtn = document.getElementById('flip');
         const hatsBtn = document.getElementById('hats');
+        const uploadBtn = document.getElementById('upload');
         const downloadBtn = document.getElementById('download');
         const helpBtn = document.getElementById('help');
         const msg = document.getElementById('msg');
         const agent = document.getElementById('agent');
         const envNotice = document.getElementById('env-notice');
 
-        // Prefill name from QR param (and remember on this device)
-        if (qp.name) {
-            agent.value = qp.name;
-            try { localStorage.setItem('qcpd.name', qp.name); } catch { }
-        } else {
-            // if no ?name, prefill from prior visit for convenience
-            try {
-                const stored = localStorage.getItem('qcpd.name');
-                if (stored) agent.value = stored;
-            } catch { }
-        }
-        agent.addEventListener('change', () => {
-            const v = (agent.value || '').trim();
-            if (v) try { localStorage.setItem('qcpd.name', v); } catch { }
-        });
+        // Prefill agent
+        (() => {
+            const stored = localStorage.getItem('qcpd.name');
+            if (stored) agent.value = stored;
+        })();
 
-        // Try to auto-open camera if ?auto=1
-        window.addEventListener('DOMContentLoaded', () => {
-            if (qp.auto) setTimeout(() => openBtn.click(), 350);
-        });
-
-        /* =======================
-         * 4) Help modal
-         * ======================= */
-        const helpBackdrop = document.getElementById('help-backdrop');
-        const helpClose = document.getElementById('help-close');
-        const helpBody = document.getElementById('help-body');
-
+        // ----- Environment checks and notices -----
         function addNotice(html, warn = false) {
             const div = document.createElement('div');
             div.className = 'notice' + (warn ? ' warn' : '');
             div.innerHTML = html;
             envNotice.appendChild(div);
         }
+
         function isInAppBrowser() {
             const ua = navigator.userAgent || '';
             const isInstagram = ua.includes('Instagram');
@@ -293,6 +217,7 @@
             const isDrive = ua.includes('Drive');
             return isInstagram || isFB || isLine || isWeChat || isGmail || isDrive;
         }
+
         (function startupChecks() {
             if (!window.isSecureContext) {
                 addNotice(`<b>Camera requires HTTPS.</b><br/>Open this page over <code>https://</code>.`, true);
@@ -303,16 +228,26 @@
             if (isInAppBrowser()) {
                 addNotice(`<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.`);
             }
-            addNotice(`<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.`);
+            // Persistent reminder (as you requested)
+            addNotice(`<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.`, false);
         })();
+
+        // ----- Modal help content -----
+        const helpBackdrop = document.getElementById('help-backdrop');
+        const helpClose = document.getElementById('help-close');
+        const helpBody = document.getElementById('help-body');
 
         function platformHelpHtml() {
             const ua = navigator.userAgent || '';
             const isIOS = /iPhone|iPad|iPod/i.test(ua);
             const isAndroid = /Android/i.test(ua);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+            const isChrome = /Chrome/i.test(ua);
+
             const common = `
         <p><small>Why this happens: If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>
       `;
+
             if (isIOS) {
                 return `
           ${common}
@@ -342,6 +277,7 @@
           </ol>
         `;
             } else {
+                // Desktop
                 return `
           ${common}
           <h4>Desktop (Chrome/Edge)</h4>
@@ -358,6 +294,7 @@
         `;
             }
         }
+
         function openHelp() {
             helpBody.innerHTML = platformHelpHtml();
             helpBackdrop.style.display = 'flex';
@@ -371,9 +308,7 @@
         helpClose.onclick = closeHelp;
         helpBackdrop.addEventListener('click', (e) => { if (e.target === helpBackdrop) closeHelp(); });
 
-        /* =======================
-         * 5) Camera logic
-         * ======================= */
+        // ----- Camera state -----
         let stream, imageDataURL;
         let facing = 'environment'; // or 'user'
         let mirror = false;
@@ -381,8 +316,9 @@
 
         function applyPreviewTransforms() {
             const mirrorScale = mirror ? -1 : 1;
-            vid.style.transform = `scaleX(${mirrorScale})`;  // Only mirror the live preview
-            can.style.transform = 'none';                    // NEVER mirror canvas (keep text normal)
+            const t = `scaleX(${mirrorScale})`;
+            vid.style.transform = t;
+            can.style.transform = t;
             flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
             hatsBtn.textContent = `Hats: ${hatCount}`;
         }
@@ -395,6 +331,7 @@
         }
 
         async function getBestStream(desiredFacing) {
+            // Try facingMode first
             try {
                 return await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } },
@@ -402,6 +339,7 @@
                 });
             } catch (e) { /* fallback next */ }
 
+            // Fallback: enumerate devices (helps on iOS)
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videos = devices.filter(d => d.kind === 'videoinput');
             if (!videos.length) throw new Error('No camera device found');
@@ -415,7 +353,9 @@
             return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId } }, audio: false });
         }
 
+        // *** NEW: permission probing ***
         async function checkCameraPermissionState() {
+            // Not all browsers support Permissions API for 'camera'
             if (!navigator.permissions || !navigator.permissions.query) return null;
             try {
                 const status = await navigator.permissions.query({ name: 'camera' });
@@ -423,13 +363,6 @@
             } catch {
                 return null;
             }
-        }
-
-        function addNotice(html, warn = false) {
-            const div = document.createElement('div');
-            div.className = 'notice' + (warn ? ' warn' : '');
-            div.innerHTML = html;
-            envNotice.appendChild(div);
         }
 
         function showDeniedNoticeInline() {
@@ -442,9 +375,11 @@
 
         async function openCamera() {
             try {
+                // Probe permission if possible and pre-warn
                 const state = await checkCameraPermissionState();
                 if (state === 'denied') {
                     showDeniedNoticeInline();
+                    // We still attempt getUserMedia in case the site was just changed to allowed without reload
                 }
 
                 await stopStream();
@@ -473,6 +408,7 @@
                     return;
                 }
                 if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+                    // This is the key case: user or browser setting says “Not allowed”
                     showDeniedNoticeInline();
                     msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
                     return;
@@ -497,9 +433,7 @@
             hatsBtn.textContent = `Hats: ${hatCount}`;
         };
 
-        /* =======================
-         * 6) Overlays and capture
-         * ======================= */
+        /* ===== Helpers for portrait-safe caption & sizing (added) ===== */
         function fitFontSize(text, basePx, maxWidth, fontStack) {
             let size = Math.max(10, basePx);
             ctx.font = `${size}px ${fontStack}`;
@@ -520,6 +454,119 @@
             }
             const line2 = words.slice(i).join(' ');
             return [line1, line2];
+        }
+
+        // ----- Frame + Hats (landscape unchanged, portrait uses a separate layout) -----
+        function drawFrame(w, h, name) {
+            const isPortrait = (w / h) < 0.9; // near-square treated as portrait (safer on phones)
+
+            if (!isPortrait) {
+                // ============= LANDSCAPE (UNCHANGED) =============
+                // Top banner
+                const grad = ctx.createLinearGradient(0, 0, w, 0);
+                grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
+                ctx.fillStyle = '#cfe6f7';
+                ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
+                ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
+                // Bottom ribbon
+                ctx.fillStyle = 'rgba(16,37,54,0.92)';
+                ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
+                // Caption
+                ctx.fillStyle = '#29d49a';
+                ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
+                ctx.fillText(`Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+                // Fun accents
+                ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+                ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
+                ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
+                ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
+                ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
+                ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
+                ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
+                ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
+                return;
+            }
+
+            // ============= PORTRAIT (NEW, phone-safe) =============
+            const sideM = Math.floor(w * 0.04);
+            const innerW = w - sideM * 2;
+
+            // Smaller top banner (avoid overlapping heads)
+            const topH = Math.floor(h * 0.10);
+            const grad = ctx.createLinearGradient(0, 0, w, 0);
+            grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
+
+            // Title auto-fit
+            const title = '👑 QCPD — The Sapphire Heist';
+            const titleFontStack = `"Segoe UI", system-ui, Arial`;
+            const titleBase = Math.floor(h * 0.045);
+            const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+            ctx.font = `${titleSize}px ${titleFontStack}`;
+            ctx.fillStyle = '#cfe6f7';
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'left';
+            ctx.fillText(title, sideM, Math.floor(topH * 0.58));
+
+            // Slimmer bottom ribbon
+            const botH = Math.floor(h * 0.16);
+            const botY = h - botH;
+            ctx.fillStyle = 'rgba(16,37,54,0.92)';
+            ctx.fillRect(0, botY, w, botH);
+
+            // Caption (wrap to 2 lines if necessary)
+            const baseCaption = `Detective ${name} • Case Solved!`;
+            const extra = `The Evidence will be sent to Archives`;
+            const capFontStack = `"Segoe UI", system-ui, Arial`;
+            let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
+            ctx.font = `${capSize}px ${capFontStack}`;
+            let line1 = baseCaption, line2 = extra;
+
+            if (ctx.measureText(baseCaption).width > innerW) {
+                const [l1, l2first] = wrapTwoLines(baseCaption, innerW);
+                line1 = l1;
+                if (l2first) {
+                    const join = l2first + ' — ' + extra;
+                    if (ctx.measureText(join).width <= innerW) {
+                        line2 = join;
+                    } else if (ctx.measureText(l2first).width <= innerW) {
+                        line2 = l2first;
+                    } else {
+                        line2 = '';
+                    }
+                } else {
+                    if (ctx.measureText(extra).width > innerW) {
+                        capSize = fitFontSize(extra, capSize, innerW, capFontStack);
+                        ctx.font = `${capSize}px ${capFontStack}`;
+                    }
+                    line2 = extra;
+                }
+            } else {
+                if (ctx.measureText(extra).width > innerW) {
+                    const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
+                    if (newSize < capSize) {
+                        capSize = newSize;
+                        ctx.font = `${capSize}px ${capFontStack}`;
+                    }
+                }
+            }
+
+            ctx.fillStyle = '#29d49a';
+            ctx.textBaseline = 'alphabetic';
+            ctx.textAlign = 'left';
+            const lineGap = Math.max(4, Math.floor(capSize * 0.28));
+            const firstY = Math.floor(botY + botH * 0.45);
+            ctx.fillText(line1, sideM, firstY);
+            if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+
+            // Emojis placed away from faces
+            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+            ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
+            // ctx.fillText('✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
+            // ctx.fillText('💍', Math.floor(w - sideM - h * 0.01), Math.floor(botY - h * 0.02));
+            // ctx.fillText('🔷', Math.floor(w - sideM - h * 0.15), Math.floor(botY - h * 0.02));
+            // ctx.fillText('✨', Math.floor(w - sideM - h * 0.05), Math.floor(botY - h * 0.02));
         }
 
         function drawRoundedRectPath(ctx, x, y, w, h, r) {
@@ -567,166 +614,74 @@
             for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
         }
 
-        function drawFrame(w, h, name) {
-            const isPortrait = (w / h) < 0.9;
-
-            if (!isPortrait) {
-                // LANDSCAPE
-                const grad = ctx.createLinearGradient(0, 0, w, 0);
-                grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-                ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
-                ctx.fillStyle = '#cfe6f7';
-                ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
-                ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
-                ctx.fillStyle = 'rgba(16,37,54,0.92)';
-                ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
-                ctx.fillStyle = '#29d49a';
-                ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-                ctx.fillText(`Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
-                ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-                ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
-                ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
-                ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
-                ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
-                ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
-                ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
-                ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
-                return;
-            }
-
-            // PORTRAIT
-            const sideM = Math.floor(w * 0.04);
-            const innerW = w - sideM * 2;
-
-            const topH = Math.floor(h * 0.10);
-            const grad = ctx.createLinearGradient(0, 0, w, 0);
-            grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
-
-            const title = '👑 QCPD — The Sapphire Heist';
-            const titleFontStack = `"Segoe UI", system-ui, Arial`;
-            const titleBase = Math.floor(h * 0.045);
-            const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
-            ctx.font = `${titleSize}px ${titleFontStack}`;
-            ctx.fillStyle = '#cfe6f7';
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'left';
-            ctx.fillText(title, sideM, Math.floor(topH * 0.58));
-
-            const botH = Math.floor(h * 0.16);
-            const botY = h - botH;
-            ctx.fillStyle = 'rgba(16,37,54,0.92)';
-            ctx.fillRect(0, botY, w, botH);
-
-            const baseCaption = `Detective ${name} • Case Solved!`;
-            const extra = `The Evidence will be sent to Archives`;
-            const capFontStack = `"Segoe UI", system-ui, Arial`;
-            let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
-            ctx.font = `${capSize}px ${capFontStack}`;
-            let line1 = baseCaption, line2 = extra;
-
-            if (ctx.measureText(baseCaption).width > innerW) {
-                const [l1, l2first] = wrapTwoLines(baseCaption, innerW);
-                line1 = l1;
-                if (l2first) {
-                    const join = l2first + ' — ' + extra;
-                    if (ctx.measureText(join).width <= innerW) {
-                        line2 = join;
-                    } else if (ctx.measureText(l2first).width <= innerW) {
-                        line2 = l2first;
-                    } else {
-                        line2 = '';
-                    }
-                } else {
-                    if (ctx.measureText(extra).width > innerW) {
-                        capSize = fitFontSize(extra, capSize, innerW, capFontStack);
-                        ctx.font = `${capSize}px ${capFontStack}`;
-                    }
-                    line2 = extra;
-                }
-            } else {
-                if (ctx.measureText(extra).width > innerW) {
-                    const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
-                    if (newSize < capSize) {
-                        capSize = newSize;
-                        ctx.font = `${capSize}px ${capFontStack}`;
-                    }
-                }
-            }
-
-            ctx.fillStyle = '#29d49a';
-            ctx.textBaseline = 'alphabetic';
-            ctx.textAlign = 'left';
-            const lineGap = Math.max(4, Math.floor(capSize * 0.28));
-            const firstY = Math.floor(botY + botH * 0.45);
-            ctx.fillText(line1, sideM, firstY);
-            if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
-
-            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-            ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
-        }
-
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;
             if (!vw || !vh) return false;
             can.width = vw; can.height = vh;
-
-            // Draw mirrored live video when front camera is used
             ctx.save();
             if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
             ctx.drawImage(vid, 0, 0, vw, vh);
             ctx.restore();
-
-            // Draw overlays and text normally (never mirrored)
             const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
             drawFrame(vw, vh, name);
             drawHatsOverlay(vw, vh, hatCount);
             return true;
         }
 
-        /* =======================
-         * 7) Capture, log, download
-         * ======================= */
-        capBtn.onclick = async () => {
+        capBtn.onclick = () => {
             const ok = drawVideoToCanvas();
             if (!ok) { msg.textContent = 'Video not ready.'; return; }
-            await stopStream();
+            stopStream();
             vid.style.display = 'none'; can.style.display = 'block';
-            downloadBtn.disabled = false; retakeBtn.disabled = false;
+            uploadBtn.disabled = false; downloadBtn.disabled = false; retakeBtn.disabled = false;
             capBtn.disabled = true; flipBtn.disabled = true; hatsBtn.disabled = true;
-
-            const imageDataURL = can.toDataURL('image/jpeg', 0.92);
-            msg.textContent = 'Review the shot. You can retake or download.';
-
-            // Build the central log payload (with thumbnail) and send once
-            const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.7);
-            const payload = {
-                type: 'capture',
-                name: ((agent.value || localStorage.getItem('qcpd.name') || 'Detective').trim() || 'Detective'),
-                team: ((qp.team || 'Team Detective').trim() || 'Team Detective'),
-                event: (qp.event || '').trim(),
-                ts: Date.now(),
-                tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-                ua: navigator.userAgent || '',
-                facing,
-                hats: hatCount || 0,
-                thumbB64: thumbB64 || null,
-                thumbType: thumbB64 ? 'image/jpeg' : null
-            };
-            sendCentralLog(payload);
+            imageDataURL = can.toDataURL('image/jpeg', 0.92);
+            msg.textContent = 'Review the shot. You can retake or upload / download.';
         };
 
         retakeBtn.onclick = async () => {
             can.style.display = 'none'; vid.style.display = 'block';
-            downloadBtn.disabled = true; retakeBtn.disabled = true;
+            uploadBtn.disabled = true; downloadBtn.disabled = true; retakeBtn.disabled = true;
             capBtn.disabled = false; flipBtn.disabled = false; hatsBtn.disabled = false;
             await openCamera();
         };
 
+        // Upload flow (open Drive + save/share)
+        function dataURLToBlob(dataURL) {
+            const [hdr, b64] = dataURL.split(',');
+            const mime = (hdr.match(/data:([^;]+);base64/) || [, 'application/octet-stream'])[1];
+            const bin = atob(b64); const len = bin.length; const u8 = new Uint8Array(len);
+            for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+            return new Blob([u8], { type: mime });
+        }
+        function buildSafeFilename(agentName) {
+            const base = (agentName || '').trim() || localStorage.getItem('qcpd.name') || 'detective';
+            const safe = base.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'detective';
+            return `detective_${safe}.jpg`;
+        }
+
+        uploadBtn.onclick = async () => {
+            if (!imageDataURL) { msg.textContent = 'Capture a photo first, then upload.'; return; }
+            const folderUrl = 'https://drive.google.com/drive/folders/1uSNnX4Mpic3IHEfjuy6QVXdFTm52AIWm?usp=sharing';
+            window.open(folderUrl, '_blank', 'noopener');
+            const filename = buildSafeFilename(agent.value);
+            try {
+                const blob = dataURLToBlob(imageDataURL);
+                const file = new File([blob], filename, { type: 'image/jpeg' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'Detective Photo', text: 'Upload to Drive folder' });
+                    msg.textContent = 'Shared successfully. If you opened Drive, you can also upload there.';
+                    return;
+                }
+            } catch { }
+            const a = document.createElement('a'); a.href = imageDataURL; a.download = filename;
+            document.body.appendChild(a); a.click(); a.remove();
+            msg.textContent = 'Photo saved. Drag & drop into the opened Drive tab to upload.';
+        };
+
         downloadBtn.onclick = () => {
-            const dataUrl = can.toDataURL('image/jpeg', 0.92);
-            if (!dataUrl) { msg.textContent = 'No image to download yet.'; return; }
-            const a = document.createElement('a'); a.href = dataUrl; a.download = `qcpd_${Date.now()}.jpg`; a.click();
+            if (!imageDataURL) { msg.textContent = 'No image to download yet.'; return; }
+            const a = document.createElement('a'); a.href = imageDataURL; a.download = `qcpd_${Date.now()}.jpg`; a.click();
         };
     </script>
 </body>

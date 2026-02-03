@@ -1054,8 +1054,214 @@
     })();
   </script>
 
-  <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit (unchanged) -->
   <script>
+    /* Doorway common code box: accept 367, show success, unlock next tab, keep user on this tab */
+    (function () {
+      function enableTab(tabId) {
+        // Prefer orchestrator if present (no auto-switch)
+        try {
+          const used = !!(window.QCPD?.unlockTab?.(tabId, { autoSwitch: false }));
+          if (used) return;
+        } catch { }
+
+        // DOM fallback
+        const btn = document.querySelector(`.tab[data-tab="${tabId}"]`);
+        if (btn) {
+          btn.classList.remove('disabled');
+          btn.removeAttribute('disabled');
+          btn.setAttribute('aria-disabled', 'false');
+          btn.classList.add('qcpd-pulse');
+          setTimeout(() => btn.classList.remove('qcpd-pulse'), 1800);
+        }
+      }
+
+      function markDoorsCompleteForTelemetry() {
+        if (!document.getElementById('doors-complete')) {
+          const d = document.createElement('div');
+          d.id = 'doors-complete';
+          d.style.display = 'none';
+          document.body.appendChild(d);
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('doorsCodeInput');
+        const btn = document.getElementById('doorsCodeConfirm');
+        const status = document.getElementById('doorwayStatus');
+
+        function ok() {
+          enableTab('colorcode');
+          if (status) {
+            if (!/✅/.test(status.textContent || '')) {
+              status.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
+            }
+            status.classList.add('ok');
+          }
+          input?.classList.remove('input-bad');
+          input?.classList.add('input-ok');
+          markDoorsCompleteForTelemetry();
+        }
+
+        function bad() {
+          if (status) {
+            status.textContent = 'Not correct — try again.';
+            status.classList.remove('ok');
+          }
+          input?.classList.add('input-bad');
+          setTimeout(() => input?.classList.remove('input-bad'), 250);
+        }
+
+        btn?.addEventListener('click', () => {
+          const v = (input?.value || '').replace(/\D+/g, '');
+          if (v === '367') ok(); else bad();
+        });
+
+        input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn?.click(); });
+
+        // Also honor module/game signals if they emit completion events or attributes:
+        ['qcpd:doorsComplete', 'doorsComplete'].forEach(evt =>
+          window.addEventListener(evt, ok, { once: true })
+        );
+        const mo = new MutationObserver(() => {
+          if (document.querySelector('[data-doors-complete="true"]')) { ok(); mo.disconnect(); }
+        });
+        mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-doors-complete'] });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      let DESIGN_W = null, DESIGN_H = null, FROZEN = false;
+
+      const viewport = document.getElementById('doorsZoomViewport');
+      const host = document.getElementById('doorsHost');
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      const zoomResetBtn = document.getElementById('zoomReset');
+      const zoomFsBtn = document.getElementById('zoomFullscreen');
+      const zoomLabel = document.getElementById('zoomLabel');
+
+      const fs = document.getElementById('doorsOverlay');
+      const fsVp = document.getElementById('fsViewport');
+      const fsIn = document.getElementById('fsIn');
+      const fsOut = document.getElementById('fsOut');
+      const fsReset = document.getElementById('fsReset');
+      const fsClose = document.getElementById('fsClose');
+      const fsLabel = document.getElementById('fsLabel');
+
+      let currentScale = 1, fitScale = 1;
+      const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
+
+      function initialMeasure() {
+        if (FROZEN) return;
+        const child = host?.firstElementChild; if (!child) return;
+        const attrW = parseInt(child.getAttribute?.('width'), 10);
+        const attrH = parseInt(child.getAttribute?.('height'), 10);
+        const cssW = child.offsetWidth || 960; // unaffected by transform
+        const cssH = child.offsetHeight || 540;
+
+        DESIGN_W = (attrW > 0) ? attrW : (DESIGN_W || Math.max(720, cssW));
+        DESIGN_H = (attrH > 0) ? attrH : (DESIGN_H || Math.max(540, cssH));
+        FROZEN = (DESIGN_W && DESIGN_H);
+      }
+
+      function computeFitScale(vpElem) {
+        const vpW = vpElem.clientWidth;
+        const vpH = vpElem.clientHeight || Math.floor(window.innerHeight * 0.7);
+        if (!DESIGN_W || !DESIGN_H) initialMeasure();
+        if (!DESIGN_W || !DESIGN_H) return 1;
+        const scaleW = vpW / DESIGN_W;
+        const scaleH = (vpH - 20) / DESIGN_H;
+        return Math.max(MIN_SCALE, Math.min(scaleW, (scaleH || scaleW)));
+      }
+
+      function applyScale(scale, labelElem) {
+        currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+        if (host) {
+          host.style.transform = `scale(${currentScale})`;
+          host.style.width = `${DESIGN_W}px`;
+          host.style.height = `${DESIGN_H}px`;
+          host.style.marginLeft = host.style.marginRight = 'auto';
+        }
+        const pct = `${Math.round(currentScale * 100)}%`;
+        (labelElem || zoomLabel).textContent = pct;
+
+        if (viewport) {
+          const desiredH = DESIGN_H * currentScale + 16;
+          const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
+          viewport.style.height = `${maxH}px`;
+        }
+      }
+
+      function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
+        if (!FROZEN) initialMeasure();
+        fitScale = computeFitScale(targetVp);
+        applyScale(fitScale, labelElem);
+      }
+      function zoomBy(delta, labelElem) { applyScale(currentScale + delta, labelElem); }
+      function resetZoom(labelElem) { applyScale(fitScale, labelElem); }
+
+      zoomInBtn?.addEventListener('click', () => zoomBy(STEP, zoomLabel));
+      zoomOutBtn?.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
+      zoomResetBtn?.addEventListener('click', () => resetZoom(zoomLabel));
+
+      // Fullscreen overlay
+      let inFullscreen = false, placeholder = null;
+      function openFullscreen() {
+        if (inFullscreen) return;
+        inFullscreen = true;
+        placeholder = document.createElement('div');
+        host?.parentNode?.insertBefore(placeholder, host);
+        fsVp?.appendChild(host);
+        fs?.setAttribute('aria-hidden', 'false');
+        fitToViewport(fsVp, fsLabel);
+      }
+      function closeFullscreen() {
+        if (!inFullscreen) return;
+        inFullscreen = false;
+        fs?.setAttribute('aria-hidden', 'true');
+        if (placeholder?.parentNode) {
+          placeholder.parentNode.insertBefore(host, placeholder);
+          placeholder.remove(); placeholder = null;
+        }
+        fitToViewport(viewport, zoomLabel);
+      }
+      zoomFsBtn?.addEventListener('click', openFullscreen);
+      fsClose?.addEventListener('click', closeFullscreen);
+      fsIn?.addEventListener('click', () => zoomBy(STEP, fsLabel));
+      fsOut?.addEventListener('click', () => zoomBy(-STEP, fsLabel));
+      fsReset?.addEventListener('click', () => resetZoom(fsLabel));
+
+      // Pinch-to-zoom (viewport + fullscreen)
+      function makePinch(vp, label) {
+        let last = null;
+        function dist(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
+        vp?.addEventListener('touchstart', (e) => { if (e.touches.length === 2) last = dist(e.touches[0], e.touches[1]); }, { passive: true });
+        vp?.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && last) { const d = dist(e.touches[0], e.touches[1]); const f = d / last; last = d; applyScale(currentScale * f, label); e.preventDefault(); } }, { passive: false });
+        vp?.addEventListener('touchend', () => { last = null; }, { passive: true });
+      }
+      makePinch(viewport, zoomLabel);
+      makePinch(fsVp, fsLabel);
+
+      // Initial fit when content arrives; freeze design size after first measure
+      const injectObs = new MutationObserver(() => {
+        if (host?.firstElementChild) {
+          if (!FROZEN) initialMeasure();
+          setTimeout(() => fitToViewport(), 50);
+          injectObs.disconnect();
+        }
+      });
+      if (host) injectObs.observe(host, { childList: true, subtree: true });
+
+      // Refit on window changes (🔒 do NOT re-measure the design size again)
+      window.addEventListener('resize', () => inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel));
+      window.addEventListener('orientationchange', () => setTimeout(() => inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel), 200));
+    })();
+  </script>
+
+  <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit (unchanged) -->
+  <!-- <script>
     (function () {
       let DESIGN_W = null, DESIGN_H = null;
 
@@ -1249,7 +1455,7 @@
       window.__qcpd_openDoorFullscreen = openFullscreen;
       window.__qcpd_closeDoorFullscreen = closeFullscreen;
     })();
-  </script>
+  </script> -->
 </body>
 
 </html>

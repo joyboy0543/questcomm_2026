@@ -61,7 +61,6 @@
       }
     }
 
-    /* Centered agree row */
     .agree-row {
       display: flex;
       align-items: center;
@@ -76,7 +75,6 @@
       font-size: .95rem;
     }
 
-    /* Tab pulse (kept but unused in manual mode) */
     @keyframes qcpdPulse {
       0% {
         box-shadow: 0 0 0 0 rgba(46, 168, 255, .65);
@@ -216,7 +214,6 @@
       color: var(--ink);
     }
 
-    /* Avoid clipping inside Doorway content */
     #doorsHost {
       transform-origin: top center;
       will-change: transform;
@@ -298,11 +295,9 @@
     /* ===== Closed Doors gallery (portrait-first) ===== */
     .door-gallery {
       display: none;
-      /* JS toggles this */
       margin-top: 8px;
       gap: 10px;
       justify-items: center;
-      /* center cards */
     }
 
     .door-card {
@@ -371,7 +366,6 @@
       }
     }
 
-    /* Center the zoom shell and host */
     #doorsZoomShell {
       max-width: 980px;
       margin: 0 auto;
@@ -624,8 +618,8 @@
               They call me by many names.... but this is how I sign.<br>
             </strong> What am I?
           </li>
-          <!-- <br>
-          <li>
+          <br>
+          <!-- <li>
             What comes first sets the tone, what surrounds gives it meaning,<br>
             and what follows reveals the way forward.<br>
             Assemble them in an order, a sentence that places you in the corridor.<br>
@@ -780,508 +774,7 @@
     });
   </script>
 
-  <!-- Manual per-tab confirm handlers: write persistent success + unlock next tab (no auto-scroll/advance) -->
-  <script>
-    (function () {
-      // Add a leading green check mark if not present.
-      function ensureCheckmark(statusEl) {
-        if (!statusEl) return;
-        const txt = statusEl.textContent || '';
-        if (!/✅/.test(txt)) {
-          statusEl.textContent = ('✅ ' + txt).trim();
-        }
-        statusEl.classList.add('ok');
-      }
-
-      // Enable the next tab (robust: by data-tab, with index fallback)
-      function enableNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return null;
-        const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
-        let next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
-
-        // Fallback: if not found by data-tab, try the currently active button and enable its next sibling
-        if (!next) {
-          const activeIdx = tabs.findIndex(b => b.classList.contains('active'));
-          if (activeIdx >= 0 && activeIdx < tabs.length - 1) {
-            next = tabs[activeIdx + 1];
-          }
-        }
-
-        if (!next) return null;
-        next.classList.remove('disabled');
-        next.removeAttribute('disabled');
-        next.setAttribute('aria-disabled', 'false');
-        return next;
-      }
-
-      // Subtle next-tab highlight, no scroll/advance
-      function pulseNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return;
-        const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
-        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
-        if (!next || next.classList.contains('disabled')) return;
-        next.classList.add('qcpd-pulse');
-        setTimeout(() => next.classList.remove('qcpd-pulse'), 2200);
-      }
-
-      // Generic binder
-      function bindTabConfirm({ tabId, inputId, buttonId, statusId, correctValue, normalize }) {
-        const input = document.getElementById(inputId);
-        const button = document.getElementById(buttonId);
-        const status = document.getElementById(statusId);
-
-        function clean(v) { return (v || '').trim(); }
-        function norm(v) { v = clean(v); return normalize ? normalize(v) : v; }
-
-        function onSuccess() {
-          const next = enableNextTab(tabId);
-          pulseNextTab(tabId);
-          ensureCheckmark(status);      // keep module's message; just add ✅ and .ok
-          input?.classList.remove('input-bad');
-          input?.classList.add('input-ok');
-        }
-
-        function onFail() {
-          if (status) {
-            status.textContent = 'Not correct — try again.';
-            status.classList.remove('ok');
-          }
-          input?.classList.add('input-bad');
-          setTimeout(() => input?.classList.remove('input-bad'), 250);
-        }
-
-        button?.addEventListener('click', () => {
-          const v = norm(input?.value);
-          if (!v) return onFail();
-          if (Array.isArray(correctValue)) {
-            onFail(); // (reserved for future multi-answer)
-          } else {
-            if (v === correctValue) onSuccess(); else onFail();
-          }
-        });
-
-        input?.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') button?.click();
-        });
-      }
-
-      // === Bind the three upstream tabs with their target answers ===
-      // Cipher Photo: expected 3-digit code '243'
-      bindTabConfirm({
-        tabId: 'cipher',
-        inputId: 'cipherInput',
-        buttonId: 'cipherConfirm',
-        statusId: 'cipherStatus',
-        correctValue: '243',
-        normalize: (v) => v.replace(/\D+/g, '') // keep digits only
-      });
-
-      // Riddle 1 (Lock Screen): expected single digit '1'
-      bindTabConfirm({
-        tabId: 'riddle1',
-        inputId: 'riddle1Input',
-        buttonId: 'riddle1Confirm',
-        statusId: 'riddle1Status',
-        correctValue: '1',
-        normalize: (v) => v.replace(/\D+/g, '')
-      });
-
-      // Potion: expected number '928'
-      bindTabConfirm({
-        tabId: 'potion',
-        inputId: 'potionInput',
-        buttonId: 'potionConfirm',
-        statusId: 'potionStatus',
-        correctValue: '928',
-        normalize: (v) => v.replace(/\D+/g, '')
-      });
-
-      // Note: Doorway is wired below; Corridor uses its module confirm.
-    })();
-  </script>
-
-  <!-- MANUAL SUCCESS MODE (no auto scroll/advance; persistent inline messages) -->
-  <script>
-    (function () {
-      const MANUAL_MODE = true;
-
-      const SUCCESS_PATTERNS = [/✅/, /\bcorrect\b/i, /\bdecoded\b/i, /\bsuccess\b/i, /\bunlocked\b/i, /\bcomplete(d)?\b/i, /\bsolved\b/i];
-
-      const STATUS_TARGETS = [
-        { tab: 'cipher', el: () => document.getElementById('cipherStatus') },
-        { tab: 'riddle1', el: () => document.getElementById('riddle1Status') },
-        { tab: 'potion', el: () => document.getElementById('potionStatus') },
-        { tab: 'doors', el: () => document.getElementById('doorwayStatus') },
-        { tab: 'colorcode', el: () => document.getElementById('ringsStatus') },
-      ];
-
-      function looksSuccessful(el) {
-        if (!el) return false;
-        const txt = (el.textContent || '').trim();
-        const cls = el.className || '';
-        if (/(\bok\b|\bsuccess\b)/i.test(cls)) return true;
-        return SUCCESS_PATTERNS.some(r => r.test(txt));
-      }
-
-      function ensureCheckmark(statusEl) {
-        if (!statusEl) return;
-        const txt = statusEl.textContent || '';
-        if (!/✅/.test(txt)) {
-          statusEl.textContent = ('✅ ' + txt).trim();
-        }
-        statusEl.classList.add('ok');
-      }
-
-      function enableNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return null;
-        const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
-        let next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
-
-        if (!next) {
-          const activeIdx = tabs.findIndex(b => b.classList.contains('active'));
-          if (activeIdx >= 0 && activeIdx < tabs.length - 1) next = tabs[activeIdx + 1];
-        }
-
-        if (!next) return null;
-        next.classList.remove('disabled');
-        next.removeAttribute('disabled');
-        next.setAttribute('aria-disabled', 'false');
-        return next;
-      }
-
-      function pulseNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return;
-        const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
-        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
-        if (!next || next.classList.contains('disabled')) return;
-        next.classList.add('qcpd-pulse');
-        setTimeout(() => next.classList.remove('qcpd-pulse'), 2200);
-      }
-
-      function watchStatus(targetGetter, tabId) {
-        const el = targetGetter(); if (!el) return;
-        const obs = new MutationObserver(() => {
-          if (looksSuccessful(el)) {
-            enableNextTab(tabId);
-            pulseNextTab(tabId);
-            ensureCheckmark(el);   // keep module's text, just add ✅
-          }
-        });
-        obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-      }
-
-      function markDoorsCompleteBanner() {
-        if (!document.getElementById('doors-complete')) {
-          const d = document.createElement('div');
-          d.id = 'doors-complete';
-          d.style.display = 'none';
-          document.body.appendChild(d);
-        }
-      }
-
-      function watchDoorsSignals() {
-        const host = document.getElementById('doorsHost');
-
-        function handleDoorsManualSuccess() {
-          enableNextTab('doors');
-          pulseNextTab('doors');
-          const status = document.getElementById('doorwayStatus');
-          if (status) ensureCheckmark(status);
-          markDoorsCompleteBanner(); // telemetry marker
-        }
-
-        ['qcpd:doorsComplete', 'doorsComplete'].forEach(evtName => {
-          window.addEventListener(evtName, () => { if (MANUAL_MODE) handleDoorsManualSuccess(); }, { once: true });
-        });
-
-        const attrObs = new MutationObserver(() => {
-          const el = document.querySelector('[data-doors-complete="true"]');
-          if (el && MANUAL_MODE) { handleDoorsManualSuccess(); attrObs.disconnect(); }
-        });
-        attrObs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['data-doors-complete'] });
-        const firstAttr = document.querySelector('[data-doors-complete="true"]');
-        if (firstAttr && MANUAL_MODE) { handleDoorsManualSuccess(); }
-
-        if (host) {
-          const hostObs = new MutationObserver(() => {
-            const txt = (host.innerText || host.textContent || '').trim();
-            if (SUCCESS_PATTERNS.some(r => r.test(txt)) && MANUAL_MODE) { handleDoorsManualSuccess(); hostObs.disconnect(); }
-          });
-          hostObs.observe(host, { childList: true, subtree: true, characterData: true });
-          const initialTxt = (host.innerText || host.textContent || '').trim();
-          if (initialTxt && SUCCESS_PATTERNS.some(r => r.test(initialTxt)) && MANUAL_MODE) {
-            handleDoorsManualSuccess();
-          }
-        }
-      }
-
-      /* Wire the common Doorway code box; hide per-game confirm boxes */
-      function wireDoorsCodeBoxAndHidePerGameInputs() {
-        const input = document.getElementById('doorsCodeInput');
-        const btn = document.getElementById('doorsCodeConfirm');
-        const status = document.getElementById('doorwayStatus');
-        const host = document.getElementById('doorsHost');
-
-        function clean(v) { return (v || '').replace(/\D+/g, ''); }
-
-        function successUX() {
-          enableNextTab('doors');
-          pulseNextTab('doors');
-          if (status) ensureCheckmark(status);  // do not overwrite any message; just add ✅
-          input?.classList.remove('input-bad');
-          input?.classList.add('input-ok');
-          markDoorsCompleteBanner(); // telemetry
-        }
-
-        btn?.addEventListener('click', () => {
-          const v = clean(input?.value);
-          if (v === '367') {
-            successUX();
-          } else {
-            if (status) {
-              status.textContent = 'Not correct — try again.';
-              status.classList.remove('ok');
-            }
-            input?.classList.add('input-bad');
-            setTimeout(() => input?.classList.remove('input-bad'), 250);
-          }
-        });
-
-        input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn?.click(); });
-
-        // Hide per-game inputs inside Doorway content (safety net)
-        const KILL_SELECTORS = [
-          '.digit-row',
-          '[id*="Confirm"]',
-          '[data-role="confirm"]',
-          '.confirm',
-          'input[type="text"]',
-          'input[type="number"]',
-          '.entry',
-          'button.confirm'
-        ];
-        function nukePerGameInputs(root) {
-          try { KILL_SELECTORS.forEach(sel => root.querySelectorAll(sel).forEach(el => el.style.display = 'none')); } catch { }
-        }
-        if (host) {
-          nukePerGameInputs(host);
-          const mo = new MutationObserver(muts => muts.forEach(m => m.addedNodes && m.addedNodes.forEach(n => {
-            if (n.nodeType === 1) nukePerGameInputs(n);
-          })));
-          mo.observe(host, { childList: true, subtree: true });
-        }
-      }
-
-      window.addEventListener('DOMContentLoaded', () => {
-        STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
-        watchDoorsSignals();
-        wireDoorsCodeBoxAndHidePerGameInputs();
-      });
-    })();
-  </script>
-
-  <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit -->
-  <script>
-    (function () {
-      let DESIGN_W = null, DESIGN_H = null;
-
-      const viewport = document.getElementById('doorsZoomViewport');
-      const host = document.getElementById('doorsHost');
-      const zoomInBtn = document.getElementById('zoomIn');
-      const zoomOutBtn = document.getElementById('zoomOut');
-      const zoomResetBtn = document.getElementById('zoomReset');
-      const zoomFsBtn = document.getElementById('zoomFullscreen');
-      const zoomLabel = document.getElementById('zoomLabel');
-      const orientHint = document.getElementById('orientHint');
-
-      const fs = document.getElementById('doorsOverlay');
-      const fsVp = document.getElementById('fsViewport');
-      const fsIn = document.getElementById('fsIn');
-      const fsOut = document.getElementById('fsOut');
-      const fsReset = document.getElementById('fsReset');
-      const fsClose = document.getElementById('fsClose');
-      const fsLabel = document.getElementById('fsLabel');
-
-      let currentScale = 1, fitScale = 1;
-      const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
-
-      function measureDesignSize() {
-        const child = host.firstElementChild; if (!child) return;
-        const rect = child.getBoundingClientRect();
-        const cssW = child.offsetWidth || rect.width;
-        const cssH = child.offsetHeight || rect.height;
-        const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
-        const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
-        DESIGN_W = Math.max(attrW || 0, cssW || 0, 720) || 720;
-        DESIGN_H = Math.max(attrH || 0, cssH || 0, 540) || 540;
-      }
-
-      function computeFitScale(vpElem) {
-        const vpW = vpElem.clientWidth;
-        const vpH = vpElem.clientHeight || Math.floor(window.innerHeight * 0.7);
-        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
-        if (!DESIGN_W || !DESIGN_H) return 1;
-        const scaleW = vpW / DESIGN_W;
-        const scaleH = (vpH - 20) / DESIGN_H;
-        return Math.max(MIN_SCALE, Math.min(scaleW, (scaleH || scaleW)));
-      }
-
-      function applyScale(scale, labelElem) {
-        currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-        host.style.transform = `scale(${currentScale})`;
-        host.style.width = `${DESIGN_W}px`;
-        host.style.height = `${DESIGN_H}px`;
-        const pct = `${Math.round(currentScale * 100)}%`;
-        (labelElem || zoomLabel).textContent = pct;
-
-        host.style.marginLeft = host.style.marginRight = 'auto';
-        const desiredH = DESIGN_H * currentScale + 16;
-        const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
-        viewport.style.height = maxH + 'px';
-      }
-
-      function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
-        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
-        fitScale = computeFitScale(targetVp);
-        applyScale(fitScale, labelElem);
-        maybeShowOrientHint();
-      }
-
-      function zoomBy(delta, labelElem) { applyScale(currentScale + delta, labelElem); }
-      function resetZoom(labelElem) { applyScale(fitScale, labelElem); }
-
-      function maybeShowOrientHint() {
-        const isNarrow = window.innerWidth < 420;
-        const tight = fitScale < 0.7;
-        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
-      }
-
-      zoomInBtn.addEventListener('click', () => zoomBy(STEP, zoomLabel));
-      zoomOutBtn.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
-      zoomResetBtn.addEventListener('click', () => resetZoom(zoomLabel));
-
-      // Pinch-to-zoom
-      let lastTouchDist = null;
-      viewport.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) lastTouchDist = distance(e.touches[0], e.touches[1]);
-      }, { passive: true });
-      viewport.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2 && lastTouchDist) {
-          const d = distance(e.touches[0], e.touches[1]);
-          const factor = d / lastTouchDist;
-          lastTouchDist = d;
-          applyScale(currentScale * factor, zoomLabel);
-          e.preventDefault();
-        }
-      }, { passive: false });
-      viewport.addEventListener('touchend', (event) => {
-        if (event.touches && event.touches.length < 2) lastTouchDist = null;
-      });
-
-      function distance(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
-
-      /* Fullscreen overlay for phones */
-      let inFullscreen = false, placeholder = null;
-      function openFullscreen() {
-        if (inFullscreen) return;
-        inFullscreen = true;
-        placeholder = document.createElement('div');
-        host.parentNode.insertBefore(placeholder, host);
-        fsVp.appendChild(host);
-        fs.setAttribute('aria-hidden', 'false');
-
-        fitToViewport(fsVp, fsLabel);
-        bindFsGestures();
-      }
-      function closeFullscreen() {
-        if (!inFullscreen) return;
-        inFullscreen = false;
-        fs.setAttribute('aria-hidden', 'true');
-        if (placeholder && placeholder.parentNode) {
-          placeholder.parentNode.insertBefore(host, placeholder);
-          placeholder.remove(); placeholder = null;
-        }
-        fitToViewport(viewport, zoomLabel);
-        unbindFsGestures();
-      }
-
-      document.getElementById('zoomFullscreen').addEventListener('click', openFullscreen);
-      document.getElementById('fsClose').addEventListener('click', closeFullscreen);
-      document.getElementById('fsIn').addEventListener('click', () => zoomBy(STEP, fsLabel));
-      document.getElementById('fsOut').addEventListener('click', () => zoomBy(-STEP, fsLabel));
-      document.getElementById('fsReset').addEventListener('click', () => resetZoom(fsLabel));
-
-      let fsLastTouchDist = null;
-      function bindFsGestures() {
-        fsVp.addEventListener('touchstart', fsStart, { passive: true });
-        fsVp.addEventListener('touchmove', fsMove, { passive: false });
-        fsVp.addEventListener('touchend', fsEnd, { passive: true });
-      }
-      function unbindFsGestures() {
-        fsVp.removeEventListener('touchstart', fsStart);
-        fsVp.removeEventListener('touchmove', fsMove);
-        fsVp.removeEventListener('touchend', fsEnd);
-      }
-      function fsStart(e) { if (e.touches.length === 2) fsLastTouchDist = distance(e.touches[0], e.touches[1]); }
-      function fsMove(e) {
-        if (e.touches.length === 2 && fsLastTouchDist) {
-          const d = distance(e.touches[0], e.touches[1]);
-          const factor = d / fsLastTouchDist;
-          fsLastTouchDist = d;
-          applyScale(currentScale * factor, fsLabel);
-          e.preventDefault();
-        }
-      }
-      function fsEnd() { fsLastTouchDist = null; }
-
-      (function autoEnterFsOnSmallPhone() {
-        const tabs = document.getElementById('tabs');
-        if (!tabs) return;
-        tabs.addEventListener('click', (e) => {
-          const btn = e.target.closest('button.tab');
-          if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
-            setTimeout(() => { if (!host.firstElementChild) return; openFullscreen(); }, 200);
-          }
-        });
-      })();
-
-      window.addEventListener('resize', () => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
-      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); }, 200));
-
-      const injectObs = new MutationObserver(() => {
-        if (host.firstElementChild) {
-          setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
-          injectObs.disconnect();
-        }
-      });
-      injectObs.observe(host, { childList: true, subtree: true });
-
-      let ro = null;
-      function attachResizeObserver() {
-        if (!host.firstElementChild || ro) return;
-        ro = new ResizeObserver(() => {
-          measureDesignSize();
-          inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel);
-        });
-        ro.observe(host.firstElementChild);
-      }
-      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
-      subtreeObs.observe(host, { childList: true, subtree: true });
-
-      if (host.firstElementChild) {
-        setTimeout(() => { measureDesignSize(); fitToViewport(); attachResizeObserver(); }, 50);
-      }
-
-      window.__qcpd_openDoorFullscreen = openFullscreen;
-      window.__qcpd_closeDoorFullscreen = closeFullscreen;
-    })();
-  </script>
-
-  <!-- CLOSED DOORS GALLERY CONTROLLER -->
+  <!-- CLOSED DOORS GALLERY CONTROLLER (unchanged) -->
   <script>
     (function () {
       const host = document.getElementById('doorsHost');
@@ -1484,6 +977,277 @@
         const active = document.querySelector('.tab.active');
         if (active?.dataset.tab === 'cipher') setTimeout(tryOpenCipherOnce, 150);
       });
+    })();
+  </script>
+
+  <!-- ✅ FAIL-SAFE: Cipher confirm unlock (robust, no auto-advance, keeps module text) -->
+  <script>
+    (function () {
+      function enableNextTab(currentTabId, targetTabId) {
+        // Prefer orchestrator if available (no auto-switch)
+        try {
+          const used = !!(window.QCPD?.unlockTab?.(targetTabId, { autoSwitch: false }));
+          if (used) return true;
+        } catch { /* ignore */ }
+
+        // DOM fallback (class/attrs)
+        const row = document.getElementById('tabs'); if (!row) return false;
+        const nextBtn = row.querySelector(`button.tab[data-tab="${targetTabId}"]`);
+        if (!nextBtn) return false;
+        nextBtn.classList.remove('disabled');
+        nextBtn.removeAttribute('disabled');
+        nextBtn.setAttribute('aria-disabled', 'false');
+
+        // Subtle highlight (no scroll / no click)
+        nextBtn.classList.add('qcpd-pulse');
+        setTimeout(() => nextBtn.classList.remove('qcpd-pulse'), 1800);
+        return true;
+      }
+
+      function prefixCheck(statusEl) {
+        if (!statusEl) return;
+        const t = statusEl.textContent || '';
+        if (!/✅/.test(t)) statusEl.textContent = (t ? `✅ ${t}` : '✅ The next section has been unlocked, kindly proceed to it.');
+        statusEl.classList.add('ok');
+      }
+
+      function cleanDigits(v) { return (v || '').replace(/\D+/g, ''); }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('cipherInput');
+        const btn = document.getElementById('cipherConfirm');
+        const status = document.getElementById('cipherStatus');
+
+        if (!btn) return;
+
+        function onSuccess() {
+          // Unlock riddle1 and decorate status without moving tabs
+          enableNextTab('cipher', 'riddle1');
+          prefixCheck(status);
+          input?.classList.remove('input-bad');
+          input?.classList.add('input-ok');
+        }
+        function onFail() {
+          if (status) { status.textContent = 'Not correct — try again.'; status.classList.remove('ok'); }
+          input?.classList.add('input-bad');
+          setTimeout(() => input?.classList.remove('input-bad'), 250);
+        }
+
+        btn.addEventListener('click', () => {
+          const v = cleanDigits(input?.value);
+          if (!v) return onFail();
+          if (v === '243') onSuccess(); else onFail();
+        });
+
+        input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+
+        // Also handle the "already solved" resume scenario defensively
+        try {
+          const saved = (window.QCPD?.load?.() || {}).cipher;
+          const savedVal = (saved && typeof saved === 'object') ? saved.value : saved;
+          if (savedVal === '243') {
+            if (input) input.value = '243';
+            onSuccess();
+          }
+        } catch { }
+      });
+    })();
+  </script>
+
+  <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit (unchanged) -->
+  <script>
+    (function () {
+      let DESIGN_W = null, DESIGN_H = null;
+
+      const viewport = document.getElementById('doorsZoomViewport');
+      const host = document.getElementById('doorsHost');
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      const zoomResetBtn = document.getElementById('zoomReset');
+      const zoomFsBtn = document.getElementById('zoomFullscreen');
+      const zoomLabel = document.getElementById('zoomLabel');
+      const orientHint = document.getElementById('orientHint');
+
+      const fs = document.getElementById('doorsOverlay');
+      const fsVp = document.getElementById('fsViewport');
+      const fsIn = document.getElementById('fsIn');
+      const fsOut = document.getElementById('fsOut');
+      const fsReset = document.getElementById('fsReset');
+      const fsClose = document.getElementById('fsClose');
+      const fsLabel = document.getElementById('fsLabel');
+
+      let currentScale = 1, fitScale = 1;
+      const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
+
+      function measureDesignSize() {
+        const child = host.firstElementChild; if (!child) return;
+        const rect = child.getBoundingClientRect();
+        const cssW = child.offsetWidth || rect.width;
+        const cssH = child.offsetHeight || rect.height;
+        const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
+        const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
+        DESIGN_W = Math.max(attrW || 0, cssW || 0, 720) || 720;
+        DESIGN_H = Math.max(attrH || 0, cssH || 0, 540) || 540;
+      }
+
+      function computeFitScale(vpElem) {
+        const vpW = vpElem.clientWidth;
+        const vpH = vpElem.clientHeight || Math.floor(window.innerHeight * 0.7);
+        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
+        if (!DESIGN_W || !DESIGN_H) return 1;
+        const scaleW = vpW / DESIGN_W;
+        const scaleH = (vpH - 20) / DESIGN_H;
+        return Math.max(MIN_SCALE, Math.min(scaleW, (scaleH || scaleW)));
+      }
+
+      function applyScale(scale, labelElem) {
+        currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+        host.style.transform = `scale(${currentScale})`;
+        host.style.width = `${DESIGN_W}px`;
+        host.style.height = `${DESIGN_H}px`;
+        const pct = `${Math.round(currentScale * 100)}%`;
+        (labelElem || zoomLabel).textContent = pct;
+
+        host.style.marginLeft = host.style.marginRight = 'auto';
+        const desiredH = DESIGN_H * currentScale + 16;
+        const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
+        viewport.style.height = maxH + 'px';
+      }
+
+      function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
+        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
+        fitScale = computeFitScale(targetVp);
+        applyScale(fitScale, labelElem);
+        maybeShowOrientHint();
+      }
+
+      function zoomBy(delta, labelElem) { applyScale(currentScale + delta, labelElem); }
+      function resetZoom(labelElem) { applyScale(fitScale, labelElem); }
+
+      function maybeShowOrientHint() {
+        const isNarrow = window.innerWidth < 420;
+        const tight = fitScale < 0.7;
+        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
+      }
+
+      zoomInBtn.addEventListener('click', () => zoomBy(STEP, zoomLabel));
+      zoomOutBtn.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
+      zoomResetBtn.addEventListener('click', () => resetZoom(zoomLabel));
+      document.getElementById('zoomFullscreen').addEventListener('click', openFullscreen);
+
+      // Pinch-to-zoom
+      let lastTouchDist = null;
+      viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) lastTouchDist = distance(e.touches[0], e.touches[1]);
+      }, { passive: true });
+      viewport.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && lastTouchDist) {
+          const d = distance(e.touches[0], e.touches[1]);
+          const factor = d / lastTouchDist;
+          lastTouchDist = d;
+          applyScale(currentScale * factor, zoomLabel);
+          e.preventDefault();
+        }
+      }, { passive: false });
+      viewport.addEventListener('touchend', (event) => {
+        if (event.touches && event.touches.length < 2) lastTouchDist = null;
+      });
+
+      function distance(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
+
+      /* Fullscreen overlay for phones */
+      let inFullscreen = false, placeholder = null;
+      function openFullscreen() {
+        if (inFullscreen) return;
+        inFullscreen = true;
+        placeholder = document.createElement('div');
+        host.parentNode.insertBefore(placeholder, host);
+        fsVp.appendChild(host);
+        fs.setAttribute('aria-hidden', 'false');
+
+        fitToViewport(fsVp, fsLabel);
+        bindFsGestures();
+      }
+      function closeFullscreen() {
+        if (!inFullscreen) return;
+        inFullscreen = false;
+        fs.setAttribute('aria-hidden', 'true');
+        if (placeholder && placeholder.parentNode) {
+          placeholder.parentNode.insertBefore(host, placeholder);
+          placeholder.remove(); placeholder = null;
+        }
+        fitToViewport(viewport, zoomLabel);
+        unbindFsGestures();
+      }
+
+      document.getElementById('fsClose').addEventListener('click', closeFullscreen);
+      document.getElementById('fsIn').addEventListener('click', () => zoomBy(STEP, fsLabel));
+      document.getElementById('fsOut').addEventListener('click', () => zoomBy(-STEP, fsLabel));
+      document.getElementById('fsReset').addEventListener('click', () => resetZoom(fsLabel));
+
+      let fsLastTouchDist = null;
+      function bindFsGestures() {
+        fsVp.addEventListener('touchstart', fsStart, { passive: true });
+        fsVp.addEventListener('touchmove', fsMove, { passive: false });
+        fsVp.addEventListener('touchend', fsEnd, { passive: true });
+      }
+      function unbindFsGestures() {
+        fsVp.removeEventListener('touchstart', fsStart);
+        fsVp.removeEventListener('touchmove', fsMove);
+        fsVp.removeEventListener('touchend', fsEnd);
+      }
+      function fsStart(e) { if (e.touches.length === 2) fsLastTouchDist = distance(e.touches[0], e.touches[1]); }
+      function fsMove(e) {
+        if (e.touches.length === 2 && fsLastTouchDist) {
+          const d = distance(e.touches[0], e.touches[1]);
+          const factor = d / fsLastTouchDist;
+          fsLastTouchDist = d;
+          applyScale(currentScale * factor, fsLabel);
+          e.preventDefault();
+        }
+      }
+      function fsEnd() { fsLastTouchDist = null; }
+
+      (function autoEnterFsOnSmallPhone() {
+        const tabs = document.getElementById('tabs');
+        if (!tabs) return;
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('button.tab');
+          if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
+            setTimeout(() => { if (!host.firstElementChild) return; openFullscreen(); }, 200);
+          }
+        });
+      })();
+
+      window.addEventListener('resize', () => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
+      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); }, 200));
+
+      const injectObs = new MutationObserver(() => {
+        if (host.firstElementChild) {
+          setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
+          injectObs.disconnect();
+        }
+      });
+      injectObs.observe(host, { childList: true, subtree: true });
+
+      let ro = null;
+      function attachResizeObserver() {
+        if (!host.firstElementChild || ro) return;
+        ro = new ResizeObserver(() => {
+          measureDesignSize();
+          inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel);
+        });
+        ro.observe(host.firstElementChild);
+      }
+      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
+      subtreeObs.observe(host, { childList: true, subtree: true });
+
+      if (host.firstElementChild) {
+        setTimeout(() => { measureDesignSize(); fitToViewport(); attachResizeObserver(); }, 50);
+      }
+
+      window.__qcpd_openDoorFullscreen = openFullscreen;
+      window.__qcpd_closeDoorFullscreen = closeFullscreen;
     })();
   </script>
 </body>

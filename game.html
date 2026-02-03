@@ -350,14 +350,6 @@
       font-size: .9rem;
     }
 
-    .door-card .door-go {
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid #243546;
-      background: #102536;
-      color: #fff;
-    }
-
     @media (orientation: portrait) {
       html.dg-ready #doorsZoomShell {
         display: none;
@@ -454,9 +446,9 @@
       <!-- Tabs -->
       <div class="tabs" id="tabs">
         <button class="tab active" data-tab="briefing">Briefing</button>
-        <button class="tab disabled" data-tab="cipher">Lindholmen River-view Photo</button>
+        <button class="tab disabled" data-tab="cipher">Lindholmen River View Photo</button>
         <button class="tab disabled" data-tab="riddle1">Lock Screen</button>
-        <button class="tab disabled" data-tab="potion">Evidence Note on home-screen</button>
+        <button class="tab disabled" data-tab="potion">Evidence Note on HomeScreen</button>
         <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
         <button class="tab disabled" data-tab="colorcode">Corridor Clue</button>
         <button class="tab disabled" data-tab="findings">Findings</button>
@@ -798,12 +790,21 @@
         statusEl.classList.add('ok');
       }
 
-      // Enable the next tab (direct)
+      // Enable the next tab (robust: by data-tab, with index fallback)
       function enableNextTab(currentTabId) {
         const row = document.getElementById('tabs'); if (!row) return;
         const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
-        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
+        let next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+
+        // Fallback: if not found by data-tab, try finding the active button and enabling its next sibling
+        if (!next) {
+          const activeIdx = tabs.findIndex(b => b.classList.contains('active'));
+          if (activeIdx >= 0 && activeIdx < tabs.length - 1) {
+            next = tabs[activeIdx + 1];
+          }
+        }
+
         if (!next) return;
         next.classList.remove('disabled');
         next.removeAttribute('disabled');
@@ -916,8 +917,15 @@
       function enableNextTab(currentTabId) {
         const row = document.getElementById('tabs'); if (!row) return;
         const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
-        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
+        let next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+
+        // Fallback by active index if needed
+        if (!next) {
+          const activeIdx = tabs.findIndex(b => b.classList.contains('active'));
+          if (activeIdx >= 0 && activeIdx < tabs.length - 1) next = tabs[activeIdx + 1];
+        }
+
         if (!next) return;
         next.classList.remove('disabled');
         next.removeAttribute('disabled');

@@ -159,7 +159,8 @@
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
-        <p id="msg2" class="hint">Downloading the photo will be private to your device.</p>
+        <p id="msg2" class="hint">Downloading the photo will be private to your device. Kindly share this with Emma C.,
+            to keep track of the participation. Thank you, hope you had fun! 😊 🦄 </p>
     </div>
 
     <!-- Help modal -->
@@ -537,7 +538,7 @@
                 ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
                 ctx.fillStyle = '#29d49a';
                 ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-                ctx.fillText(`Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+                ctx.fillText(`🦄 Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
                 ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
                 ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
                 ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
@@ -573,7 +574,7 @@
             ctx.fillStyle = 'rgba(16,37,54,0.92)';
             ctx.fillRect(0, botY, w, botH);
 
-            const baseCaption = `Detective ${name} • Case Solved!`;
+            const baseCaption = `🦄 Detective ${name} • Case Solved!`;
             const extra = `The Evidence will be sent to Archives`;
             const capFontStack = `"Segoe UI", system-ui, Arial`;
             let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);

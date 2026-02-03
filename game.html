@@ -783,21 +783,24 @@
   <!-- Manual per-tab confirm handlers: write persistent success + unlock next tab (no auto-scroll/advance) -->
   <script>
     (function () {
-      // Standard inline success writer
-      function writeInlineSuccess(statusEl) {
+      // Add a leading green check mark if not present.
+      function ensureCheckmark(statusEl) {
         if (!statusEl) return;
-        statusEl.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
+        const txt = statusEl.textContent || '';
+        if (!/✅/.test(txt)) {
+          statusEl.textContent = ('✅ ' + txt).trim();
+        }
         statusEl.classList.add('ok');
       }
 
       // Enable the next tab (robust: by data-tab, with index fallback)
       function enableNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return;
+        const row = document.getElementById('tabs'); if (!row) return null;
         const tabs = Array.from(row.querySelectorAll('button.tab'));
         const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
         let next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
 
-        // Fallback: if not found by data-tab, try finding the active button and enabling its next sibling
+        // Fallback: if not found by data-tab, try the currently active button and enable its next sibling
         if (!next) {
           const activeIdx = tabs.findIndex(b => b.classList.contains('active'));
           if (activeIdx >= 0 && activeIdx < tabs.length - 1) {
@@ -805,10 +808,22 @@
           }
         }
 
-        if (!next) return;
+        if (!next) return null;
         next.classList.remove('disabled');
         next.removeAttribute('disabled');
         next.setAttribute('aria-disabled', 'false');
+        return next;
+      }
+
+      // Subtle next-tab highlight, no scroll/advance
+      function pulseNextTab(currentTabId) {
+        const row = document.getElementById('tabs'); if (!row) return;
+        const tabs = Array.from(row.querySelectorAll('button.tab'));
+        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
+        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        if (!next || next.classList.contains('disabled')) return;
+        next.classList.add('qcpd-pulse');
+        setTimeout(() => next.classList.remove('qcpd-pulse'), 2200);
       }
 
       // Generic binder
@@ -821,9 +836,9 @@
         function norm(v) { v = clean(v); return normalize ? normalize(v) : v; }
 
         function onSuccess() {
-          enableNextTab(tabId);
-          writeInlineSuccess(status);
-          // also add ok style on input for UX
+          const next = enableNextTab(tabId);
+          pulseNextTab(tabId);
+          ensureCheckmark(status);      // keep module's message; just add ✅ and .ok
           input?.classList.remove('input-bad');
           input?.classList.add('input-ok');
         }
@@ -841,7 +856,7 @@
           const v = norm(input?.value);
           if (!v) return onFail();
           if (Array.isArray(correctValue)) {
-            onFail(); // not used here; reserve if we later support multiple answers
+            onFail(); // (reserved for future multi-answer)
           } else {
             if (v === correctValue) onSuccess(); else onFail();
           }
@@ -883,20 +898,17 @@
         normalize: (v) => v.replace(/\D+/g, '')
       });
 
-      // Note: Doorway is already wired elsewhere in game.html to accept '367' and keep user on the same tab.
-      // The Corridor (colorcode) uses its own module confirmation; if you want manual confirm there too, tell me the exact expected input and I’ll wire it the same way.
+      // Note: Doorway is wired below; Corridor uses its module confirm.
     })();
   </script>
 
   <!-- MANUAL SUCCESS MODE (no auto scroll/advance; persistent inline messages) -->
   <script>
     (function () {
-      // Enable manual mode globally (affects all tabs)
       const MANUAL_MODE = true;
 
       const SUCCESS_PATTERNS = [/✅/, /\bcorrect\b/i, /\bdecoded\b/i, /\bsuccess\b/i, /\bunlocked\b/i, /\bcomplete(d)?\b/i, /\bsolved\b/i];
 
-      // Map each tab to its status element getter (so we know where to write the message)
       const STATUS_TARGETS = [
         { tab: 'cipher', el: () => document.getElementById('cipherStatus') },
         { tab: 'riddle1', el: () => document.getElementById('riddle1Status') },
@@ -913,46 +925,55 @@
         return SUCCESS_PATTERNS.some(r => r.test(txt));
       }
 
-      // Enable next tab
+      function ensureCheckmark(statusEl) {
+        if (!statusEl) return;
+        const txt = statusEl.textContent || '';
+        if (!/✅/.test(txt)) {
+          statusEl.textContent = ('✅ ' + txt).trim();
+        }
+        statusEl.classList.add('ok');
+      }
+
       function enableNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return;
+        const row = document.getElementById('tabs'); if (!row) return null;
         const tabs = Array.from(row.querySelectorAll('button.tab'));
         const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
         let next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
 
-        // Fallback by active index if needed
         if (!next) {
           const activeIdx = tabs.findIndex(b => b.classList.contains('active'));
           if (activeIdx >= 0 && activeIdx < tabs.length - 1) next = tabs[activeIdx + 1];
         }
 
-        if (!next) return;
+        if (!next) return null;
         next.classList.remove('disabled');
         next.removeAttribute('disabled');
         next.setAttribute('aria-disabled', 'false');
+        return next;
       }
 
-      // Standard inline success message (persistent)
-      function writeInlineSuccess(tabId, statusEl) {
-        const el = statusEl || (STATUS_TARGETS.find(x => x.tab === tabId)?.el?.() || null);
-        if (!el) return;
-        el.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
-        el.classList.add('ok');
+      function pulseNextTab(currentTabId) {
+        const row = document.getElementById('tabs'); if (!row) return;
+        const tabs = Array.from(row.querySelectorAll('button.tab'));
+        const idx = tabs.findIndex(b => (b.dataset.tab || '').trim() === currentTabId);
+        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        if (!next || next.classList.contains('disabled')) return;
+        next.classList.add('qcpd-pulse');
+        setTimeout(() => next.classList.remove('qcpd-pulse'), 2200);
       }
 
-      // Watch a status element and, when it looks successful, enable next tab and write message
       function watchStatus(targetGetter, tabId) {
         const el = targetGetter(); if (!el) return;
         const obs = new MutationObserver(() => {
           if (looksSuccessful(el)) {
             enableNextTab(tabId);
-            writeInlineSuccess(tabId, el);
+            pulseNextTab(tabId);
+            ensureCheckmark(el);   // keep module's text, just add ✅
           }
         });
         obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
       }
 
-      // Doorway: telemetry marker helper (used by code box and any module signals)
       function markDoorsCompleteBanner() {
         if (!document.getElementById('doors-complete')) {
           const d = document.createElement('div');
@@ -962,14 +983,15 @@
         }
       }
 
-      // Doorway signals (custom events / attributes / text watchers) – manual behavior
       function watchDoorsSignals() {
         const host = document.getElementById('doorsHost');
 
         function handleDoorsManualSuccess() {
           enableNextTab('doors');
-          writeInlineSuccess('doors');
-          markDoorsCompleteBanner(); // keep telemetry working
+          pulseNextTab('doors');
+          const status = document.getElementById('doorwayStatus');
+          if (status) ensureCheckmark(status);
+          markDoorsCompleteBanner(); // telemetry marker
         }
 
         ['qcpd:doorsComplete', 'doorsComplete'].forEach(evtName => {
@@ -993,7 +1015,6 @@
           const initialTxt = (host.innerText || host.textContent || '').trim();
           if (initialTxt && SUCCESS_PATTERNS.some(r => r.test(initialTxt)) && MANUAL_MODE) {
             handleDoorsManualSuccess();
-            // don't disconnect here; if modules re-render, it will be set again harmlessly
           }
         }
       }
@@ -1009,10 +1030,8 @@
 
         function successUX() {
           enableNextTab('doors');
-          if (status) {
-            status.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
-            status.classList.add('ok');
-          }
+          pulseNextTab('doors');
+          if (status) ensureCheckmark(status);  // do not overwrite any message; just add ✅
           input?.classList.remove('input-bad');
           input?.classList.add('input-ok');
           markDoorsCompleteBanner(); // telemetry
@@ -1058,10 +1077,8 @@
       }
 
       window.addEventListener('DOMContentLoaded', () => {
-        // Wire success watchers for every tab in manual mode
         STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
-
-        watchDoorsSignals();               // Door signals honor manual behavior
+        watchDoorsSignals();
         wireDoorsCodeBoxAndHidePerGameInputs();
       });
     })();

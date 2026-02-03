@@ -36,7 +36,7 @@
 
   function solved(out, silent = false) {
     // keep your original success line as-is
-    out.textContent = 'Phrase accepted and the data from the phone is neutralized. Findings are now complete. Over!';
+    out.textContent = '✅ Phrase accepted and the data from the phone is neutralized. Findings are now complete. Over!';
     // persist + unlock (no auto-switch)
     window.QCPD?.save(KEY, ANSWER_WITH_SPACES);
 

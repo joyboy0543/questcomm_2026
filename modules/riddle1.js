@@ -3,7 +3,7 @@
     const KEY = 'riddle1', ANSWER = '1';
 
     function solved(out) {
-        out.textContent = 'Good job!. The first step is secured, let\'s carefully move to the next part.';
+        out.textContent = '✅ Good job, Detective!. That seems correct! Solving this has revealed a code in itself: ❌❌☑️❌. This might be useful for later, let\'s note this and move to the next section.';
         window.QCPD?.save(KEY, ANSWER);
         window.QCPD?.radio('Lock screen Unlocked: Digit recorded. Over!');
 

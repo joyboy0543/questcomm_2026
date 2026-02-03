@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <!-- Allow pinch zoom for accessibility on phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <!-- Strong no-cache hints (best-effort without server headers) -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>Evidence - QCPD</title>
+
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="doors.css" />
+
+    <!-- Minimal, additive styles (no conflicts) -->
+    <style>
+        /* ===== Highlight the "I agree..." CTA ===== */
+        #agreeBtn {
+            position: relative;
+            font-weight: 600;
+            border: 1px solid #2ea8ff;
+            background: linear-gradient(180deg, #0f2a3f, #10324a);
+            color: #e9f6ff;
+            padding: 12px 14px;
+            border-radius: 12px;
+            box-shadow: 0 0 0 0 rgba(46, 168, 255, 0.45);
+            transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+            outline-offset: 3px;
+        }
+
+        #agreeBtn:hover {
+            transform: translateY(-1px);
+        }
+
+        #agreeBtn:active {
+            transform: translateY(0);
+        }
+
+        #agreeBtn:focus-visible {
+            outline: 2px solid #2ea8ff;
+        }
+
+        .cta-pulse {
+            animation: ctaPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes ctaPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 168, 255, .55);
+            }
+
+            70% {
+                box-shadow: 0 0 0 14px rgba(46, 168, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 168, 255, 0);
+            }
+        }
+
+        .agree-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .agree-note {
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        @keyframes qcpdPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 168, 255, .65);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(46, 168, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 168, 255, 0);
+            }
+        }
+
+        .qcpd-pulse {
+            position: relative;
+            animation: qcpdPulse 1.2s ease-out 2;
+            outline: 2px solid var(--accent);
+        }
+
+        /* ===== Cipher overlay retained ===== */
+        .photo-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, .75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .photo-overlay[aria-hidden="false"] {
+            display: flex;
+        }
+
+        .photo-frame {
+            background: #0b1218;
+            border: 1px solid #243546;
+            border-radius: 12px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .photo-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-bottom: 1px solid #243546;
+        }
+
+        .photo-bar button {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #243546;
+            background: #102536;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .photo-vp {
+            flex: 1 1 auto;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #09131a;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .photo-img {
+            transform-origin: center center;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .photo-open-hint {
+            text-align: center;
+            font-size: .92rem;
+            opacity: .9;
+            margin-top: 6px;
+        }
+
+        /* ===== Doorway shell ===== */
+        .zoom-shell {
+            --bg: #0d1a24;
+            --edge: #243546;
+            --ink: #cfe6f7;
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--edge);
+            border-radius: 12px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .zoom-viewport {
+            position: relative;
+            overflow: auto;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+            background: #09131a;
+            border-radius: 10px;
+            min-height: 240px;
+        }
+
+        #evidencePanel {
+            overflow: visible;
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .zoom-controls button {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--edge);
+            background: #102536;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .zoom-controls span {
+            min-width: 56px;
+            text-align: center;
+            color: var(--ink);
+        }
+
+        #doorsHost {
+            transform-origin: top center;
+            will-change: transform;
+            margin: 0 auto;
+            overflow: visible !important;
+        }
+
+        #doorsHost *,
+        #doorsHost *::before,
+        #doorsHost *::after {
+            overflow: visible !important;
+            max-width: none !important;
+        }
+
+        .orient-hint {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px dashed var(--edge);
+            color: var(--ink);
+            background: #0b1822;
+            text-align: center;
+            font-size: .95rem;
+        }
+
+        #doorsHost canvas,
+        #doorsHost svg,
+        #doorsHost .door-game-root {
+            max-width: none !important;
+            display: block;
+            overflow: visible !important;
+        }
+
+        .zoom-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000c;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .zoom-overlay[aria-hidden="false"] {
+            display: flex;
+        }
+
+        .zoom-overlay .overlay-inner {
+            background: #0b1218;
+            border: 1px solid var(--edge);
+            border-radius: 12px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .zoom-overlay .overlay-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--edge);
+        }
+
+        .zoom-overlay .overlay-vp {
+            flex: 1 1 auto;
+            overflow: auto;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+            background: #09131a;
+            border-radius: 0 0 12px 12px;
+        }
+    </style>
+
+    <style>
+        /* ===== Closed Doors gallery (portrait-first) ===== */
+        .door-gallery {
+            display: none;
+            margin-top: 8px;
+            gap: 10px;
+            justify-items: center;
+        }
+
+        .door-card {
+            display: grid;
+            grid-template-columns: 56px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--edge);
+            background: #0d1a24;
+            color: var(--ink);
+            cursor: pointer;
+            transition: transform .08s ease, background .2s ease, border-color .2s ease;
+            width: min(640px, 92vw);
+        }
+
+        .door-card:hover {
+            transform: translateY(-1px);
+            background: #0f2636;
+        }
+
+        .door-card:active {
+            transform: translateY(0);
+        }
+
+        .door-card .door-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #09131a;
+            border: 1px solid #243546;
+            font-size: 28px;
+        }
+
+        .door-card .door-title {
+            font-weight: 600;
+        }
+
+        .door-card .door-sub {
+            opacity: .8;
+            font-size: .9rem;
+        }
+
+        @media (orientation: portrait) {
+            html.dg-ready #doorsZoomShell {
+                display: none;
+            }
+
+            html.dg-ready .door-gallery {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (orientation: landscape) {
+            .door-gallery {
+                display: none;
+            }
+
+            #doorsZoomShell {
+                display: block;
+            }
+        }
+
+        #doorsZoomShell {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        #doorsZoomViewport {
+            min-height: 280px;
+        }
+
+        #doorsHost {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 🔒 Hide any per-game confirm/input that might be injected inside Doorway */
+        #doorsHost .digit-row,
+        #doorsHost [id*="Confirm"],
+        #doorsHost [data-role="confirm"],
+        #doorsHost .confirm,
+        #doorsHost input[type="text"],
+        #doorsHost input[type="number"],
+        #doorsHost .entry {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HARD RESET: clear stored answers/progress & caches on every open -->
+    <script>
+        (function hardResetOnOpen() {
+            try {
+                const toRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && /^qcpd\./i.test(k)) toRemove.push(k);
+                }
+                toRemove.forEach(k => localStorage.removeItem(k));
+            } catch (e) { }
+            try { sessionStorage.clear(); } catch (e) { }
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations?.().then(regs => regs.forEach(r => r.unregister())).catch(() => { });
+            }
+            if (window.caches?.keys) {
+                caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).catch(() => { });
+            }
+            window.addEventListener('pageshow', (e) => { if (e.persisted) { try { location.reload(); } catch (err) { } } });
+        })();
+    </script>
+
+    <div class="app">
+        <!-- Left panel: Database / Cases -->
+        <aside class="panel" id="dbPanel">
+            <h2 class="title">Database</h2>
+            <p id="hello" style="color:var(--muted);margin-bottom:8px"></p>
+            <ul class="case-list">
+                <li class="case active" data-case="heist">Case: The Sapphire Heist</li>
+                <li class="case locked" data-case="solved">Case: Old Town Robbery</li>
+                <li class="case locked" data-case="ongoing">Case: Harbor Break-in</li>
+                <li class="case locked">Case: Metro Vault Incident</li>
+                <li class="case locked">Case: Night Market Sting</li>
+                <li class="case locked">Case: Museum Archives Breach</li>
+                <li class="case locked">Case: Rail Yard Smuggling</li>
+            </ul>
+        </aside>
+
+        <!-- Center panel: Evidence -->
+        <main class="panel" id="evidencePanel">
+            <h2 class="title">Evidence</h2>
+            <div id="caseMsg" class="msg" style="display:none"></div>
+
+            <!-- Tabs -->
+            <div class="tabs" id="tabs">
+                <button class="tab active" data-tab="briefing">Briefing</button>
+                <button class="tab disabled" data-tab="cipher">Lindholmen River View Photo</button>
+                <button class="tab disabled" data-tab="riddle1">Lock Screen</button>
+                <button class="tab disabled" data-tab="potion">Evidence Note on HomeScreen</button>
+                <button class="tab disabled" data-tab="doors">Doorway Sequence</button>
+                <button class="tab disabled" data-tab="colorcode">Corridor Clue</button>
+                <button class="tab disabled" data-tab="findings">Findings</button>
+            </div>
+
+            <!-- Sections -->
+            <section id="briefing" class="section active">
+                <h3>Case: The Sapphire Heist</h3>
+                <p>Welcome, Detective. Great to hear that you have uncovered the hidden clues. Congratulations on your
+                    findings
+                    so far. </p>
+                <ol>A 3 digit code, that might hopefully be helpful later.</ol>
+                <ol>A single digit, supposedly a part of a code.</ol>
+                <ol>One more single digit, also supposedly a part of a code.</ol>
+
+                <p>In the Evidence panel, each section contains information extracted from the burglar's phone. Some
+                    notes are
+                    gathered based on the conversation from the interrogation. The collected evidence seems to be
+                    encrypted in
+                    some form of puzzle or a riddle. Decode them and extract the key findings.</p>
+                <p class="status">And one more thing detective! Don't forget to keep the findings confidential and
+                    handle the
+                    evidence with care.</p>
+
+                <div class="agree-row">
+                    <!-- <span class="agree-note">Click button to proceed</span> -->
+                    <button id="agreeBtn" aria-describedby="agreeHelp">I agree to investigate the evidence as per the
+                        QCPD
+                        regulations.</button>
+                </div>
+                <p id="agreeHelp" class="hint photo-open-hint" style="text-align:center">Tap the button to begin.</p>
+            </section>
+
+            <section id="cipher" class="section">
+                <h3>Cipher Terminal - Photo Forensics</h3>
+                <p class="status">This was found on the burglar's phone. We believe it contains a hidden code. Click the
+                    photo
+                    to open it. Zoom and pan if needed. Record the code that you decipher.</p>
+
+                <figure class="photo-thumb"></figure>
+                <p class="hint photo-open-hint">Tip: the photo will open directly in a new tab.</p>
+
+                <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+                    <input id="cipherInput" placeholder="Enter code" inputmode="numeric" />
+                    <button id="cipherConfirm">Confirm</button>
+                </div>
+                <p id="cipherStatus" class="status"></p>
+            </section>
+
+            <section id="riddle1" class="section">
+                <h3>Lock Screen</h3>
+                <p class="status" style="opacity:.7">This is seen on the recovered LockScreen of the burglar's phone.
+                    The code
+                    seems to be a single digit. Please type in once you have solved it.</p>
+
+                <div class="qcpd-riddle">
+                    <p>I arrive before the journey begins.</p>
+                    <p>Yet, I am not the road.</p>
+                    <p>I turn the empty into something.</p>
+                    <p>Without ever becoming many.</p>
+                    <p class="qcpd-question">What am I?</p>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+                    <input id="riddle1Input" placeholder="Enter digit" inputmode="numeric" />
+                    <button id="riddle1Confirm">Confirm</button>
+                </div>
+                <p id="riddle1Status" class="status"></p>
+            </section>
+
+            <section id="potion" class="section">
+                <h3>Evidence Note on Home-Screen</h3>
+
+                <article class="potion-card">
+                    <header class="potion-title">Padlock Potion</header>
+                    <p>You have now reached the home-screen of the burglar's phone. We believe that solving it might be
+                        the only
+                        way
+                        to avoid auto-deletion.</p>
+
+                    <div class="potion-body">
+                        <p class="potion-lede">How to Brew a basic Padlock Potion?</p>
+                        <p>To bind a common padlock shut and command its clasp to sleep:</p>
+                        <ul class="potion-steps">
+                            <li><strong>First, one eyelash from a wild dragon - caught in the sunset’s ruby‑sparked
+                                    glow.</strong>
+                            </li>
+                            <li><strong>Next, two bones from a royal frog - crown‑kissed and pale as snow.</strong></li>
+                            <li><strong>Last, three drops of snot from a liar’s nose - lies condensed to a glistening
+                                    flow.</strong>
+                            </li>
+                            <li><strong>Stir clockwise:</strong> once for the lash, twice for the bones, thrice for the
+                                drops.</li>
+                            <li><strong>Then whisper:</strong> “By scale and crown, by truth denied - bolt, bar, and
+                                latch, be tied.”
+                            </li>
+                        </ul>
+                        <p class="potion-warning"><em>Mind the order! Reverse the steps, and you may unlock forces eager
+                                to snap any
+                                padlock wide open.</em></p>
+                    </div>
+                </article>
+
+                <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+                    <input id="potionInput" placeholder="Enter the decoded number" inputmode="numeric" />
+                    <button id="potionConfirm">Confirm</button>
+                </div>
+                <p id="potionStatus" class="status"></p>
+            </section>
+
+            <section id="doors" class="section">
+                <h3>Doorway Sequence</h3>
+                <p>Great work detective! We have entered the burglar's phone and it only has these three doors. Let's
+                    investigate on what they do!</p>
+                <p class="status">Click on each door and solve the encryptions. The messages could hint to some code
+                    that might
+                    be useful.</p>
+
+                <!-- Closed Doors gallery (portrait-friendly) -->
+                <div id="doorGallery" class="door-gallery" aria-label="Choose a door"></div>
+
+                <!-- Responsive zoom container + fullscreen -->
+                <div class="zoom-shell" id="doorsZoomShell" aria-label="Zoomable container">
+                    <div class="zoom-viewport" id="doorsZoomViewport">
+                        <div id="doorsHost"></div>
+                    </div>
+                    <div class="zoom-controls" aria-label="Zoom controls">
+                        <button id="zoomOut" title="Zoom out">−</button>
+                        <span id="zoomLabel" aria-live="polite">100%</span>
+                        <button id="zoomIn" title="Zoom in">+</button>
+                        <button id="zoomReset" title="Reset zoom">Reset</button>
+                        <button id="zoomFullscreen" title="Use entire screen (best on phones)">Fullscreen</button>
+                    </div>
+                </div>
+
+                <!-- ✅ Common Doorway code input (single place to enter 367) -->
+                <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+                    <input id="doorsCodeInput" placeholder="Enter the 3‑digit code" inputmode="numeric" />
+                    <button id="doorsCodeConfirm">Confirm</button>
+                </div>
+
+                <p id="doorwayStatus" class="status"></p>
+
+                <div id="orientHint" class="orient-hint" role="note" aria-live="polite" style="display:none">
+                    Tip: rotate your phone to landscape for a wider view.
+                </div>
+            </section>
+
+            <!-- Fullscreen overlay for Doorway -->
+            <div id="doorsOverlay" class="zoom-overlay" aria-hidden="true" role="dialog">
+                <div class="overlay-inner">
+                    <div class="overlay-bar">
+                        <button id="fsOut">−</button>
+                        <span id="fsLabel">100%</span>
+                        <button id="fsIn">+</button>
+                        <button id="fsReset">Reset</button>
+                        <button id="fsClose" title="Close fullscreen">Close</button>
+                    </div>
+                    <div class="overlay-vp" id="fsViewport"></div>
+                </div>
+            </div>
+
+            <section id="colorcode" class="section">
+                <h3>Corridor Clue</h3>
+                <p>Almost there detective! But, there seems to be a fail-safe that the burglars have programmed on their
+                    phone.
+                    Let's solve this and see where it leads!</p>
+
+                <ol class="corridor-hints">
+                    <li><strong>
+                            I keep a key to connect something, a scale that weighs nothing.<br>
+                            I have many legends that tells no tale, but find in me the help to your ail.<br>
+                            You see in me what you seek, but I am not what you need.<br>
+                            You have me everywhere, but you seldom truly see me!<br>
+                        </strong> What am I?
+                    </li>
+                    <br>
+                    <li><strong>
+                            I am single, sometimes many. In a place of common, I choose only me.<br>
+                            I make you feel special in every other way; I am always before you, yet you never let me
+                            stay.<br>
+                        </strong> What am I?
+                    </li>
+                    <br>
+                    <li><strong>
+                            I cradle many havens, yet I never let them fall.<br>
+                            I wander imperfect circles, never dizzy, through it all.<br>
+                            I rise and dip with purpose, base and crest align.<br>
+                            They call me by many names.... but this is how I sign.<br>
+                        </strong> What am I?
+                    </li>
+                    <br>
+                    <!-- <li>
+            What comes first sets the tone, what surrounds gives it meaning,<br>
+            and what follows reveals the way forward.<br>
+            Assemble them in an order, a sentence that places you in the corridor.<br>
+            I await your arrival - your destination is near.<br>
+          </li> -->
+                </ol>
+
+                <div id="corridorGrid" class="corridor-grid" aria-label="Select one word from each column"></div>
+
+                <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+                    <input id="ringsInput" placeholder="Enter one word from each column" />
+                    <button id="ringsConfirm">Confirm</button>
+                </div>
+                <p id="ringsStatus" class="status"></p>
+            </section>
+
+            <section id="findings" class="section">
+                <h3>Findings</h3>
+                <p>Impressive! I have gathered the decoded information and codes here.</p>
+                <ul class="findings-list">
+                    <br>
+                    <li><strong>243</strong> - Decoded from the Encrypted image. Looks like the other 3 digit codes,
+                        probably to
+                        open a lock.</li>
+                    <br>
+                    <li><strong>1</strong> - Decoded from the lock-screen of the phone. Looks like this digit is a part
+                        of a
+                        bigger code.</li>
+                    <br>
+                    <li><strong>928</strong> - Decoded from evidence found on the home-screen of the phone, The Padlock
+                        potion.
+                        This can only be for one strange lock.</li>
+                    <br>
+                    <li><strong>367</strong> - Decoded from the Doorway Sequence. This code is still unclear to me. What
+                        do you
+                        think this would be?</li>
+                    <br>
+                    <li><strong>THE WORLD MAP</strong> - Decoded from the Corridor Clue. This does not seem the end of
+                        this clue.
+                        Could it be a part of the larger picture? Have you recognized this from elsewhere?</li>
+                    <br>
+                </ul>
+                <p class="status">Amazing! Let's proceed to the next place based on the collected evidence. It feels
+                    like we are
+                    almost there!.</p>
+            </section>
+        </main>
+
+        <!-- Right panel: Radio -->
+        <aside class="panel" id="radioPanel">
+            <h2 class="title">Radio</h2>
+            <details open>
+                <summary>Case Hints</summary>
+                <div class="group">
+                    <button id="hintBtn">Get hint for current puzzle</button>
+                    <div id="radioHints" style="margin-top:8px"></div>
+                </div>
+            </details>
+
+            <details open>
+                <summary>Radio Chatter</summary>
+                <div class="group" id="radioChatter"></div>
+            </details>
+
+            <details>
+                <summary>Team Contacts (Please contact for more insights)</summary>
+                <div class="group">
+                    <div class="msg">Case Lead: Det. Emma</div>
+                    <div class="msg">Asst Lead: Det. Jay</div>
+                    <div class="msg">Evidence Handling: Det. L.</div>
+                    <div class="msg">Forensics Lab: Dr. D.</div>
+                    <div class="msg">Surveillance: QCPD Systems</div>
+                </div>
+            </details>
+        </aside>
+    </div>
+
+    <!-- Base -->
+    <script src="app.js"></script>
+
+    <!-- Shared helpers -->
+    <script src="modules/progress.js?v=20260123-4"></script>
+
+    <!-- Puzzle modules -->
+    <script src="modules/cipher.js?v=20260123-4"></script>
+    <script src="modules/riddle1.js?v=20260123-4"></script>
+    <script src="modules/potion.js?v=20260123-4"></script>
+
+    <!-- Doorway Sequence Orchestrator & Games -->
+    <script src="modules/doors.js?v=20260123-6"></script>
+    <script src="modules/door_minesweep4.js?v=20260123-4"></script>
+    <script src="modules/door_composite.js?v=20260123-4"></script>
+    <script src="modules/door_path7.js?v=20260123-4"></script>
+
+    <!-- Corridor clue module -->
+    <script src="modules/colorcode.js?v=20260123-4"></script>
+
+    <!-- Telemetry - storing data -->
+    <script type="module" src="modules/telemetry.js?v=20260116"></script>
+
+    <!-- Telemetry wiring -->
+    <script type="module">
+        import { startSession, appendAttempt } from './modules/telemetry.js';
+
+        function getIdentity() {
+            return {
+                name: localStorage.getItem('qcpd.name') || '',
+                codename: localStorage.getItem('qcpd.codename') || '',
+                department: localStorage.getItem('qcpd.department') || ''
+            };
+        }
+
+        // 1) Start the session on Agree
+        document.getElementById('agreeBtn')?.addEventListener('click', async () => {
+            const { name, codename, department } = getIdentity();
+            await startSession({ name, codename, department });
+            document.getElementById('agreeBtn')?.classList.remove('cta-pulse');
+        });
+
+        // 2) Append attempts on each Confirm
+        document.getElementById('cipherConfirm')?.addEventListener('click', async () => {
+            const v = document.getElementById('cipherInput')?.value?.trim();
+            if (v) await appendAttempt('photo puzzle', v);
+        });
+
+        document.getElementById('riddle1Confirm')?.addEventListener('click', async () => {
+            const v = document.getElementById('riddle1Input')?.value?.trim();
+            if (v) await appendAttempt('riddle 1', v);
+        });
+
+        document.getElementById('potionConfirm')?.addEventListener('click', async () => {
+            const v = document.getElementById('potionInput')?.value?.trim();
+            if (v) await appendAttempt('potion riddle', v);
+        });
+
+        // Corridor uses original IDs (rings*)
+        document.getElementById('ringsConfirm')?.addEventListener('click', async () => {
+            const v = document.getElementById('ringsInput')?.value?.trim();
+            if (v) await appendAttempt('corridor riddle', v);
+        });
+
+        // 3) Doorway logging: watch for a success banner with id="doors-complete"
+        const doorsObs = new MutationObserver(async () => {
+            const banner = document.getElementById('doors-complete');
+            if (banner) {
+                await appendAttempt('doorway sequence', '367');
+                doorsObs.disconnect();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const agree = document.getElementById('agreeBtn');
+            if (agree) agree.classList.add('cta-pulse');
+
+            doorsObs.observe(document.body, { childList: true, subtree: true });
+            const banner = document.getElementById('doors-complete');
+            if (banner) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
+        });
+    </script>
+
+    <!-- CLOSED DOORS GALLERY CONTROLLER (unchanged) -->
+    <script>
+        (function () {
+            const host = document.getElementById('doorsHost');
+            const gallery = document.getElementById('doorGallery');
+            let roots = [];
+            const originalDisplay = new WeakMap();
+
+            function isPortrait() { return window.matchMedia('(orientation: portrait)').matches; }
+
+            function findPuzzleRoots() {
+                if (!host) return [];
+                let kids = Array.from(host.children).filter(el => el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
+                kids = kids.filter(el => {
+                    const r = el.getBoundingClientRect();
+                    return (r.width * r.height) > 2000;
+                });
+                if (kids.length >= 3) return kids.slice(0, 3);
+
+                const guesses = host.querySelectorAll('.door-game-root, [data-door], [data-game], #door-mines, #door-composite, #door-path');
+                const uniq = [];
+                guesses.forEach(el => {
+                    const root = el.closest('#doorsHost > *') || el;
+                    if (root && !uniq.includes(root)) uniq.push(root);
+                });
+                if (uniq.length >= 3) return uniq.slice(0, 3);
+
+                const blocks = Array.from(host.querySelectorAll(':scope *'))
+                    .filter(el => el.parentElement && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
+                const ranked = blocks
+                    .map(el => ({ el, area: el.getBoundingClientRect().width * el.getBoundingClientRect().height }))
+                    .sort((a, b) => b.area - a.area)
+                    .map(x => x.el);
+                const chosen = [];
+                for (const el of ranked) {
+                    const top = el.closest('#doorsHost > *') || el;
+                    if (top && !chosen.includes(top)) chosen.push(top);
+                    if (chosen.length === 3) break;
+                }
+                return chosen.length === 3 ? chosen : kids.slice(0, 3);
+            }
+
+            function ensureOriginalDisplaySaved() {
+                roots.forEach(el => {
+                    if (!originalDisplay.has(el)) originalDisplay.set(el, el.style.display || '');
+                });
+            }
+
+            function showOnly(index) {
+                ensureOriginalDisplaySaved();
+                roots.forEach((el, i) => {
+                    el.style.display = (i === index) ? (originalDisplay.get(el) || '') : 'none';
+                });
+            }
+            function showAll() {
+                roots.forEach(el => {
+                    const d = originalDisplay.get(el);
+                    el.style.display = (d == null ? '' : d);
+                });
+            }
+
+            function buildGallery() {
+                if (!gallery) return;
+                gallery.innerHTML = '';
+                const labels = [
+                    { icon: '🔒', title: 'Door A', sub: 'Jewel Latin' },
+                    { icon: '🧨', title: 'Door B', sub: 'Defuser Protocol' },
+                    { icon: '🗺️', title: 'Door C', sub: 'Path Sequence' },
+                ];
+                labels.forEach((info, idx) => {
+                    const card = document.createElement('button');
+                    card.className = 'door-card';
+                    card.type = 'button';
+                    card.setAttribute('data-door', String(idx));
+                    card.innerHTML = `
+          <div class="door-icon" aria-hidden="true">${info.icon}</div>
+          <div>
+            <div class="door-title">${info.title}</div>
+            <div class="door-sub">${info.sub}</div>
+          </div>
+          <div><span class="door-go">Open</span></div>
+        `;
+                    card.addEventListener('click', () => openDoor(idx));
+                    gallery.appendChild(card);
+                });
+            }
+
+            function openDoor(idx) {
+                if (!roots.length) return;
+                if (isPortrait() && typeof window.__qcpd_openDoorFullscreen === 'function') {
+                    window.__qcpd_openDoorFullscreen();
+                    setTimeout(() => { showOnly(idx); }, 30);
+                } else {
+                    showOnly(idx);
+                    try { document.getElementById('doors').scrollIntoView({ behavior: 'smooth' }); } catch { }
+                }
+            }
+
+            function onCloseFullscreen() { if (isPortrait()) showAll(); }
+            (function hookCloseFS() {
+                const fsClose = document.getElementById('fsClose');
+                if (fsClose) fsClose.addEventListener('click', onCloseFullscreen);
+            })();
+
+            function setLayout() {
+                if (!gallery) return;
+                const galleryReady = roots && roots.length === 3 && gallery.childElementCount >= 1;
+
+                if (isPortrait() && galleryReady) {
+                    document.documentElement.classList.add('dg-ready');
+                    gallery.style.display = 'grid';
+                    showAll();
+                } else {
+                    document.documentElement.classList.remove('dg-ready');
+                    gallery.style.display = galleryReady ? 'grid' : 'none';
+                    showAll();
+                }
+            }
+
+            const bootObs = new MutationObserver(() => {
+                if (!host.firstElementChild) return;
+                roots = findPuzzleRoots();
+                if (roots.length === 3) {
+                    ensureOriginalDisplaySaved();
+                    buildGallery();
+                    setLayout();
+                    bootObs.disconnect();
+                }
+            });
+            bootObs.observe(host, { childList: true, subtree: true });
+
+            if (host.firstElementChild) {
+                roots = findPuzzleRoots();
+                if (roots.length === 3) {
+                    ensureOriginalDisplaySaved();
+                    buildGallery();
+                    setLayout();
+                    bootObs.disconnect();
+                }
+            }
+
+            window.addEventListener('resize', setLayout);
+            window.addEventListener('orientationchange', () => setTimeout(setLayout, 150));
+        })();
+    </script>
+
+    <!-- Cipher photo: auto-open in new tab (single step) -->
+    <script>
+        (function () {
+            const thumb = document.querySelector('#cipher .photo-thumb');
+            const tabs = document.getElementById('tabs');
+            let autoOpenedCipher = false, lastOpenTs = 0;
+
+            function extractImageURL(fig) {
+                if (!fig) return null;
+                const img = fig.querySelector('img');
+                if (img?.src) return img.src;
+                const cs = getComputedStyle(fig);
+                const bg = cs.backgroundImage || '';
+                const m = bg.match(/url\(["']?(.*?)["']?\)/);
+                return (m && m[1]) ? m[1] : null;
+            }
+
+            function openImageInNewTab(src) {
+                const now = Date.now();
+                if (!src) return;
+                if (now - lastOpenTs < 500) return;
+                lastOpenTs = now;
+                try { window.open(src, '_blank', 'noopener'); } catch { }
+            }
+
+            function tryOpenCipherOnce() {
+                if (autoOpenedCipher) return;
+                const src = extractImageURL(thumb);
+                if (src) { autoOpenedCipher = true; openImageInNewTab(src); }
+            }
+
+            function wireThumb() {
+                if (!thumb) return;
+                thumb.style.cursor = 'zoom-in';
+                thumb.addEventListener('click', () => {
+                    const src = extractImageURL(thumb);
+                    openImageInNewTab(src);
+                });
+            }
+
+            const obs = new MutationObserver(() => { wireThumb(); });
+            if (thumb) {
+                obs.observe(thumb, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+                wireThumb();
+            }
+
+            if (tabs) {
+                tabs.addEventListener('click', (e) => {
+                    const btn = e.target.closest('button.tab');
+                    if (btn?.dataset.tab === 'cipher') setTimeout(tryOpenCipherOnce, 120);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const active = document.querySelector('.tab.active');
+                if (active?.dataset.tab === 'cipher') setTimeout(tryOpenCipherOnce, 150);
+            });
+        })();
+    </script>
+
+    <!-- ✅ FAIL-SAFE: Cipher confirm unlock (robust, no auto-advance, keeps module text) -->
+    <script>
+        (function () {
+            function enableNextTab(currentTabId, targetTabId) {
+                // Prefer orchestrator if available (no auto-switch)
+                try {
+                    const used = !!(window.QCPD?.unlockTab?.(targetTabId, { autoSwitch: false }));
+                    if (used) return true;
+                } catch { /* ignore */ }
+
+                // DOM fallback (class/attrs)
+                const row = document.getElementById('tabs'); if (!row) return false;
+                const nextBtn = row.querySelector(`button.tab[data-tab="${targetTabId}"]`);
+                if (!nextBtn) return false;
+                nextBtn.classList.remove('disabled');
+                nextBtn.removeAttribute('disabled');
+                nextBtn.setAttribute('aria-disabled', 'false');
+
+                // Subtle highlight (no scroll / no click)
+                nextBtn.classList.add('qcpd-pulse');
+                setTimeout(() => nextBtn.classList.remove('qcpd-pulse'), 1800);
+                return true;
+            }
+
+            function prefixCheck(statusEl) {
+                if (!statusEl) return;
+                const t = statusEl.textContent || '';
+                if (!/✅/.test(t)) statusEl.textContent = (t ? `✅ ${t}` : '✅ The next section has been unlocked, kindly proceed to it.');
+                statusEl.classList.add('ok');
+            }
+
+            function cleanDigits(v) { return (v || '').replace(/\D+/g, ''); }
+
+            window.addEventListener('DOMContentLoaded', () => {
+                const input = document.getElementById('cipherInput');
+                const btn = document.getElementById('cipherConfirm');
+                const status = document.getElementById('cipherStatus');
+
+                if (!btn) return;
+
+                function onSuccess() {
+                    // Unlock riddle1 and decorate status without moving tabs
+                    enableNextTab('cipher', 'riddle1');
+                    prefixCheck(status);
+                    input?.classList.remove('input-bad');
+                    input?.classList.add('input-ok');
+                }
+                function onFail() {
+                    if (status) { status.textContent = 'Not correct — try again.'; status.classList.remove('ok'); }
+                    input?.classList.add('input-bad');
+                    setTimeout(() => input?.classList.remove('input-bad'), 250);
+                }
+
+                btn.addEventListener('click', () => {
+                    const v = cleanDigits(input?.value);
+                    if (!v) return onFail();
+                    if (v === '243') onSuccess(); else onFail();
+                });
+
+                input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+
+                // Also handle the "already solved" resume scenario defensively
+                try {
+                    const saved = (window.QCPD?.load?.() || {}).cipher;
+                    const savedVal = (saved && typeof saved === 'object') ? saved.value : saved;
+                    if (savedVal === '243') {
+                        if (input) input.value = '243';
+                        onSuccess();
+                    }
+                } catch { }
+            });
+        })();
+    </script>
+
+    <script>
+        /* Doorway common code box: accept 367, show success, unlock next tab, keep user on this tab */
+        (function () {
+            function enableTab(tabId) {
+                // Prefer orchestrator if present (no auto-switch)
+                try {
+                    const used = !!(window.QCPD?.unlockTab?.(tabId, { autoSwitch: false }));
+                    if (used) return;
+                } catch { }
+
+                // DOM fallback
+                const btn = document.querySelector(`.tab[data-tab="${tabId}"]`);
+                if (btn) {
+                    btn.classList.remove('disabled');
+                    btn.removeAttribute('disabled');
+                    btn.setAttribute('aria-disabled', 'false');
+                    btn.classList.add('qcpd-pulse');
+                    setTimeout(() => btn.classList.remove('qcpd-pulse'), 1800);
+                }
+            }
+
+            function markDoorsCompleteForTelemetry() {
+                if (!document.getElementById('doors-complete')) {
+                    const d = document.createElement('div');
+                    d.id = 'doors-complete';
+                    d.style.display = 'none';
+                    document.body.appendChild(d);
+                }
+            }
+
+            window.addEventListener('DOMContentLoaded', () => {
+                const input = document.getElementById('doorsCodeInput');
+                const btn = document.getElementById('doorsCodeConfirm');
+                const status = document.getElementById('doorwayStatus');
+
+                function ok() {
+                    enableTab('colorcode');
+                    if (status) {
+                        if (!/✅/.test(status.textContent || '')) {
+                            status.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
+                        }
+                        status.classList.add('ok');
+                    }
+                    input?.classList.remove('input-bad');
+                    input?.classList.add('input-ok');
+                    markDoorsCompleteForTelemetry();
+                }
+
+                function bad() {
+                    if (status) {
+                        status.textContent = 'Not correct — try again.';
+                        status.classList.remove('ok');
+                    }
+                    input?.classList.add('input-bad');
+                    setTimeout(() => input?.classList.remove('input-bad'), 250);
+                }
+
+                btn?.addEventListener('click', () => {
+                    const v = (input?.value || '').replace(/\D+/g, '');
+                    if (v === '367') ok(); else bad();
+                });
+
+                input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn?.click(); });
+
+                // Also honor module/game signals if they emit completion events or attributes:
+                ['qcpd:doorsComplete', 'doorsComplete'].forEach(evt =>
+                    window.addEventListener(evt, ok, { once: true })
+                );
+                const mo = new MutationObserver(() => {
+                    if (document.querySelector('[data-doors-complete="true"]')) { ok(); mo.disconnect(); }
+                });
+                mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-doors-complete'] });
+            });
+        })();
+    </script>
+
+    <script>
+        (function () {
+            let DESIGN_W = null, DESIGN_H = null, FROZEN = false;
+
+            const viewport = document.getElementById('doorsZoomViewport');
+            const host = document.getElementById('doorsHost');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomResetBtn = document.getElementById('zoomReset');
+            const zoomFsBtn = document.getElementById('zoomFullscreen');
+            const zoomLabel = document.getElementById('zoomLabel');
+
+            const fs = document.getElementById('doorsOverlay');
+            const fsVp = document.getElementById('fsViewport');
+            const fsIn = document.getElementById('fsIn');
+            const fsOut = document.getElementById('fsOut');
+            const fsReset = document.getElementById('fsReset');
+            const fsClose = document.getElementById('fsClose');
+            const fsLabel = document.getElementById('fsLabel');
+
+            let currentScale = 1, fitScale = 1;
+            const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
+
+            function initialMeasure() {
+                if (FROZEN) return;
+                const child = host?.firstElementChild; if (!child) return;
+                const attrW = parseInt(child.getAttribute?.('width'), 10);
+                const attrH = parseInt(child.getAttribute?.('height'), 10);
+                const cssW = child.offsetWidth || 960; // unaffected by transform
+                const cssH = child.offsetHeight || 540;
+
+                DESIGN_W = (attrW > 0) ? attrW : (DESIGN_W || Math.max(720, cssW));
+                DESIGN_H = (attrH > 0) ? attrH : (DESIGN_H || Math.max(540, cssH));
+                FROZEN = (DESIGN_W && DESIGN_H);
+            }
+
+            function computeFitScale(vpElem) {
+                const vpW = vpElem.clientWidth;
+                const vpH = vpElem.clientHeight || Math.floor(window.innerHeight * 0.7);
+                if (!DESIGN_W || !DESIGN_H) initialMeasure();
+                if (!DESIGN_W || !DESIGN_H) return 1;
+                const scaleW = vpW / DESIGN_W;
+                const scaleH = (vpH - 20) / DESIGN_H;
+                return Math.max(MIN_SCALE, Math.min(scaleW, (scaleH || scaleW)));
+            }
+
+            function applyScale(scale, labelElem) {
+                currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+                if (host) {
+                    host.style.transform = `scale(${currentScale})`;
+                    host.style.width = `${DESIGN_W}px`;
+                    host.style.height = `${DESIGN_H}px`;
+                    host.style.marginLeft = host.style.marginRight = 'auto';
+                }
+                const pct = `${Math.round(currentScale * 100)}%`;
+                (labelElem || zoomLabel).textContent = pct;
+
+                if (viewport) {
+                    const desiredH = DESIGN_H * currentScale + 16;
+                    const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
+                    viewport.style.height = `${maxH}px`;
+                }
+            }
+
+            function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
+                if (!FROZEN) initialMeasure();
+                fitScale = computeFitScale(targetVp);
+                applyScale(fitScale, labelElem);
+            }
+            function zoomBy(delta, labelElem) { applyScale(currentScale + delta, labelElem); }
+            function resetZoom(labelElem) { applyScale(fitScale, labelElem); }
+
+            zoomInBtn?.addEventListener('click', () => zoomBy(STEP, zoomLabel));
+            zoomOutBtn?.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
+            zoomResetBtn?.addEventListener('click', () => resetZoom(zoomLabel));
+
+            // Fullscreen overlay
+            let inFullscreen = false, placeholder = null;
+            function openFullscreen() {
+                if (inFullscreen) return;
+                inFullscreen = true;
+                placeholder = document.createElement('div');
+                host?.parentNode?.insertBefore(placeholder, host);
+                fsVp?.appendChild(host);
+                fs?.setAttribute('aria-hidden', 'false');
+                fitToViewport(fsVp, fsLabel);
+            }
+            function closeFullscreen() {
+                if (!inFullscreen) return;
+                inFullscreen = false;
+                fs?.setAttribute('aria-hidden', 'true');
+                if (placeholder?.parentNode) {
+                    placeholder.parentNode.insertBefore(host, placeholder);
+                    placeholder.remove(); placeholder = null;
+                }
+                fitToViewport(viewport, zoomLabel);
+            }
+            zoomFsBtn?.addEventListener('click', openFullscreen);
+            fsClose?.addEventListener('click', closeFullscreen);
+            fsIn?.addEventListener('click', () => zoomBy(STEP, fsLabel));
+            fsOut?.addEventListener('click', () => zoomBy(-STEP, fsLabel));
+            fsReset?.addEventListener('click', () => resetZoom(fsLabel));
+
+            // Pinch-to-zoom (viewport + fullscreen)
+            function makePinch(vp, label) {
+                let last = null;
+                function dist(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
+                vp?.addEventListener('touchstart', (e) => { if (e.touches.length === 2) last = dist(e.touches[0], e.touches[1]); }, { passive: true });
+                vp?.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && last) { const d = dist(e.touches[0], e.touches[1]); const f = d / last; last = d; applyScale(currentScale * f, label); e.preventDefault(); } }, { passive: false });
+                vp?.addEventListener('touchend', () => { last = null; }, { passive: true });
+            }
+            makePinch(viewport, zoomLabel);
+            makePinch(fsVp, fsLabel);
+
+            // Initial fit when content arrives; freeze design size after first measure
+            const injectObs = new MutationObserver(() => {
+                if (host?.firstElementChild) {
+                    if (!FROZEN) initialMeasure();
+                    setTimeout(() => fitToViewport(), 50);
+                    injectObs.disconnect();
+                }
+            });
+            if (host) injectObs.observe(host, { childList: true, subtree: true });
+
+            // Refit on window changes (🔒 do NOT re-measure the design size again)
+            window.addEventListener('resize', () => inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel));
+            window.addEventListener('orientationchange', () => setTimeout(() => inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel), 200));
+        })();
+    </script>
+
+    <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit (unchanged) -->
+    <!-- <script>
+    (function () {
+      let DESIGN_W = null, DESIGN_H = null;
+
+      const viewport = document.getElementById('doorsZoomViewport');
+      const host = document.getElementById('doorsHost');
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      const zoomResetBtn = document.getElementById('zoomReset');
+      const zoomFsBtn = document.getElementById('zoomFullscreen');
+      const zoomLabel = document.getElementById('zoomLabel');
+      const orientHint = document.getElementById('orientHint');
+
+      const fs = document.getElementById('doorsOverlay');
+      const fsVp = document.getElementById('fsViewport');
+      const fsIn = document.getElementById('fsIn');
+      const fsOut = document.getElementById('fsOut');
+      const fsReset = document.getElementById('fsReset');
+      const fsClose = document.getElementById('fsClose');
+      const fsLabel = document.getElementById('fsLabel');
+
+      let currentScale = 1, fitScale = 1;
+      const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
+
+      function measureDesignSize() {
+        const child = host.firstElementChild; if (!child) return;
+        const rect = child.getBoundingClientRect();
+        const cssW = child.offsetWidth || rect.width;
+        const cssH = child.offsetHeight || rect.height;
+        const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
+        const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
+        DESIGN_W = Math.max(attrW || 0, cssW || 0, 720) || 720;
+        DESIGN_H = Math.max(attrH || 0, cssH || 0, 540) || 540;
+      }
+
+      function computeFitScale(vpElem) {
+        const vpW = vpElem.clientWidth;
+        const vpH = vpElem.clientHeight || Math.floor(window.innerHeight * 0.7);
+        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
+        if (!DESIGN_W || !DESIGN_H) return 1;
+        const scaleW = vpW / DESIGN_W;
+        const scaleH = (vpH - 20) / DESIGN_H;
+        return Math.max(MIN_SCALE, Math.min(scaleW, (scaleH || scaleW)));
+      }
+
+      function applyScale(scale, labelElem) {
+        currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+        host.style.transform = `scale(${currentScale})`;
+        host.style.width = `${DESIGN_W}px`;
+        host.style.height = `${DESIGN_H}px`;
+        const pct = `${Math.round(currentScale * 100)}%`;
+        (labelElem || zoomLabel).textContent = pct;
+
+        host.style.marginLeft = host.style.marginRight = 'auto';
+        const desiredH = DESIGN_H * currentScale + 16;
+        const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
+        viewport.style.height = maxH + 'px';
+      }
+
+      function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
+        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
+        fitScale = computeFitScale(targetVp);
+        applyScale(fitScale, labelElem);
+        maybeShowOrientHint();
+      }
+
+      function zoomBy(delta, labelElem) { applyScale(currentScale + delta, labelElem); }
+      function resetZoom(labelElem) { applyScale(fitScale, labelElem); }
+
+      function maybeShowOrientHint() {
+        const isNarrow = window.innerWidth < 420;
+        const tight = fitScale < 0.7;
+        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
+      }
+
+      zoomInBtn.addEventListener('click', () => zoomBy(STEP, zoomLabel));
+      zoomOutBtn.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
+      zoomResetBtn.addEventListener('click', () => resetZoom(zoomLabel));
+      document.getElementById('zoomFullscreen').addEventListener('click', openFullscreen);
+
+      // Pinch-to-zoom
+      let lastTouchDist = null;
+      viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) lastTouchDist = distance(e.touches[0], e.touches[1]);
+      }, { passive: true });
+      viewport.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && lastTouchDist) {
+          const d = distance(e.touches[0], e.touches[1]);
+          const factor = d / lastTouchDist;
+          lastTouchDist = d;
+          applyScale(currentScale * factor, zoomLabel);
+          e.preventDefault();
+        }
+      }, { passive: false });
+      viewport.addEventListener('touchend', (event) => {
+        if (event.touches && event.touches.length < 2) lastTouchDist = null;
+      });
+
+      function distance(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
+
+      /* Fullscreen overlay for phones */
+      let inFullscreen = false, placeholder = null;
+      function openFullscreen() {
+        if (inFullscreen) return;
+        inFullscreen = true;
+        placeholder = document.createElement('div');
+        host.parentNode.insertBefore(placeholder, host);
+        fsVp.appendChild(host);
+        fs.setAttribute('aria-hidden', 'false');
+
+        fitToViewport(fsVp, fsLabel);
+        bindFsGestures();
+      }
+      function closeFullscreen() {
+        if (!inFullscreen) return;
+        inFullscreen = false;
+        fs.setAttribute('aria-hidden', 'true');
+        if (placeholder && placeholder.parentNode) {
+          placeholder.parentNode.insertBefore(host, placeholder);
+          placeholder.remove(); placeholder = null;
+        }
+        fitToViewport(viewport, zoomLabel);
+        unbindFsGestures();
+      }
+
+      document.getElementById('fsClose').addEventListener('click', closeFullscreen);
+      document.getElementById('fsIn').addEventListener('click', () => zoomBy(STEP, fsLabel));
+      document.getElementById('fsOut').addEventListener('click', () => zoomBy(-STEP, fsLabel));
+      document.getElementById('fsReset').addEventListener('click', () => resetZoom(fsLabel));
+
+      let fsLastTouchDist = null;
+      function bindFsGestures() {
+        fsVp.addEventListener('touchstart', fsStart, { passive: true });
+        fsVp.addEventListener('touchmove', fsMove, { passive: false });
+        fsVp.addEventListener('touchend', fsEnd, { passive: true });
+      }
+      function unbindFsGestures() {
+        fsVp.removeEventListener('touchstart', fsStart);
+        fsVp.removeEventListener('touchmove', fsMove);
+        fsVp.removeEventListener('touchend', fsEnd);
+      }
+      function fsStart(e) { if (e.touches.length === 2) fsLastTouchDist = distance(e.touches[0], e.touches[1]); }
+      function fsMove(e) {
+        if (e.touches.length === 2 && fsLastTouchDist) {
+          const d = distance(e.touches[0], e.touches[1]);
+          const factor = d / fsLastTouchDist;
+          fsLastTouchDist = d;
+          applyScale(currentScale * factor, fsLabel);
+          e.preventDefault();
+        }
+      }
+      function fsEnd() { fsLastTouchDist = null; }
+
+      (function autoEnterFsOnSmallPhone() {
+        const tabs = document.getElementById('tabs');
+        if (!tabs) return;
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('button.tab');
+          if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
+            setTimeout(() => { if (!host.firstElementChild) return; openFullscreen(); }, 200);
+          }
+        });
+      })();
+
+      window.addEventListener('resize', () => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
+      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); }, 200));
+
+      const injectObs = new MutationObserver(() => {
+        if (host.firstElementChild) {
+          setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
+          injectObs.disconnect();
+        }
+      });
+      injectObs.observe(host, { childList: true, subtree: true });
+
+      let ro = null;
+      function attachResizeObserver() {
+        if (!host.firstElementChild || ro) return;
+        ro = new ResizeObserver(() => {
+          measureDesignSize();
+          inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel);
+        });
+        ro.observe(host.firstElementChild);
+      }
+      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
+      subtreeObs.observe(host, { childList: true, subtree: true });
+
+      if (host.firstElementChild) {
+        setTimeout(() => { measureDesignSize(); fitToViewport(); attachResizeObserver(); }, 50);
+      }
+
+      window.__qcpd_openDoorFullscreen = openFullscreen;
+      window.__qcpd_closeDoorFullscreen = closeFullscreen;
+    })();
+  </script> -->
+</body>
+
+</html>

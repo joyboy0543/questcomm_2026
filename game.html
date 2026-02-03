@@ -3,9 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <!-- Allow pinch zoom for accessibility on phones -->
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
-  <!-- Strong no-cache hints (best-effort without server headers) -->
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -15,7 +13,6 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="doors.css" />
 
-  <!-- Minimal, additive styles (no conflicts) -->
   <style>
     /* ===== Highlight the "I agree..." CTA ===== */
     #agreeBtn {
@@ -394,25 +391,43 @@
 </head>
 
 <body>
-  <!-- HARD RESET: clear stored answers/progress & caches on every open -->
+  <!-- HARD RESET: keep identity keys; clear other qcpd.* -->
   <script>
     (function hardResetOnOpen() {
       try {
         const toRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
-          if (k && /^qcpd\./i.test(k)) toRemove.push(k);
+          // keep identity keys
+          if (k && /^qcpd\./i.test(k) && !/^qcpd\.(name|codename|department)$/i.test(k)) {
+            toRemove.push(k);
+          }
         }
         toRemove.forEach(k => localStorage.removeItem(k));
       } catch (e) { }
       try { sessionStorage.clear(); } catch (e) { }
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations?.().then(regs => regs.forEach(r => r.unregister())).catch(() => { });
+        navigator.serviceWorker.getRegistrations?.()
+          .then(regs => regs.forEach(r => r.unregister()))
+          .catch(() => { });
       }
       if (window.caches?.keys) {
         caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).catch(() => { });
       }
-      window.addEventListener('pageshow', (e) => { if (e.persisted) { try { location.reload(); } catch (err) { } } });
+      window.addEventListener('pageshow', (e) => { if (e.persisted) { try { location.reload(); } catch { } } });
+    })();
+  </script>
+
+  <!-- Initialize identity from QR if provided -->
+  <script>
+    (function initIdentityFromQR() {
+      const p = new URLSearchParams(location.search);
+      const name = (p.get('name') || '').trim();
+      const codename = (p.get('codename') || '').trim();
+      const department = (p.get('department') || '').trim();
+      if (name) try { localStorage.setItem('qcpd.name', name); } catch { }
+      if (codename) try { localStorage.setItem('qcpd.codename', codename); } catch { }
+      if (department) try { localStorage.setItem('qcpd.department', department); } catch { }
     })();
   </script>
 
@@ -464,7 +479,6 @@
           evidence with care.</p>
 
         <div class="agree-row">
-          <!-- <span class="agree-note">Click button to proceed</span> -->
           <button id="agreeBtn" aria-describedby="agreeHelp">I agree to investigate the evidence as per the QCPD
             regulations.</button>
         </div>
@@ -473,11 +487,19 @@
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal - Photo Forensics</h3>
-        <p class="status">This was found on the burglar's phone. We believe it contains a hidden code. Click the photo
-          to open it. Zoom and pan if needed. Record the code that you decipher.</p>
+        <p class="status">We recovered a photo from one of the burglar’s phones, believed to have been taken from inside
+          Qualcomm’s office. We also noted a cryptic message sent from the same device to an unknown number. The message
+          reads: </p>
+
+        <p>“The river reflects the view, not the clue.</p><br>
+        <p>Above the waterline, a quiet triad guides you through.”</p><br>
+
+        <p>We suspect the photo and the message are linked. Your expertise is needed to interpret this riddle and
+          uncover what it hides. Click on the photo to open it. Zoom and pan if needed. Record the code that you
+          decipher.</p>
 
         <figure class="photo-thumb"></figure>
-        <p class="hint photo-open-hint">Tip: the photo will open directly in a new tab.</p>
+        <p class="hint photo-open-hint">Note: Clicking the photo will open it in a new tab.</p>
 
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <input id="cipherInput" placeholder="Enter code" inputmode="numeric" />
@@ -488,8 +510,9 @@
 
       <section id="riddle1" class="section">
         <h3>Lock Screen</h3>
-        <p class="status" style="opacity:.7">This is seen on the recovered LockScreen of the burglar's phone. The code
-          seems to be a single digit. Please type in once you have solved it.</p>
+        <p class="status" style="opacity:.7">This is from the one of the recovered phone's LockScreen of the burglars.
+          The code
+          seems to be a single digit. Please type in once you have solved it, to note it down.</p>
 
         <div class="qcpd-riddle">
           <p>I arrive before the journey begins.</p>
@@ -508,12 +531,11 @@
 
       <section id="potion" class="section">
         <h3>Evidence Note on Home-Screen</h3>
-
         <article class="potion-card">
           <header class="potion-title">Padlock Potion</header>
-          <p>You have now reached the home-screen of the burglar's phone. We believe that solving it might be the only
-            way
-            to avoid auto-deletion.</p>
+          <p>We have now reached the home-screen of the burglar's phone. We believe that deciphering this might be the
+            only
+            way to avoid auto-deletion.</p>
 
           <div class="potion-body">
             <p class="potion-lede">How to Brew a basic Padlock Potion?</p>
@@ -534,7 +556,7 @@
         </article>
 
         <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
-          <input id="potionInput" placeholder="Enter the decoded number" inputmode="numeric" />
+          <input id="potionInput" placeholder="Enter the deciphered number" inputmode="numeric" />
           <button id="potionConfirm">Confirm</button>
         </div>
         <p id="potionStatus" class="status"></p>
@@ -542,8 +564,9 @@
 
       <section id="doors" class="section">
         <h3>Doorway Sequence</h3>
-        <p>Great work detective! We have entered the burglar's phone and it only has these three doors. Let's
-          investigate on what they do!</p>
+        <p>Great work detective! We have entered the burglar's phone and it looks like it is setup in such a way that
+          solving these is the only way forward! Let's
+          investigate carefully on what these doors do!</p>
         <p class="status">Click on each door and solve the encryptions. The messages could hint to some code that might
           be useful.</p>
 
@@ -564,9 +587,9 @@
           </div>
         </div>
 
-        <!-- ✅ Common Doorway code input (single place to enter 367) -->
+        <!-- Common Doorway code input (367) -->
         <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
-          <input id="doorsCodeInput" placeholder="Enter the 3‑digit code" inputmode="numeric" />
+          <input id="doorsCodeInput" placeholder="Enter the revealed digits" inputmode="numeric" />
           <button id="doorsCodeConfirm">Confirm</button>
         </div>
 
@@ -593,7 +616,7 @@
 
       <section id="colorcode" class="section">
         <h3>Corridor Clue</h3>
-        <p>Almost there detective! But, there seems to be a fail-safe that the burglars have programmed on their phone.
+        <p>Almost there detective! There seems to be a final fail-safe that the burglars have programmed on their phone.
           Let's solve this and see where it leads!</p>
 
         <ol class="corridor-hints">
@@ -619,12 +642,6 @@
             </strong> What am I?
           </li>
           <br>
-          <!-- <li>
-            What comes first sets the tone, what surrounds gives it meaning,<br>
-            and what follows reveals the way forward.<br>
-            Assemble them in an order, a sentence that places you in the corridor.<br>
-            I await your arrival - your destination is near.<br>
-          </li> -->
         </ol>
 
         <div id="corridorGrid" class="corridor-grid" aria-label="Select one word from each column"></div>
@@ -749,7 +766,6 @@
       if (v) await appendAttempt('potion riddle', v);
     });
 
-    // Corridor uses original IDs (rings*)
     document.getElementById('ringsConfirm')?.addEventListener('click', async () => {
       const v = document.getElementById('ringsInput')?.value?.trim();
       if (v) await appendAttempt('corridor riddle', v);
@@ -774,7 +790,7 @@
     });
   </script>
 
-  <!-- CLOSED DOORS GALLERY CONTROLLER (unchanged) -->
+  <!-- CLOSED DOORS GALLERY CONTROLLER -->
   <script>
     (function () {
       const host = document.getElementById('doorsHost');
@@ -980,25 +996,20 @@
     })();
   </script>
 
-  <!-- ✅ FAIL-SAFE: Cipher confirm unlock (robust, no auto-advance, keeps module text) -->
+  <!-- FAIL-SAFE: Cipher confirm unlock (no auto-advance) -->
   <script>
     (function () {
       function enableNextTab(currentTabId, targetTabId) {
-        // Prefer orchestrator if available (no auto-switch)
         try {
           const used = !!(window.QCPD?.unlockTab?.(targetTabId, { autoSwitch: false }));
           if (used) return true;
-        } catch { /* ignore */ }
-
-        // DOM fallback (class/attrs)
+        } catch { }
         const row = document.getElementById('tabs'); if (!row) return false;
         const nextBtn = row.querySelector(`button.tab[data-tab="${targetTabId}"]`);
         if (!nextBtn) return false;
         nextBtn.classList.remove('disabled');
         nextBtn.removeAttribute('disabled');
         nextBtn.setAttribute('aria-disabled', 'false');
-
-        // Subtle highlight (no scroll / no click)
         nextBtn.classList.add('qcpd-pulse');
         setTimeout(() => nextBtn.classList.remove('qcpd-pulse'), 1800);
         return true;
@@ -1007,10 +1018,9 @@
       function prefixCheck(statusEl) {
         if (!statusEl) return;
         const t = statusEl.textContent || '';
-        if (!/✅/.test(t)) statusEl.textContent = (t ? `✅ ${t}` : '✅ The next section has been unlocked, kindly proceed to it.');
+        if (!/✅/.test(t)) statusEl.textContent = (t ? `✅ ${t}` : '✅ The next section has been unlocked, let us investigate further.');
         statusEl.classList.add('ok');
       }
-
       function cleanDigits(v) { return (v || '').replace(/\D+/g, ''); }
 
       window.addEventListener('DOMContentLoaded', () => {
@@ -1021,14 +1031,13 @@
         if (!btn) return;
 
         function onSuccess() {
-          // Unlock riddle1 and decorate status without moving tabs
           enableNextTab('cipher', 'riddle1');
           prefixCheck(status);
           input?.classList.remove('input-bad');
           input?.classList.add('input-ok');
         }
         function onFail() {
-          if (status) { status.textContent = 'Not correct — try again.'; status.classList.remove('ok'); }
+          if (status) { status.textContent = 'That doesn\'t seem right. Let us open the photo and review again.'; status.classList.remove('ok'); }
           input?.classList.add('input-bad');
           setTimeout(() => input?.classList.remove('input-bad'), 250);
         }
@@ -1038,33 +1047,25 @@
           if (!v) return onFail();
           if (v === '243') onSuccess(); else onFail();
         });
-
         input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
 
-        // Also handle the "already solved" resume scenario defensively
         try {
           const saved = (window.QCPD?.load?.() || {}).cipher;
           const savedVal = (saved && typeof saved === 'object') ? saved.value : saved;
-          if (savedVal === '243') {
-            if (input) input.value = '243';
-            onSuccess();
-          }
+          if (savedVal === '243') { if (input) input.value = '243'; onSuccess(); }
         } catch { }
       });
     })();
   </script>
 
+  <!-- Doorway common code box: accept 367 -->
   <script>
-    /* Doorway common code box: accept 367, show success, unlock next tab, keep user on this tab */
     (function () {
       function enableTab(tabId) {
-        // Prefer orchestrator if present (no auto-switch)
         try {
           const used = !!(window.QCPD?.unlockTab?.(tabId, { autoSwitch: false }));
           if (used) return;
         } catch { }
-
-        // DOM fallback
         const btn = document.querySelector(`.tab[data-tab="${tabId}"]`);
         if (btn) {
           btn.classList.remove('disabled');
@@ -1074,7 +1075,6 @@
           setTimeout(() => btn.classList.remove('qcpd-pulse'), 1800);
         }
       }
-
       function markDoorsCompleteForTelemetry() {
         if (!document.getElementById('doors-complete')) {
           const d = document.createElement('div');
@@ -1092,21 +1092,15 @@
         function ok() {
           enableTab('colorcode');
           if (status) {
-            if (!/✅/.test(status.textContent || '')) {
-              status.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
-            }
+            if (!/✅/.test(status.textContent || '')) status.textContent = '✅ The next section has been unlocked, let us proceed to it.';
             status.classList.add('ok');
           }
           input?.classList.remove('input-bad');
           input?.classList.add('input-ok');
           markDoorsCompleteForTelemetry();
         }
-
         function bad() {
-          if (status) {
-            status.textContent = 'Not correct — try again.';
-            status.classList.remove('ok');
-          }
+          if (status) { status.textContent = 'That doesn\'t seem right. Let\'s look at the biger picture here, what could the code denote?'; status.classList.remove('ok'); }
           input?.classList.add('input-bad');
           setTimeout(() => input?.classList.remove('input-bad'), 250);
         }
@@ -1115,10 +1109,8 @@
           const v = (input?.value || '').replace(/\D+/g, '');
           if (v === '367') ok(); else bad();
         });
-
         input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn?.click(); });
 
-        // Also honor module/game signals if they emit completion events or attributes:
         ['qcpd:doorsComplete', 'doorsComplete'].forEach(evt =>
           window.addEventListener(evt, ok, { once: true })
         );
@@ -1130,6 +1122,7 @@
     })();
   </script>
 
+  <!-- Doorway scaler (frozen design size to prevent shrinking) -->
   <script>
     (function () {
       let DESIGN_W = null, DESIGN_H = null, FROZEN = false;
@@ -1158,11 +1151,12 @@
         const child = host?.firstElementChild; if (!child) return;
         const attrW = parseInt(child.getAttribute?.('width'), 10);
         const attrH = parseInt(child.getAttribute?.('height'), 10);
-        const cssW = child.offsetWidth || 960; // unaffected by transform
+        const cssW = child.offsetWidth || 960;
         const cssH = child.offsetHeight || 540;
 
         DESIGN_W = (attrW > 0) ? attrW : (DESIGN_W || Math.max(720, cssW));
         DESIGN_H = (attrH > 0) ? attrH : (DESIGN_H || Math.max(540, cssH));
+        FROKEN = false; // keep FROZEN name consistent
         FROZEN = (DESIGN_W && DESIGN_H);
       }
 
@@ -1233,7 +1227,7 @@
       fsOut?.addEventListener('click', () => zoomBy(-STEP, fsLabel));
       fsReset?.addEventListener('click', () => resetZoom(fsLabel));
 
-      // Pinch-to-zoom (viewport + fullscreen)
+      // Pinch-to-zoom
       function makePinch(vp, label) {
         let last = null;
         function dist(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
@@ -1254,208 +1248,15 @@
       });
       if (host) injectObs.observe(host, { childList: true, subtree: true });
 
-      // Refit on window changes (🔒 do NOT re-measure the design size again)
+      // Refit on window changes (🔒 do NOT re-measure design size again)
       window.addEventListener('resize', () => inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel));
       window.addEventListener('orientationchange', () => setTimeout(() => inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel), 200));
-    })();
-  </script>
 
-  <!-- Doorway scaler + pinch zoom + Fullscreen overlay + robust re-fit (unchanged) -->
-  <!-- <script>
-    (function () {
-      let DESIGN_W = null, DESIGN_H = null;
-
-      const viewport = document.getElementById('doorsZoomViewport');
-      const host = document.getElementById('doorsHost');
-      const zoomInBtn = document.getElementById('zoomIn');
-      const zoomOutBtn = document.getElementById('zoomOut');
-      const zoomResetBtn = document.getElementById('zoomReset');
-      const zoomFsBtn = document.getElementById('zoomFullscreen');
-      const zoomLabel = document.getElementById('zoomLabel');
-      const orientHint = document.getElementById('orientHint');
-
-      const fs = document.getElementById('doorsOverlay');
-      const fsVp = document.getElementById('fsViewport');
-      const fsIn = document.getElementById('fsIn');
-      const fsOut = document.getElementById('fsOut');
-      const fsReset = document.getElementById('fsReset');
-      const fsClose = document.getElementById('fsClose');
-      const fsLabel = document.getElementById('fsLabel');
-
-      let currentScale = 1, fitScale = 1;
-      const MIN_SCALE = 0.45, MAX_SCALE = 3.0, STEP = 0.15;
-
-      function measureDesignSize() {
-        const child = host.firstElementChild; if (!child) return;
-        const rect = child.getBoundingClientRect();
-        const cssW = child.offsetWidth || rect.width;
-        const cssH = child.offsetHeight || rect.height;
-        const attrW = parseInt(child.getAttribute && child.getAttribute('width'), 10);
-        const attrH = parseInt(child.getAttribute && child.getAttribute('height'), 10);
-        DESIGN_W = Math.max(attrW || 0, cssW || 0, 720) || 720;
-        DESIGN_H = Math.max(attrH || 0, cssH || 0, 540) || 540;
-      }
-
-      function computeFitScale(vpElem) {
-        const vpW = vpElem.clientWidth;
-        const vpH = vpElem.clientHeight || Math.floor(window.innerHeight * 0.7);
-        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
-        if (!DESIGN_W || !DESIGN_H) return 1;
-        const scaleW = vpW / DESIGN_W;
-        const scaleH = (vpH - 20) / DESIGN_H;
-        return Math.max(MIN_SCALE, Math.min(scaleW, (scaleH || scaleW)));
-      }
-
-      function applyScale(scale, labelElem) {
-        currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-        host.style.transform = `scale(${currentScale})`;
-        host.style.width = `${DESIGN_W}px`;
-        host.style.height = `${DESIGN_H}px`;
-        const pct = `${Math.round(currentScale * 100)}%`;
-        (labelElem || zoomLabel).textContent = pct;
-
-        host.style.marginLeft = host.style.marginRight = 'auto';
-        const desiredH = DESIGN_H * currentScale + 16;
-        const maxH = Math.max(280, Math.min(window.innerHeight * 0.78, desiredH));
-        viewport.style.height = maxH + 'px';
-      }
-
-      function fitToViewport(targetVp = viewport, labelElem = zoomLabel) {
-        if (!DESIGN_W || !DESIGN_H) measureDesignSize();
-        fitScale = computeFitScale(targetVp);
-        applyScale(fitScale, labelElem);
-        maybeShowOrientHint();
-      }
-
-      function zoomBy(delta, labelElem) { applyScale(currentScale + delta, labelElem); }
-      function resetZoom(labelElem) { applyScale(fitScale, labelElem); }
-
-      function maybeShowOrientHint() {
-        const isNarrow = window.innerWidth < 420;
-        const tight = fitScale < 0.7;
-        if (orientHint) orientHint.style.display = (isNarrow && tight) ? 'block' : 'none';
-      }
-
-      zoomInBtn.addEventListener('click', () => zoomBy(STEP, zoomLabel));
-      zoomOutBtn.addEventListener('click', () => zoomBy(-STEP, zoomLabel));
-      zoomResetBtn.addEventListener('click', () => resetZoom(zoomLabel));
-      document.getElementById('zoomFullscreen').addEventListener('click', openFullscreen);
-
-      // Pinch-to-zoom
-      let lastTouchDist = null;
-      viewport.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) lastTouchDist = distance(e.touches[0], e.touches[1]);
-      }, { passive: true });
-      viewport.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2 && lastTouchDist) {
-          const d = distance(e.touches[0], e.touches[1]);
-          const factor = d / lastTouchDist;
-          lastTouchDist = d;
-          applyScale(currentScale * factor, zoomLabel);
-          e.preventDefault();
-        }
-      }, { passive: false });
-      viewport.addEventListener('touchend', (event) => {
-        if (event.touches && event.touches.length < 2) lastTouchDist = null;
-      });
-
-      function distance(a, b) { const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY; return Math.hypot(dx, dy); }
-
-      /* Fullscreen overlay for phones */
-      let inFullscreen = false, placeholder = null;
-      function openFullscreen() {
-        if (inFullscreen) return;
-        inFullscreen = true;
-        placeholder = document.createElement('div');
-        host.parentNode.insertBefore(placeholder, host);
-        fsVp.appendChild(host);
-        fs.setAttribute('aria-hidden', 'false');
-
-        fitToViewport(fsVp, fsLabel);
-        bindFsGestures();
-      }
-      function closeFullscreen() {
-        if (!inFullscreen) return;
-        inFullscreen = false;
-        fs.setAttribute('aria-hidden', 'true');
-        if (placeholder && placeholder.parentNode) {
-          placeholder.parentNode.insertBefore(host, placeholder);
-          placeholder.remove(); placeholder = null;
-        }
-        fitToViewport(viewport, zoomLabel);
-        unbindFsGestures();
-      }
-
-      document.getElementById('fsClose').addEventListener('click', closeFullscreen);
-      document.getElementById('fsIn').addEventListener('click', () => zoomBy(STEP, fsLabel));
-      document.getElementById('fsOut').addEventListener('click', () => zoomBy(-STEP, fsLabel));
-      document.getElementById('fsReset').addEventListener('click', () => resetZoom(fsLabel));
-
-      let fsLastTouchDist = null;
-      function bindFsGestures() {
-        fsVp.addEventListener('touchstart', fsStart, { passive: true });
-        fsVp.addEventListener('touchmove', fsMove, { passive: false });
-        fsVp.addEventListener('touchend', fsEnd, { passive: true });
-      }
-      function unbindFsGestures() {
-        fsVp.removeEventListener('touchstart', fsStart);
-        fsVp.removeEventListener('touchmove', fsMove);
-        fsVp.removeEventListener('touchend', fsEnd);
-      }
-      function fsStart(e) { if (e.touches.length === 2) fsLastTouchDist = distance(e.touches[0], e.touches[1]); }
-      function fsMove(e) {
-        if (e.touches.length === 2 && fsLastTouchDist) {
-          const d = distance(e.touches[0], e.touches[1]);
-          const factor = d / fsLastTouchDist;
-          fsLastTouchDist = d;
-          applyScale(currentScale * factor, fsLabel);
-          e.preventDefault();
-        }
-      }
-      function fsEnd() { fsLastTouchDist = null; }
-
-      (function autoEnterFsOnSmallPhone() {
-        const tabs = document.getElementById('tabs');
-        if (!tabs) return;
-        tabs.addEventListener('click', (e) => {
-          const btn = e.target.closest('button.tab');
-          if (btn?.dataset.tab === 'doors' && window.innerWidth < 480) {
-            setTimeout(() => { if (!host.firstElementChild) return; openFullscreen(); }, 200);
-          }
-        });
-      })();
-
-      window.addEventListener('resize', () => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
-      window.addEventListener('orientationchange', () => setTimeout(() => { inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); }, 200));
-
-      const injectObs = new MutationObserver(() => {
-        if (host.firstElementChild) {
-          setTimeout(() => { measureDesignSize(); fitToViewport(); }, 50);
-          injectObs.disconnect();
-        }
-      });
-      injectObs.observe(host, { childList: true, subtree: true });
-
-      let ro = null;
-      function attachResizeObserver() {
-        if (!host.firstElementChild || ro) return;
-        ro = new ResizeObserver(() => {
-          measureDesignSize();
-          inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel);
-        });
-        ro.observe(host.firstElementChild);
-      }
-      const subtreeObs = new MutationObserver(() => { attachResizeObserver(); measureDesignSize(); inFullscreen ? fitToViewport(fsVp, fsLabel) : fitToViewport(viewport, zoomLabel); });
-      subtreeObs.observe(host, { childList: true, subtree: true });
-
-      if (host.firstElementChild) {
-        setTimeout(() => { measureDesignSize(); fitToViewport(); attachResizeObserver(); }, 50);
-      }
-
+      // Expose helpers (optional)
       window.__qcpd_openDoorFullscreen = openFullscreen;
       window.__qcpd_closeDoorFullscreen = closeFullscreen;
     })();
-  </script> -->
+  </script>
 </body>
 
 </html>

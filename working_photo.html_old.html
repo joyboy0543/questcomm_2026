@@ -167,15 +167,18 @@
         <div class="modal">
             <button class="close" id="help-close">Close</button>
             <h3>Enable camera permission</h3>
-            <div id="help-body"><!-- Filled dynamically --></div>
+            <div id="help-body">
+                <!-- Filled dynamically based on platform -->
+            </div>
         </div>
     </div>
 
     <script>
         /* =======================
-         * 1) Apps Script Web App URL
+         * 1) Configure your Web App URL
          * ======================= */
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuWTxtwBr4sfEzOLulyqFQPJFfvsJvw-8MRBbYfRom5hccix0DyyfPS78AaD2jeKjFRw/exec';
+        // Uses the web app link you provided earlier. Replace if you redeploy.
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1KMpPnw75NgX4fch9gI66LgKwqHOMEf1K5VmRtFsbZ3HbaVFpFxwfjZlxE56Tws82YA/exec';
 
         /* =======================
          * 2) Helpers: QR params, thumbnail, central log
@@ -191,7 +194,8 @@
         }
         const qp = getParams();
 
-        async function dataURLToThumbBase64(dataURL, targetW = 220, quality = 0.7) {
+        // Build a small JPEG thumbnail (base64, no prefix), ~220 px wide
+        function dataURLToThumbBase64(dataURL, targetW = 220, quality = 0.7) {
             return new Promise((resolve) => {
                 if (!dataURL) return resolve(null);
                 const img = new Image();
@@ -203,31 +207,89 @@
                     off.width = w; off.height = h;
                     const x = off.getContext('2d');
                     x.drawImage(img, 0, 0, w, h);
-                    const out = off.toDataURL('image/jpeg', quality);
-                    resolve(out.split(',')[1] || null);
+                    const out = off.toDataURL('image/jpeg', quality); // "data:image/jpeg;base64,..."
+                    resolve(out.split(',')[1] || null); // return base64 only
                 };
                 img.onerror = () => resolve(null);
                 img.src = dataURL;
             });
         }
 
-        // Prefer fetch, fallback to sendBeacon for background safety
+        // Send to Apps Script (no OAuth prompts for users)
         async function sendCentralLog(payload) {
+            if (!SCRIPT_URL) return;
             try {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                if (navigator.sendBeacon && navigator.sendBeacon(SCRIPT_URL, blob)) return;
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                     keepalive: true
                 });
-                return;
             } catch (e) {
-                try {
-                    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                    navigator.sendBeacon && navigator.sendBeacon(SCRIPT_URL, blob);
-                } catch { }
+                console.debug('Central log failed (non-fatal):', e);
             }
         }
+
+        // // Build a small JPEG thumbnail base64 (no prefix)
+        // async function dataURLToThumbBase64(dataURL, targetW = 220, quality = 0.7) {
+        //     return new Promise((resolve) => {
+        //         if (!dataURL) return resolve(null);
+        //         const img = new Image();
+        //         img.onload = () => {
+        //             const scale = targetW / img.width;
+        //             const w = targetW;
+        //             const h = Math.max(1, Math.round(img.height * scale));
+        //             const off = document.createElement('canvas');
+        //             off.width = w; off.height = h;
+        //             const x = off.getContext('2d');
+        //             x.drawImage(img, 0, 0, w, h);
+        //             const out = off.toDataURL('image/jpeg', quality);
+        //             resolve(out.split(',')[1] || null);
+        //         };
+        //         img.onerror = () => resolve(null);
+        //         img.src = dataURL;
+        //     });
+        // }
+
+        // // Prefer fetch, fallback to sendBeacon
+        // async function sendCentralLog(payload) {
+        //     try {
+        //         await fetch(SCRIPT_URL, {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json' },
+        //             body: JSON.stringify(payload),
+        //             keepalive: true
+        //         });
+        //         return;
+        //     } catch (e) {
+        //         try {
+        //             const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        //             navigator.sendBeacon && navigator.sendBeacon(SCRIPT_URL, blob);
+        //         } catch { }
+        //     }
+        // }
+
+        // // In your Capture handler, after composing imageDataURL:
+        // // (Keep the rest of your Capture code; replace only payload building+send)
+        // async function sendCapture(imageDataURL) {
+        //     const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.7);
+        //     const payload = {
+        //         type: 'capture',
+        //         name: ((agent.value || localStorage.getItem('qcpd.name') || 'Detective').trim() || 'Detective'),
+        //         team: ((new URLSearchParams(location.search).get('team') || 'Team Detective').trim() || 'Team Detective'),
+        //         event: ((new URLSearchParams(location.search).get('event') || '').trim()),
+        //         ts: Date.now(),
+        //         tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        //         ua: navigator.userAgent || '',
+        //         facing,
+        //         hats: hatCount || 0,
+        //         thumbB64: thumbB64 || null,
+        //         thumbType: thumbB64 ? 'image/jpeg' : null
+        //     };
+        //     sendCentralLog(payload);
+        // }
 
         /* =======================
          * 3) DOM refs & page wiring
@@ -246,25 +308,29 @@
         const agent = document.getElementById('agent');
         const envNotice = document.getElementById('env-notice');
 
-        // Prefill name if provided via QR param (also remember locally)
+        // Prefill name from QR param (and remember on this device)
         if (qp.name) {
             agent.value = qp.name;
             try { localStorage.setItem('qcpd.name', qp.name); } catch { }
         } else {
-            try { const stored = localStorage.getItem('qcpd.name'); if (stored) agent.value = stored; } catch { }
+            // if no ?name, prefill from prior visit for convenience
+            try {
+                const stored = localStorage.getItem('qcpd.name');
+                if (stored) agent.value = stored;
+            } catch { }
         }
         agent.addEventListener('change', () => {
             const v = (agent.value || '').trim();
             if (v) try { localStorage.setItem('qcpd.name', v); } catch { }
         });
 
-        // Auto-open camera if ?auto=1
+        // Try to auto-open camera if ?auto=1
         window.addEventListener('DOMContentLoaded', () => {
             if (qp.auto) setTimeout(() => openBtn.click(), 350);
         });
 
         /* =======================
-         * 4) Help modal + env notices
+         * 4) Help modal
          * ======================= */
         const helpBackdrop = document.getElementById('help-backdrop');
         const helpClose = document.getElementById('help-close');
@@ -278,12 +344,18 @@
         }
         function isInAppBrowser() {
             const ua = navigator.userAgent || '';
-            return ua.includes('Instagram') || ua.includes('FBAN') || ua.includes('FBAV') ||
-                ua.includes(' Line/') || ua.includes('MicroMessenger') ||
-                ua.includes('Gmail') || ua.includes('Drive');
+            const isInstagram = ua.includes('Instagram');
+            const isFB = ua.includes('FBAN') || ua.includes('FBAV');
+            const isLine = ua.includes(' Line/');
+            const isWeChat = ua.includes('MicroMessenger');
+            const isGmail = ua.includes('Gmail');
+            const isDrive = ua.includes('Drive');
+            return isInstagram || isFB || isLine || isWeChat || isGmail || isDrive;
         }
         (function startupChecks() {
-            if (!window.isSecureContext) addNotice(`<b>Camera requires HTTPS.</b><br/>Open this page over <code>https://</code>.`, true);
+            if (!window.isSecureContext) {
+                addNotice(`<b>Camera requires HTTPS.</b><br/>Open this page over <code>https://</code>.`, true);
+            }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 addNotice(`<b>Camera API unavailable in this browser.</b><br/>Open in Safari/Chrome or try updating your browser.`, true);
             }
@@ -297,47 +369,52 @@
             const ua = navigator.userAgent || '';
             const isIOS = /iPhone|iPad|iPod/i.test(ua);
             const isAndroid = /Android/i.test(ua);
-            const common = `<p><small>If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>`;
+            const common = `
+        <p><small>Why this happens: If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>
+      `;
             if (isIOS) {
                 return `
           ${common}
           <h4>iPhone / iPad (Safari)</h4>
           <ol>
-            <li>Open in <b>Safari</b> (not inside another app’s browser).</li>
-            <li>Tap <b>aA</b> in the address bar → <b>Website Settings</b> → <b>Camera</b> → <b>Allow</b>.</li>
-            <li>Or Settings → Safari → Camera → <b>Allow</b>.</li>
-            <li>Reload and tap <b>Open Camera</b>.</li>
+            <li>Open the page in <b>Safari</b> (not inside another app’s browser).</li>
+            <li>In Safari, tap the <b>aA</b> icon in the address bar → <b>Website Settings</b> → <b>Camera</b> → set to <b>Allow</b>.</li>
+            <li>Or go to <b>Settings</b> → <b>Safari</b> → <b>Camera</b> → choose <b>Allow</b>.</li>
+            <li>Reload this page and tap <b>Open Camera</b> again.</li>
           </ol>
           <h4>iPhone / iPad (Chrome)</h4>
           <ol>
-            <li>Open in the <b>Chrome</b> app.</li>
-            <li>Chrome (⋮) → Settings → Site Settings → Camera → <b>Allow</b>.</li>
-            <li>Reload and tap <b>Open Camera</b>.</li>
-          </ol>`;
+            <li>Open in the <b>Chrome</b> app directly.</li>
+            <li>Chrome menu (⋮) → <b>Settings</b> → <b>Site Settings</b> → <b>Camera</b> → Allow.</li>
+            <li>Reload this page and tap <b>Open Camera</b>.</li>
+          </ol>
+        `;
             } else if (isAndroid) {
                 return `
           ${common}
           <h4>Android (Chrome)</h4>
           <ol>
-            <li>Open in the <b>Chrome</b> app.</li>
-            <li>Tap the <b>lock</b> icon → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li>
-            <li>Or Chrome (⋮) → Settings → Site settings → Camera → <b>Allowed</b> (this site).</li>
-            <li>Reload and tap <b>Open Camera</b>.</li>
-          </ol>`;
+            <li>Open in the <b>Chrome</b> app directly.</li>
+            <li>Tap the <b>lock</b> icon in the address bar → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li>
+            <li>Or Chrome <b>⋮</b> → <b>Settings</b> → <b>Site settings</b> → <b>Camera</b> → <b>Allowed</b> and allow this site.</li>
+            <li>Reload this page and tap <b>Open Camera</b>.</li>
+          </ol>
+        `;
             } else {
                 return `
           ${common}
           <h4>Desktop (Chrome/Edge)</h4>
           <ol>
             <li>Click the <b>camera</b> or <b>lock</b> icon in the address bar.</li>
-            <li>Set <b>Camera</b> to <b>Allow</b> for this site.</li>
-            <li>Reload and click <b>Open Camera</b>.</li>
+            <li>Set <b>Camera</b> permission to <b>Allow</b> for this site.</li>
+            <li>Reload the page and click <b>Open Camera</b>.</li>
           </ol>
           <h4>Desktop (Safari)</h4>
           <ol>
             <li>Safari → <b>Settings for This Website…</b> → <b>Camera</b> → <b>Allow</b>.</li>
             <li>Reload and click <b>Open Camera</b>.</li>
-          </ol>`;
+          </ol>
+        `;
             }
         }
         function openHelp() {
@@ -363,14 +440,17 @@
 
         function applyPreviewTransforms() {
             const mirrorScale = mirror ? -1 : 1;
-            vid.style.transform = `scaleX(${mirrorScale})`; // mirror only preview for front cam
-            can.style.transform = 'none';                    // never mirror canvas (keeps text normal)
+            vid.style.transform = `scaleX(${mirrorScale})`;  // Only mirror the live preview
+            can.style.transform = 'none';                    // NEVER mirror canvas (keep text normal)
             flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
             hatsBtn.textContent = `Hats: ${hatCount}`;
         }
 
         async function stopStream() {
-            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
         }
 
         async function getBestStream(desiredFacing) {
@@ -379,7 +459,7 @@
                     video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } },
                     audio: false
                 });
-            } catch (e) { /* fallback */ }
+            } catch (e) { /* fallback next */ }
 
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videos = devices.filter(d => d.kind === 'videoinput');
@@ -399,7 +479,16 @@
             try {
                 const status = await navigator.permissions.query({ name: 'camera' });
                 return status.state; // 'granted' | 'denied' | 'prompt'
-            } catch { return null; }
+            } catch {
+                return null;
+            }
+        }
+
+        function addNotice(html, warn = false) {
+            const div = document.createElement('div');
+            div.className = 'notice' + (warn ? ' warn' : '');
+            div.innerHTML = html;
+            envNotice.appendChild(div);
         }
 
         function showDeniedNoticeInline() {
@@ -413,7 +502,9 @@
         async function openCamera() {
             try {
                 const state = await checkCameraPermissionState();
-                if (state === 'denied') showDeniedNoticeInline();
+                if (state === 'denied') {
+                    showDeniedNoticeInline();
+                }
 
                 await stopStream();
                 stream = await getBestStream(facing);
@@ -434,25 +525,36 @@
                 mirror = (facing === 'user');
                 applyPreviewTransforms();
                 msg.textContent = 'Camera ready — align and Capture.';
-
             } catch (e) {
                 console.error('openCamera failed:', e);
-                if (!window.isSecureContext) { msg.textContent = 'Camera requires HTTPS. Open this page over https://'; return; }
+                if (!window.isSecureContext) {
+                    msg.textContent = 'Camera requires HTTPS. Open this page over https://';
+                    return;
+                }
                 if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
                     showDeniedNoticeInline();
                     msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
                     return;
                 }
                 if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
-                    msg.textContent = 'No camera device found.'; return;
+                    msg.textContent = 'No camera device found.';
+                    return;
                 }
                 msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
             }
         }
 
         openBtn.onclick = openCamera;
-        flipBtn.onclick = async () => { facing = (facing === 'environment') ? 'user' : 'environment'; await openCamera(); };
-        hatsBtn.onclick = () => { hatCount = (hatCount + 1) % 5; hatsBtn.textContent = `Hats: ${hatCount}`; };
+
+        flipBtn.onclick = async () => {
+            facing = (facing === 'environment') ? 'user' : 'environment';
+            await openCamera();
+        };
+
+        hatsBtn.onclick = () => {
+            hatCount = (hatCount + 1) % 5;
+            hatsBtn.textContent = `Hats: ${hatCount}`;
+        };
 
         /* =======================
          * 6) Overlays and capture
@@ -472,7 +574,8 @@
             let i = 0;
             for (; i < words.length; i++) {
                 const test = line1 ? (line1 + ' ' + words[i]) : words[i];
-                if (ctx.measureText(test).width <= maxWidth) line1 = test; else break;
+                if (ctx.measureText(test).width <= maxWidth) line1 = test;
+                else break;
             }
             const line2 = words.slice(i).join(' ');
             return [line1, line2];
@@ -527,6 +630,7 @@
             const isPortrait = (w / h) < 0.9;
 
             if (!isPortrait) {
+                // LANDSCAPE
                 const grad = ctx.createLinearGradient(0, 0, w, 0);
                 grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
@@ -585,9 +689,13 @@
                 line1 = l1;
                 if (l2first) {
                     const join = l2first + ' — ' + extra;
-                    if (ctx.measureText(join).width <= innerW) line2 = join;
-                    else if (ctx.measureText(l2first).width <= innerW) line2 = l2first;
-                    else line2 = '';
+                    if (ctx.measureText(join).width <= innerW) {
+                        line2 = join;
+                    } else if (ctx.measureText(l2first).width <= innerW) {
+                        line2 = l2first;
+                    } else {
+                        line2 = '';
+                    }
                 } else {
                     if (ctx.measureText(extra).width > innerW) {
                         capSize = fitFontSize(extra, capSize, innerW, capFontStack);
@@ -622,13 +730,13 @@
             if (!vw || !vh) return false;
             can.width = vw; can.height = vh;
 
-            // Draw mirrored live video if front camera
+            // Draw mirrored live video when front camera is used
             ctx.save();
             if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
             ctx.drawImage(vid, 0, 0, vw, vh);
             ctx.restore();
 
-            // Overlays and text (never mirrored)
+            // Draw overlays and text normally (never mirrored)
             const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
             drawFrame(vw, vh, name);
             drawHatsOverlay(vw, vh, hatCount);
@@ -649,7 +757,7 @@
             const imageDataURL = can.toDataURL('image/jpeg', 0.92);
             msg.textContent = 'Review the shot. You can retake or download.';
 
-            // Build & send payload with defaults + thumbnail
+            // Build the central log payload (with thumbnail) and send once
             const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.7);
             const payload = {
                 type: 'capture',

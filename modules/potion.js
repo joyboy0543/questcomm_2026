@@ -3,7 +3,7 @@
     const KEY = 'potion', ANSWER = '928';
 
     function solved(out) {
-        out.textContent = 'Brew logged. Let\'s proceed to the Doorway Sequence.';
+        out.textContent = 'That\'s right Detective!. Let\'s proceed to the Doorway Sequence.';
         window.QCPD?.save(KEY, ANSWER);
         window.QCPD?.radio('Potion decoded: Code recorded. Over!');
         window.QCPD?.unlockTab('doors', { autoSwitch: true });

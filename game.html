@@ -76,7 +76,7 @@
       font-size: .95rem;
     }
 
-    /* Tab pulse */
+    /* Tab pulse (kept but unused in manual mode) */
     @keyframes qcpdPulse {
       0% {
         box-shadow: 0 0 0 0 rgba(46, 168, 255, .65);
@@ -358,7 +358,6 @@
       color: #fff;
     }
 
-    /* Portrait gating (only when gallery is ready) */
     @media (orientation: portrait) {
       html.dg-ready #doorsZoomShell {
         display: none;
@@ -470,9 +469,9 @@
           so far. </p>
         <ol>A 3 digit code, that might hopefully be helpful later.</ol>
         <ol>A single digit, supposedly a part of a code.</ol>
-        <ol>A single digit, supposedly a part of a code.</ol>
+        <ol>One more single digit, also supposedly a part of a code.</ol>
 
-        <p>In the Evidence panel, each station contains information extracted from the burglar's phone. Some notes are
+        <p>In the Evidence panel, each section contains information extracted from the burglar's phone. Some notes are
           gathered based on the conversation from the interrogation. The collected evidence seems to be encrypted in
           some form of puzzle or a riddle. Decode them and extract the key findings.</p>
         <p class="status">And one more thing detective! Don't forget to keep the findings confidential and handle the
@@ -488,7 +487,8 @@
 
       <section id="cipher" class="section">
         <h3>Cipher Terminal - Photo Forensics</h3>
-        <p class="status">Click the photo to open it. Zoom and pan if needed. Record the code that you decipher.</p>
+        <p class="status">This was found on the burglar's phone. We believe it contains a hidden code. Click the photo
+          to open it. Zoom and pan if needed. Record the code that you decipher.</p>
 
         <figure class="photo-thumb"></figure>
         <p class="hint photo-open-hint">Tip: the photo will open directly in a new tab.</p>
@@ -525,13 +525,14 @@
 
         <article class="potion-card">
           <header class="potion-title">Padlock Potion</header>
-          <p>You have now reached the home-screen of the burglar's phone. We believe that solving might be the only way
+          <p>You have now reached the home-screen of the burglar's phone. We believe that solving it might be the only
+            way
             to avoid auto-deletion.</p>
 
           <div class="potion-body">
-            <p class="potion-lede">How to Brew a basic Padlock Potion</p>
+            <p class="potion-lede">How to Brew a basic Padlock Potion?</p>
+            <p>To bind a common padlock shut and command its clasp to sleep:</p>
             <ul class="potion-steps">
-              <li>To bind a common padlock shut and command its clasp to sleep.</li>
               <li><strong>First, one eyelash from a wild dragon - caught in the sunset’s ruby‑sparked glow.</strong>
               </li>
               <li><strong>Next, two bones from a royal frog - crown‑kissed and pale as snow.</strong></li>
@@ -655,19 +656,19 @@
         <ul class="findings-list">
           <br>
           <li><strong>243</strong> - Decoded from the Encrypted image. Looks like the other 3 digit codes, probably to
-            open a lock. (military pattern)</li>
+            open a lock.</li>
           <br>
           <li><strong>1</strong> - Decoded from the lock-screen of the phone. Looks like this digit is a part of a
-            bigger code. (iii gold)</li>
+            bigger code.</li>
           <br>
           <li><strong>928</strong> - Decoded from evidence found on the home-screen of the phone, The Padlock potion.
-            This can only be for one strange lock. (silver)</li>
+            This can only be for one strange lock.</li>
           <br>
           <li><strong>367</strong> - Decoded from the Doorway Sequence. This code is still unclear to me. What do you
             think this would be?</li>
           <br>
           <li><strong>THE WORLD MAP</strong> - Decoded from the Corridor Clue. This does not seem the end of this clue.
-            Could it be a part of the larger picture? Have you recognized this from elsewhere? (iv gold)</li>
+            Could it be a part of the larger picture? Have you recognized this from elsewhere?</li>
           <br>
         </ul>
         <p class="status">Amazing! Let's proceed to the next place based on the collected evidence. It feels like we are
@@ -787,77 +788,15 @@
     });
   </script>
 
-  <!-- Auto-scroll to top on success + next-tab pulse + auto-advance (7s) -->
+  <!-- MANUAL SUCCESS MODE (no auto scroll/advance; persistent inline messages) -->
   <script>
     (function () {
-      function scrollToTop() {
-        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0, 0); }
-      }
-      function showTopMessage(html) {
-        let box = document.getElementById('caseMsg');
-        if (!box) {
-          box = document.createElement('div'); box.id = 'caseMsg'; box.className = 'msg';
-          const host = document.getElementById('evidencePanel') || document.body; host.prepend(box);
-        }
-        box.style.display = 'block'; box.innerHTML = html;
-        clearTimeout(showTopMessage._t);
-        showTopMessage._t = setTimeout(() => { box.style.display = ''; box.textContent = ''; }, 2500);
-      }
-      function getNextTab(currentTabId) {
-        const row = document.getElementById('tabs'); if (!row) return null;
-        const tabs = Array.from(row.querySelectorAll('button.tab'));
-        const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
-        return (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
-      }
-      function pulseNextTab(currentTabId) {
-        const next = getNextTab(currentTabId);
-        if (next && !next.classList.contains('disabled')) {
-          next.classList.add('qcpd-pulse');
-          setTimeout(() => next.classList.remove('qcpd-pulse'), 3000);
-        }
-      }
+      // Enable manual mode globally (affects all tabs)
+      const MANUAL_MODE = true;
 
       const SUCCESS_PATTERNS = [/✅/, /\bcorrect\b/i, /\bdecoded\b/i, /\bsuccess\b/i, /\bunlocked\b/i, /\bcomplete(d)?\b/i, /\bsolved\b/i];
-      function looksSuccessful(el) {
-        if (!el) return false;
-        const txt = (el.textContent || '').trim();
-        const cls = el.className || '';
-        if (/(\bok\b|\bsuccess\b)/i.test(cls)) return true;
-        return SUCCESS_PATTERNS.some(r => r.test(txt));
-      }
 
-      const reactedTabs = new Set();
-      const autoAdvance = {
-        timer: null,
-        schedule(tabId) {
-          this.cancel();
-          const next = getNextTab(tabId);
-          if (!next || next.classList.contains('disabled')) return;
-          this.timer = setTimeout(() => {
-            try { next.click(); } catch { next.dispatchEvent(new Event('click', { bubbles: true })); }
-            this.cancel();
-          }, 7000);
-        },
-        cancel() { if (this.timer) clearTimeout(this.timer); this.timer = null; }
-      };
-
-      function onSuccess(tabId) {
-        if (reactedTabs.has(tabId)) return;
-        reactedTabs.add(tabId);
-        scrollToTop();
-        showTopMessage('✅ Correct! <strong>Proceed to the next puzzle</strong> from the tabs above.');
-        pulseNextTab(tabId);
-        autoAdvance.schedule(tabId);
-      }
-
-      function wireCancelOnTabChange() {
-        const row = document.getElementById('tabs'); if (!row) return;
-        row.addEventListener('click', (e) => {
-          const btn = e.target.closest('button.tab');
-          if (btn) autoAdvance.cancel();
-        });
-      }
-
+      // Map each tab to its status element getter (so we know where to write the message)
       const STATUS_TARGETS = [
         { tab: 'cipher', el: () => document.getElementById('cipherStatus') },
         { tab: 'riddle1', el: () => document.getElementById('riddle1Status') },
@@ -866,14 +805,47 @@
         { tab: 'colorcode', el: () => document.getElementById('ringsStatus') },
       ];
 
+      function looksSuccessful(el) {
+        if (!el) return false;
+        const txt = (el.textContent || '').trim();
+        const cls = el.className || '';
+        if (/(\bok\b|\bsuccess\b)/i.test(cls)) return true;
+        return SUCCESS_PATTERNS.some(r => r.test(txt));
+      }
+
+      // Enable next tab
+      function enableNextTab(currentTabId) {
+        const row = document.getElementById('tabs'); if (!row) return;
+        const tabs = Array.from(row.querySelectorAll('button.tab'));
+        const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
+        const next = (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
+        if (!next) return;
+        next.classList.remove('disabled');
+        next.removeAttribute('disabled');
+        next.setAttribute('aria-disabled', 'false');
+      }
+
+      // Standard inline success message (persistent)
+      function writeInlineSuccess(tabId, statusEl) {
+        const el = statusEl || (STATUS_TARGETS.find(x => x.tab === tabId)?.el?.() || null);
+        if (!el) return;
+        el.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
+        el.classList.add('ok');
+      }
+
+      // Watch a status element and, when it looks successful, enable next tab and write message
       function watchStatus(targetGetter, tabId) {
         const el = targetGetter(); if (!el) return;
         const obs = new MutationObserver(() => {
-          if (!reactedTabs.has(tabId) && looksSuccessful(el)) onSuccess(tabId);
+          if (looksSuccessful(el)) {
+            enableNextTab(tabId);
+            writeInlineSuccess(tabId, el);
+          }
         });
         obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
       }
 
+      // Doorway: telemetry marker helper (used by code box and any module signals)
       function markDoorsCompleteBanner() {
         if (!document.getElementById('doors-complete')) {
           const d = document.createElement('div');
@@ -883,66 +855,43 @@
         }
       }
 
+      // Doorway signals (custom events / attributes / text watchers) – manual behavior
       function watchDoorsSignals() {
         const host = document.getElementById('doorsHost');
 
+        function handleDoorsManualSuccess() {
+          enableNextTab('doors');
+          writeInlineSuccess('doors');
+          markDoorsCompleteBanner(); // keep telemetry working
+        }
+
         ['qcpd:doorsComplete', 'doorsComplete'].forEach(evtName => {
-          window.addEventListener(evtName, () => {
-            if (!reactedTabs.has('doors')) {
-              markDoorsCompleteBanner();
-              onSuccess('doors');
-            }
-          }, { once: true });
+          window.addEventListener(evtName, () => { if (MANUAL_MODE) handleDoorsManualSuccess(); }, { once: true });
         });
 
         const attrObs = new MutationObserver(() => {
-          if (!reactedTabs.has('doors')) {
-            const el = document.querySelector('[data-doors-complete="true"]');
-            if (el) {
-              markDoorsCompleteBanner();
-              onSuccess('doors');
-              attrObs.disconnect();
-            }
-          }
+          const el = document.querySelector('[data-doors-complete="true"]');
+          if (el && MANUAL_MODE) { handleDoorsManualSuccess(); attrObs.disconnect(); }
         });
         attrObs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['data-doors-complete'] });
         const firstAttr = document.querySelector('[data-doors-complete="true"]');
-        if (firstAttr && !reactedTabs.has('doors')) {
-          markDoorsCompleteBanner();
-          onSuccess('doors');
-        }
+        if (firstAttr && MANUAL_MODE) { handleDoorsManualSuccess(); }
 
         if (host) {
           const hostObs = new MutationObserver(() => {
-            if (reactedTabs.has('doors')) return;
             const txt = (host.innerText || host.textContent || '').trim();
-            if (SUCCESS_PATTERNS.some(r => r.test(txt))) {
-              markDoorsCompleteBanner();
-              onSuccess('doors');
-              hostObs.disconnect();
-            }
+            if (SUCCESS_PATTERNS.some(r => r.test(txt)) && MANUAL_MODE) { handleDoorsManualSuccess(); hostObs.disconnect(); }
           });
           hostObs.observe(host, { childList: true, subtree: true, characterData: true });
           const initialTxt = (host.innerText || host.textContent || '').trim();
-          if (initialTxt && SUCCESS_PATTERNS.some(r => r.test(initialTxt)) && !reactedTabs.has('doors')) {
-            markDoorsCompleteBanner();
-            onSuccess('doors');
-            hostObs.disconnect();
+          if (initialTxt && SUCCESS_PATTERNS.some(r => r.test(initialTxt)) && MANUAL_MODE) {
+            handleDoorsManualSuccess();
+            // don't disconnect here; if modules re-render, it will be set again harmlessly
           }
         }
       }
 
-      function watchDoorsCompleteBanner() {
-        const obs = new MutationObserver(() => {
-          const banner = document.getElementById('doors-complete');
-          if (banner && !reactedTabs.has('doors')) { onSuccess('doors'); obs.disconnect(); }
-        });
-        obs.observe(document.body, { childList: true, subtree: true });
-        const banner = document.getElementById('doors-complete');
-        if (banner && !reactedTabs.has('doors')) { onSuccess('doors'); }
-      }
-
-      /* ✅ Wire the common Doorway code box; also remove per-game confirm boxes */
+      /* Wire the common Doorway code box; hide per-game confirm boxes */
       function wireDoorsCodeBoxAndHidePerGameInputs() {
         const input = document.getElementById('doorsCodeInput');
         const btn = document.getElementById('doorsCodeConfirm');
@@ -951,35 +900,15 @@
 
         function clean(v) { return (v || '').replace(/\D+/g, ''); }
 
-        function getNextTab(currentTabId) {
-          const row = document.getElementById('tabs'); if (!row) return null;
-          const tabs = Array.from(row.querySelectorAll('button.tab'));
-          const idx = tabs.findIndex(b => b.dataset.tab === currentTabId);
-          return (idx >= 0 && idx < tabs.length - 1) ? tabs[idx + 1] : null;
-        }
-        function enableTab(btn) {
-          if (!btn) return;
-          btn.classList.remove('disabled');
-          btn.removeAttribute('disabled');
-          btn.setAttribute('aria-disabled', 'false');
-        }
-
         function successUX() {
-          // 1) Enable the next tab BEFORE onSuccess so auto-advance can schedule
-          const next = getNextTab('doors');
-          enableTab(next);
-
-          // 2) Status like other games + input visuals
-          status.textContent = '✅ Correct — proceed to the next tab.';
-          status.classList.add('ok');
+          enableNextTab('doors');
+          if (status) {
+            status.textContent = '✅ The next section has been unlocked, kindly proceed to it.';
+            status.classList.add('ok');
+          }
           input?.classList.remove('input-bad');
           input?.classList.add('input-ok');
-
-          // 3) Telemetry marker so existing observer fires
-          markDoorsCompleteBanner();
-
-          // 4) Shared success flow
-          onSuccess('doors');
+          markDoorsCompleteBanner(); // telemetry
         }
 
         btn?.addEventListener('click', () => {
@@ -987,14 +916,15 @@
           if (v === '367') {
             successUX();
           } else {
-            status.textContent = 'Not correct — try again.';
-            status.classList.remove('ok');
+            if (status) {
+              status.textContent = 'Not correct — try again.';
+              status.classList.remove('ok');
+            }
             input?.classList.add('input-bad');
             setTimeout(() => input?.classList.remove('input-bad'), 250);
           }
         });
 
-        // Enter to submit
         input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn?.click(); });
 
         // Hide per-game inputs inside Doorway content (safety net)
@@ -1009,28 +939,22 @@
           'button.confirm'
         ];
         function nukePerGameInputs(root) {
-          try {
-            KILL_SELECTORS.forEach(sel => {
-              root.querySelectorAll(sel).forEach(el => { el.style.display = 'none'; });
-            });
-          } catch { }
+          try { KILL_SELECTORS.forEach(sel => root.querySelectorAll(sel).forEach(el => el.style.display = 'none')); } catch { }
         }
-        if (host) nukePerGameInputs(host);
         if (host) {
-          const mo = new MutationObserver((muts) => {
-            muts.forEach(m => {
-              if (m.addedNodes) m.addedNodes.forEach(n => { if (n.nodeType === 1) nukePerGameInputs(n); });
-            });
-          });
+          nukePerGameInputs(host);
+          const mo = new MutationObserver(muts => muts.forEach(m => m.addedNodes && m.addedNodes.forEach(n => {
+            if (n.nodeType === 1) nukePerGameInputs(n);
+          })));
           mo.observe(host, { childList: true, subtree: true });
         }
       }
 
       window.addEventListener('DOMContentLoaded', () => {
+        // Wire success watchers for every tab in manual mode
         STATUS_TARGETS.forEach(({ el, tab }) => watchStatus(el, tab));
-        wireCancelOnTabChange();
-        watchDoorsCompleteBanner();
-        watchDoorsSignals();
+
+        watchDoorsSignals();               // Door signals honor manual behavior
         wireDoorsCodeBoxAndHidePerGameInputs();
       });
     })();

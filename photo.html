@@ -199,11 +199,19 @@
             }
 
             /* Download (under the photo, centered) */
-            #download {
+            /* #download {
                 left: 50%;
-                bottom: -58px;
-                /* just below the canvas/video box */
-                transform: translateX(-50%);
+                bottom: -58px; */
+            /* just below the canvas/video box */
+            /* transform: translateX(-50%);
+            } */
+            #download {
+                position: static;
+                /* <-- instead of absolute */
+                display: block;
+                margin: 10px auto 0;
+                /* center below the photo */
+                transform: none;
             }
         }
 

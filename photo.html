@@ -131,6 +131,108 @@
         .modal a {
             color: #8bd1ff;
         }
+
+        /* ================================
+       Anchoring for photo and buttons
+       ================================ */
+        .photo-container {
+            position: relative;
+            width: 100%;
+            max-width: 660px;
+        }
+
+        /* Button sizes */
+        #capture,
+        #retake {
+            font-size: 1.4rem;
+            /* large */
+            padding: 18px 26px;
+            min-width: 160px;
+            font-weight: 600;
+            border-radius: 14px;
+            border: 2px solid #2ea8ff;
+            background: linear-gradient(180deg, #10324a, #0f2a3f);
+        }
+
+        #download {
+            font-size: 1rem;
+            /* medium–small */
+            padding: 10px 16px;
+            min-width: 130px;
+            border-radius: 12px;
+            border: 1px solid var(--edge);
+            background: #14334a;
+        }
+
+        #capture:disabled,
+        #retake:disabled,
+        #download:disabled {
+            opacity: 0.45;
+            filter: grayscale(10%);
+        }
+
+        /* Absolute positioning to the photo container */
+        #capture,
+        #retake,
+        #download {
+            position: absolute;
+            z-index: 20;
+        }
+
+        /* ================================
+       PORTRAIT LAYOUT
+       ================================ */
+        @media (orientation: portrait) {
+
+            /* Capture (left bottom) */
+            #capture {
+                left: 14px;
+                bottom: 18px;
+                transform: none;
+            }
+
+            /* Retake (right bottom) */
+            #retake {
+                right: 14px;
+                bottom: 18px;
+                transform: none;
+            }
+
+            /* Download (under the photo, centered) */
+            #download {
+                left: 50%;
+                bottom: -58px;
+                /* just below the canvas/video box */
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ================================
+       LANDSCAPE LAYOUT
+       ================================ */
+        @media (orientation: landscape) {
+
+            /* Retake (top center) */
+            #retake {
+                left: 50%;
+                top: 14px;
+                transform: translateX(-50%);
+            }
+
+            /* Capture (bottom center) */
+            #capture {
+                left: 50%;
+                bottom: 14px;
+                transform: translateX(-50%);
+            }
+
+            /* Download (bottom right) */
+            #download {
+                right: 14px;
+                bottom: 14px;
+                transform: none;
+            }
+        }
     </style>
 </head>
 
@@ -140,27 +242,29 @@
 
         <div id="env-notice"></div>
 
+        <!-- Top controls row (keep small/neutral here) -->
         <div class="row">
             <input id="agent" placeholder="Detective name (caption)">
             <button id="open">Open Camera</button>
-            <button id="capture" disabled>Capture</button>
-            <button id="retake" disabled>Retake</button>
             <button id="flip" disabled>Flip to Front</button>
             <button id="hats" disabled>Hats: 0</button>
             <button id="help">How to enable camera</button>
         </div>
 
-        <video id="vid" playsinline></video>
-        <canvas id="can" style="display:none"></canvas>
+        <!-- ======= Anchored area for photo + big buttons ======= -->
+        <div class="photo-container">
+            <video id="vid" playsinline></video>
+            <canvas id="can" style="display:none"></canvas>
 
-        <div class="row">
-            <!-- Upload removed per request -->
+            <!-- Big buttons are anchored to this container -->
+            <button id="retake" disabled>Retake</button>
+            <button id="capture" disabled>Capture</button>
             <button id="download" disabled>Download Photo</button>
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
         <p id="msg2" class="hint">Downloading the photo will be private to your device. Kindly share this with Emma C.,
-            to keep track of the participation. Thank you, hope you had fun! 😊 🦄 </p>
+            to keep track of the participation. Thank you, hope you had fun! 😊 🦄</p>
     </div>
 
     <!-- Help modal -->
@@ -403,6 +507,13 @@
             } catch { return null; }
         }
 
+        function addNotice(html, warn = false) {
+            const div = document.createElement('div');
+            div.className = 'notice' + (warn ? ' warn' : '');
+            div.innerHTML = html;
+            envNotice.appendChild(div);
+        }
+
         function showDeniedNoticeInline() {
             addNotice(
                 `<b>Camera permission is blocked for this site.</b><br/>
@@ -432,6 +543,9 @@
                 });
 
                 capBtn.disabled = false;
+                retakeBtn.disabled = true;  // retake only after a capture
+                downloadBtn.disabled = true;
+
                 mirror = (facing === 'user');
                 applyPreviewTransforms();
                 msg.textContent = 'Camera ready — align and Capture.';

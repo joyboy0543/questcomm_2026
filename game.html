@@ -734,10 +734,10 @@
   <script src="modules/colorcode.js?v=20260123-4"></script>
 
   <!-- Telemetry - storing data -->
-  <script type="module" src="modules/telemetry.js?v=20260116"></script>
+  <!-- <script type="module" src="modules/telemetry.js?v=20260116"></script> -->
 
   <!-- Telemetry wiring -->
-  <script type="module">
+  <!-- <script type="module">
     import { startSession, appendAttempt } from './modules/telemetry.js';
 
     function getIdentity() {
@@ -793,7 +793,104 @@
       const banner = document.getElementById('doors-complete');
       if (banner) { appendAttempt('doorway sequence', '367'); doorsObs.disconnect(); }
     });
+  </script> -->
+  <script type="module">
+    import { startSession, appendAttempt, markSection } from './modules/telemetry.js';
+
+    function getIdentity() {
+      return {
+        name: localStorage.getItem('qcpd.name') || '',
+        codename: localStorage.getItem('qcpd.codename') || '',
+        department: localStorage.getItem('qcpd.department') || ''
+      };
+    }
+
+    // 1) Start the session on Agree (and mark started)
+    document.getElementById('agreeBtn')?.addEventListener('click', async () => {
+      const { name, codename, department } = getIdentity();
+      await startSession({ name, codename, department });    // also sets started=1
+      document.getElementById('agreeBtn')?.classList.remove('cta-pulse');
+    });
+
+    // 2) Append attempts + mark sections when correct
+    // Photo (243)
+    document.getElementById('cipherConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('cipherInput')?.value?.trim();
+      if (v) await appendAttempt('photo puzzle', v);
+      if ((v || '').replace(/\D+/g, '') === '243') await markSection('photo', 1);
+    });
+
+    // Riddle1 (1)
+    document.getElementById('riddle1Confirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('riddle1Input')?.value?.trim();
+      if (v) await appendAttempt('riddle 1', v);
+      if ((v || '').replace(/\D+/g, '') === '1') await markSection('riddle1', 1);
+    });
+
+    // Potion (928)
+    document.getElementById('potionConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('potionInput')?.value?.trim();
+      if (v) await appendAttempt('potion riddle', v);
+      if ((v || '').replace(/\D+/g, '') === '928') await markSection('potion', 1);
+    });
+
+    // Corridor (we mark when Findings gets unlocked OR confirm pressed if you also validate answer elsewhere)
+    document.getElementById('ringsConfirm')?.addEventListener('click', async () => {
+      const v = document.getElementById('ringsInput')?.value?.trim();
+      if (v) await appendAttempt('corridor riddle', v);
+      // correctness is inside modules/colorcode.js; we also observe Findings unlock below
+    });
+
+    // 3) Doorway logging/finalization: mark door=1 when success banner appears or our fail-safe triggers
+    const doorsObs = new MutationObserver(async () => {
+      const banner = document.getElementById('doors-complete');
+      if (banner) {
+        await appendAttempt('doorway sequence', '367');
+        await markSection('doorway', 1);
+        doorsObs.disconnect();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const agree = document.getElementById('agreeBtn');
+      if (agree) agree.classList.add('cta-pulse');
+
+      doorsObs.observe(document.body, { childList: true, subtree: true });
+      const banner = document.getElementById('doors-complete');
+      if (banner) { appendAttempt('doorway sequence', '367'); markSection('doorway', 1); doorsObs.disconnect(); }
+    });
+
+    // 4) Observe tab unlocks to mark Corridor done (when Findings gets unlocked after corridor)
+    (function watchCorridorAndCompletion() {
+      const tabs = document.getElementById('tabs');
+      if (!tabs) return;
+
+      const mo = new MutationObserver(async (muts) => {
+        for (const m of muts) {
+          if (m.type === 'attributes' && m.target.matches('button.tab[data-tab="findings"]')) {
+            const btn = m.target;
+            if (!btn.classList.contains('disabled')) {
+              await markSection('corridor', 1);
+            }
+          }
+        }
+      });
+      const findingsBtn = tabs.querySelector('button.tab[data-tab="findings"]');
+      if (findingsBtn) {
+        mo.observe(findingsBtn, { attributes: true, attributeFilter: ['class', 'aria-disabled'] });
+      }
+
+      // Mark completed when Findings becomes active
+      tabs.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button.tab');
+        if (btn?.dataset.tab === 'findings') {
+          // Small delay to allow UI to switch
+          setTimeout(() => markSection('completed', 1), 150);
+        }
+      });
+    })();
   </script>
+
 
   <!-- CLOSED DOORS GALLERY CONTROLLER -->
   <script>
@@ -1161,7 +1258,7 @@
 
         DESIGN_W = (attrW > 0) ? attrW : (DESIGN_W || Math.max(720, cssW));
         DESIGN_H = (attrH > 0) ? attrH : (DESIGN_H || Math.max(540, cssH));
-        FROKEN = false; // keep FROZEN name consistent
+        // FROKEN = false; // keep FROZEN name consistent
         FROZEN = (DESIGN_W && DESIGN_H);
       }
 

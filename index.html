@@ -268,19 +268,21 @@
     <section class="card" id="sec-landing">
       <h2>🪪 Agent Check‑In</h2>
       <p class="hint">Enter details to begin. This posts to a Google <b>Form</b> (which writes to a Sheet).</p>
-      <form id="reg-form" method="POST" action="GOOGLE_FORM_ACTION" target="gform_iframe" style="margin:0">
+      <form id="reg-form" method="POST"
+        action="https://docs.google.com/forms/d/e/1FAIpQLSfNRnzeinyQ-GTFvFJS7eSmLss7MjaouS6Gv1JSS5YqX0fDlQ/viewform?usp=publish-editor"
+        target="gform_iframe" style="margin:0">
         <div class="row">
           <div style="flex:1 1 240px;min-width:240px">
             <label for="name">Name</label>
-            <input id="name" name="entry.NAME_ENTRY_ID" placeholder="Jane Doe" autocomplete="name">
+            <input id="name" name="entry.NAME" placeholder="Jane Doe" autocomplete="name">
           </div>
           <div style="flex:1 1 240px;min-width:240px">
             <label for="codename">Codename</label>
-            <input id="codename" name="entry.CODENAME_ENTRY_ID" placeholder="SAPPHIRE-FOX">
+            <input id="codename" name="entry.CODENAME" placeholder="SAPPHIRE-FOX">
           </div>
           <div style="flex:1 1 240px;min-width:240px">
             <label for="dept">Department</label>
-            <input id="dept" name="entry.DEPT_ENTRY_ID" placeholder="R&D / Security / Ops">
+            <input id="dept" name="entry.DEPARTMENT" placeholder="R&D / Security / Ops">
           </div>
         </div>
         <div class="section-actions" style="margin-top:10px">
@@ -396,7 +398,7 @@
 
     // ---------- B) River View (Cipher photo + same answer) ----------
     // Set this to the SAME answer you used before (case-insensitive).
-    const RIVER_ANSWER = 'REPLACE_WITH_PREVIOUS_ANSWER';
+    const RIVER_ANSWER = '243';
     $('#river-submit')?.addEventListener('click', () => {
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
       if (!val) { $('#river-msg').textContent = 'Enter an answer.'; $('#river-msg').className = 'hint warn'; return; }

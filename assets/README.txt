@@ -1,0 +1,1 @@
+Place cipher_photo.jpg here (the image from your previous Cipher Code puzzle).

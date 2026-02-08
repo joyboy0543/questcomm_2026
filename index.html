@@ -1,318 +1,519 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sapphire Heist</title>
-<style>
-  :root {
-    --edge:#243546; --bg:#0b1218; --panel:#0d1a24; --ink:#cfe6f7; --ok:#29d49a; --accent:#2ea8ff;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Arial}
-  .wrap{max-width:920px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
-  h1,h2{margin:8px 0}
-  .card{border:1px solid var(--edge);border-radius:14px;background:var(--panel);padding:16px}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  label{display:block;font-size:.95rem;opacity:.95;margin:8px 0 4px}
-  input,button,select{padding:10px 12px;border-radius:10px;border:1px solid var(--edge);background:#102536;color:#fff}
-  input::placeholder{color:#9ec4df}
-  button.primary{border:2px solid var(--accent);background:linear-gradient(180deg,#10324a,#0f2a3f);font-weight:700}
-  button[disabled]{opacity:.5;filter:grayscale(10%)}
-  .hint{opacity:.9}
-  .success{color:#48e1a8}
-  .warn{color:#ffb3b3}
-  .hr{height:1px;background:linear-gradient(90deg,transparent,#27475f,transparent);margin:2px 0}
-  .gate{display:none}
-  .gate.open{display:block}
-  .section-actions{display:flex;gap:10px;flex-wrap:wrap}
-  .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#123047;border:1px solid #1d4764;color:#8bd1ff;font-size:.8rem}
-
-  /* Safe Sweep */
-  .safe-grid{display:grid;grid-template-columns:repeat(3,90px);gap:12px;justify-content:center;margin:16px 0}
-  .safe-btn{width:90px;height:90px;border-radius:12px;font-size:1.4rem;background:#14334a;border:1px solid var(--edge);cursor:pointer}
-  .safe-btn.active{background:#1a4968;box-shadow:inset 0 0 0 2px #2ea8ff}
-
-  /* Diffuser (Simon pads) */
-  .pads{display:grid;grid-template-columns:repeat(2,140px);gap:12px;justify-content:center;margin:16px 0}
-  .pad{width:140px;height:140px;border-radius:16px;border:1px solid var(--edge);cursor:pointer;opacity:.95}
-  .pad.pad0{background:#b84444}
-  .pad.pad1{background:#3e7cc2}
-  .pad.pad2{background:#49a86d}
-  .pad.pad3{background:#c2a73e}
-  .pad.flash{filter:brightness(1.6)}
-
-  /* Pairs mini-game */
-  .pairs{display:grid;grid-template-columns:repeat(4,100px);gap:10px;justify-content:center;margin:16px 0}
-  .cardx{width:100px;height:120px;border-radius:10px;background:#14334a;border:1px solid var(--edge);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer}
-  .cardx.revealed{background:#1f4e6e}
-  .cardx.matched{background:#215f4d}
-
-  .footer-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>🔷 Sapphire Heist</h1>
-  <p class="hint">Simple flow. Progress is saved on this device. Use clear buttons below to move ahead.</p>
-
-  <!-- ================= A) Landing / Registration ================= -->
-  <section class="card" id="sec-landing">
-    <h2>🪪 Agent Check‑In</h2>
-    <p class="hint">Enter your details to begin. Submitting adds a row to a linked Google Sheet (via Google <b>Form</b>, no Apps Script).</p>
-
-    <!-- IMPORTANT: Replace GOOGLE_FORM_ACTION and entry IDs below. See README for steps. -->
-    <form id="reg-form" method="POST" action="GOOGLE_FORM_ACTION" target="gform_iframe" style="margin:0">
-      <div class="row">
-        <div style="flex:1 1 240px;min-width:240px">
-          <label for="name">Name</label>
-          <input id="name" name="entry.NAME_ENTRY_ID" placeholder="Jane Doe" autocomplete="name">
-        </div>
-        <div style="flex:1 1 240px;min-width:240px">
-          <label for="codename">Codename</label>
-          <input id="codename" name="entry.CODENAME_ENTRY_ID" placeholder="SAPPHIRE-FOX">
-        </div>
-        <div style="flex:1 1 240px;min-width:240px">
-          <label for="dept">Department</label>
-          <input id="dept" name="entry.DEPT_ENTRY_ID" placeholder="R&D / Security / Ops">
-        </div>
-      </div>
-      <div class="section-actions" style="margin-top:10px">
-        <button id="start" class="primary" type="submit">Start Mission</button>
-        <span id="reg-status" class="hint"></span>
-      </div>
-    </form>
-    <iframe name="gform_iframe" id="gform_iframe" style="display:none"></iframe>
-  </section>
-
-  <div class="hr"></div>
-
-  <!-- ================= B) Lindholmen River View Photo Riddle ================= -->
-  <section class="card gate" id="sec-river">
-    <h2>📸 Lindholmen River View — Puzzle</h2>
-    <p class="hint">Keep your existing riddle/photo section here. On success, call <code>completeRiver()</code> to open the next stage.</p>
-    <div id="river-placeholder" class="hint" style="padding:8px;border:1px dashed #27475f;border-radius:8px;margin-top:8px">
-      Placeholder: Insert your current River View puzzle markup/script here, or load it via <code>&lt;iframe src="photo.html"&gt;</code> and when solved run <code>localStorage.setItem('qc26.gates', JSON.stringify({...existing, river:true}))</code> and call <code>completeRiver()</code>.
-    </div>
-    <div class="section-actions" style="margin-top:10px">
-      <button id="river-done" class="primary" type="button">Mark River Puzzle as Solved</button>
-      <span id="river-status" class="hint"></span>
-    </div>
-  </section>
-
-  <div class="hr"></div>
-
-  <!-- ================= C) Safe Sweep ================= -->
-  <section class="card gate" id="sec-safe">
-    <h2>🔐 Safe Sweep</h2>
-    <p class="hint">Sweep the keypad in the correct pattern to release the lock.</p>
-    <div class="safe-grid" id="safe-grid"></div>
-    <div class="section-actions">
-      <button id="safe-reset" type="button">Reset</button>
-      <button id="safe-submit" class="primary" type="button">Open Safe</button>
-      <span id="safe-msg" class="hint"></span>
-    </div>
-    <div id="safe-reward" style="display:none;margin-top:8px">
-      <span class="badge">SAFE OPENED</span>
-      <p class="success">Great work. Proceed to the Diffuser.</p>
-    </div>
-  </section>
-
-  <div class="hr"></div>
-
-  <!-- ================= D) Diffuser game (Simon-style) ================= -->
-  <section class="card gate" id="sec-diffuser">
-    <h2>💣 Diffuser</h2>
-    <p class="hint">Memorize the flashing pattern and repeat it to stabilize the device.</p>
-    <div class="pads">
-      <div class="pad pad0" data-k="0"></div>
-      <div class="pad pad1" data-k="1"></div>
-      <div class="pad pad2" data-k="2"></div>
-      <div class="pad pad3" data-k="3"></div>
-    </div>
-    <div class="section-actions">
-      <button id="diff-play" class="primary" type="button">Play Pattern</button>
-      <button id="diff-reset" type="button">Reset</button>
-      <span id="diff-msg" class="hint"></span>
-    </div>
-  </section>
-
-  <div class="hr"></div>
-
-  <!-- ================= E) New Mini‑Game: Pairs (3 pairs, fast) ================= -->
-  <section class="card gate" id="sec-pairs">
-    <h2>🃏 Quick Pairs</h2>
-    <p class="hint">Flip to find all 3 pairs.</p>
-    <div class="pairs" id="pairs"></div>
-    <div class="section-actions">
-      <button id="pairs-reset" type="button">Reset</button>
-      <span id="pairs-msg" class="hint"></span>
-    </div>
-  </section>
-
-  <div class="hr"></div>
-
-  <!-- ================= F) Findings ================= -->
-  <section class="card gate" id="sec-findings">
-    <h2>📜 Findings</h2>
-    <div id="findings-body" class="hint"></div>
-    <div class="footer-actions" style="margin-top:10px">
-      <button id="restart" type="button">Restart (clear progress)</button>
-    </div>
-  </section>
-</div>
-
-<script>
-  // ================= Utilities & State =================
-  const $ = (s) => document.querySelector(s);
-  const LS = {
-    name:'qc26.name', code:'qc26.codename', dept:'qc26.dept', gates:'qc26.gates'
-  };
-  function loadGates(){ try{return JSON.parse(localStorage.getItem(LS.gates)||'{}')}catch{return{}} }
-  function saveGates(g){ try{localStorage.setItem(LS.gates, JSON.stringify(g))}catch{} }
-  const gates = loadGates();
-
-  // Prefill landing from URL or LS
-  (function prefill(){
-    const p = new URLSearchParams(location.search);
-    const name = p.get('name') || localStorage.getItem(LS.name) || '';
-    const code = p.get('codename') || localStorage.getItem(LS.code) || '';
-    const dept = p.get('department') || localStorage.getItem(LS.dept) || '';
-    if($('#name')) $('#name').value = name;
-    if($('#codename')) $('#codename').value = code;
-    if($('#dept')) $('#dept').value = dept;
-  })();
-
-  // Handle Google Form submit without navigation
-  const regForm = document.getElementById('reg-form');
-  const regStatus = document.getElementById('reg-status');
-  const gFrame = document.getElementById('gform_iframe');
-  if (regForm){
-    regForm.addEventListener('submit', (e) => {
-      // Save locally
-      const name = (document.getElementById('name')?.value||'').trim();
-      const code = (document.getElementById('codename')?.value||'').trim();
-      const dept = (document.getElementById('dept')?.value||'').trim();
-      if(!name){ e.preventDefault(); regStatus.textContent='Please enter your name.'; regStatus.className='hint warn'; return; }
-      localStorage.setItem(LS.name, name);
-      localStorage.setItem(LS.code, code);
-      localStorage.setItem(LS.dept, dept);
-      regStatus.textContent = 'Submitting…';
-      regStatus.className = 'hint';
-      // When the hidden iframe loads, assume the form POST returned
-      const onLoad = () => { regStatus.textContent = 'Registered. Good luck, Agent.'; regStatus.className='hint success'; openGate('river'); gFrame.removeEventListener('load', onLoad); };
-      gFrame.addEventListener('load', onLoad);
-    });
-  }
-
-  // Gate helpers
-  function applyGates(){
-    toggle('#sec-river', !!gates.river);
-    toggle('#sec-safe', !!gates.safe);
-    toggle('#sec-diffuser', !!gates.diffuser);
-    toggle('#sec-pairs', !!gates.pairs);
-    toggle('#sec-findings', !!gates.findings);
-  }
-  function toggle(sel, on){ const el=$(sel); if(!el) return; el.classList.toggle('open', !!on); el.style.display = on? 'block':'none'; }
-  function openGate(key){ gates[key]=true; saveGates(gates); applyGates(); }
-
-  // ============== B) River View integration ==============
-  $('#river-done')?.addEventListener('click', () => completeRiver());
-  function completeRiver(){ $('#river-status').textContent='River puzzle solved.'; $('#river-status').className='hint success'; openGate('safe'); }
-
-  // ============== C) Safe Sweep ==============
-  const safeGrid = $('#safe-grid');
-  const safeMsg = $('#safe-msg');
-  const safeReward = $('#safe-reward');
-  const target = [1,5,9,8];
-  let current = [];
-  if (safeGrid){
-    for (let i=1;i<=9;i++){
-      const b=document.createElement('button');
-      b.className='safe-btn'; b.textContent=i; b.dataset.k=i;
-      b.onclick=()=>{ b.classList.add('active'); current.push(Number(b.dataset.k)); if(!isPrefix(current,target)){ safeMsg.textContent='Wrong path — reset.'; safeMsg.className='hint warn'; } else { safeMsg.textContent = 'Path: '+current.join('‑'); safeMsg.className='hint'; } };
-      safeGrid.appendChild(b);
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sapphire Heist</title>
+  <style>
+    :root {
+      --edge: #243546;
+      --bg: #0b1218;
+      --panel: #0d1a24;
+      --ink: #cfe6f7;
+      --ok: #29d49a;
+      --accent: #2ea8ff
     }
-    $('#safe-reset').onclick=()=>{ current=[]; safeMsg.textContent='Cleared.'; safeMsg.className='hint'; safeGrid.querySelectorAll('.safe-btn').forEach(x=>x.classList.remove('active')); };
-    $('#safe-submit').onclick=()=>{ if(eq(current,target)){ safeMsg.textContent='Unlocked!'; safeMsg.className='hint success'; safeReward.style.display='block'; openGate('diffuser'); } else { safeMsg.textContent='Access denied. Reset.'; safeMsg.className='hint warn'; } };
-  }
-  function isPrefix(a,b){ if(a.length>b.length) return false; for(let i=0;i<a.length;i++){ if(a[i]!==b[i]) return false; } return true; }
-  function eq(a,b){ return a.length===b.length && a.every((v,i)=>v===b[i]); }
 
-  // ============== D) Diffuser (Simon-style) ==============
-  const pads = Array.from(document.querySelectorAll('.pad'));
-  const diffMsg = $('#diff-msg');
-  const diffPlay = $('#diff-play');
-  const diffReset = $('#diff-reset');
-  let pattern = [];
-  let input = [];
-  function seedFromName(){
-    const name = (localStorage.getItem(LS.name)||'Agent');
-    let h=0; for(let i=0;i<name.length;i++){ h=(h*31 + name.charCodeAt(i))>>>0; }
-    const arr=[]; for(let i=0;i<4;i++){ h = (h*1664525 + 1013904223)>>>0; arr.push(h%4); }
-    return arr; // length 4 pattern, deterministic per name
-  }
-  function flashPad(i, t=400){ return new Promise(res=>{ const el=pads[i]; if(!el) return res(); el.classList.add('flash'); setTimeout(()=>{ el.classList.remove('flash'); setTimeout(res, 130); }, t); }); }
-  async function playPattern(){ diffMsg.textContent='Watch…'; input=[]; for (let i=0;i<pattern.length;i++){ await flashPad(pattern[i]); } diffMsg.textContent='Repeat the pattern.'; }
-  function clickPad(i){ if(!gates.diffuser) return; input.push(i); const soFar = input.length; if (pattern[soFar-1]!==i){ diffMsg.textContent='Wrong step — Reset and try again.'; diffMsg.className='hint warn'; return; } if (soFar===pattern.length){ diffMsg.textContent='Diffuser stabilized!'; diffMsg.className='hint success'; openGate('pairs'); } }
-  pads.forEach((p)=>{ p.addEventListener('click',()=> clickPad(Number(p.dataset.k))); });
-  if (diffPlay){ diffPlay.onclick=()=>{ pattern = seedFromName(); diffMsg.className='hint'; playPattern(); }; }
-  if (diffReset){ diffReset.onclick=()=>{ input=[]; diffMsg.textContent='Reset.'; diffMsg.className='hint'; }; }
+    * {
+      box-sizing: border-box
+    }
 
-  // ============== E) Pairs game (3 pairs) ==============
-  const pairsEl = $('#pairs');
-  const pairsMsg = $('#pairs-msg');
-  const pairsReset = $('#pairs-reset');
-  let deck = [];
-  let first=null, lock=false, matches=0;
-  function buildPairs(){
-    const icons = ['\ud83d\udd0d','\ud83d\udd11','\ud83d\udd0e']; // 🔍 🔑 🔎
-    deck = icons.concat(icons).map((v,i)=>({id:i,icon:v,rev:false,mat:false}));
-    // shuffle
-    for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
-    renderPairs(); matches=0; first=null; lock=false; pairsMsg.textContent='Find all 3 pairs.'; pairsMsg.className='hint';
-  }
-  function renderPairs(){ if(!pairsEl) return; pairsEl.innerHTML=''; deck.forEach(card=>{ const d=document.createElement('div'); d.className='cardx'+(card.rev?' revealed':'')+(card.mat?' matched':''); d.textContent = card.rev||card.mat ? card.icon : '◆'; d.onclick = ()=> flipCard(card.id); pairsEl.appendChild(d); }); }
-  function flipCard(id){ if(lock) return; const c = deck.find(x=>x.id===id); if(!c||c.rev||c.mat) return; c.rev=true; renderPairs(); if(!first){ first=c; return; } lock=true; setTimeout(()=>{ if(first.icon===c.icon){ first.mat=c.mat=true; matches++; pairsMsg.textContent = matches===3? 'All pairs found!':''; if(matches===3){ pairsMsg.className='hint success'; openGate('findings'); } } else { first.rev=c.rev=false; } first=null; lock=false; renderPairs(); }, 500); }
-  if(pairsEl){ buildPairs(); }
-  pairsReset?.addEventListener('click', buildPairs);
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, Segoe UI, Roboto, Arial
+    }
 
-  // ============== F) Findings ==============
-  function showFindings(){
-    const name = localStorage.getItem(LS.name)||'';
-    const code = localStorage.getItem(LS.code)||'';
-    const dept = localStorage.getItem(LS.dept)||'';
-    const gb = loadGates();
-    const steps = [
-      ['Registration', true],
-      ['River View', !!gb.river],
-      ['Safe Sweep', !!gb.safe],
-      ['Diffuser', !!gb.diffuser],
-      ['Quick Pairs', !!gb.pairs]
-    ];
-    const html = `
-      <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
-      <ul>${steps.map(([k,v])=>`<li>${v? '✅':'⬜'} ${k}</li>`).join('')}</ul>
-      <p class="hint">Great job! Take a victory photo in your photo booth if you like.</p>`;
-    const fb = document.getElementById('findings-body'); if(fb) fb.innerHTML = html;
-  }
-  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px
+    }
 
-  // Restart
-  document.getElementById('restart')?.addEventListener('click', ()=>{ localStorage.removeItem(LS.gates); openGate('river'); // keep registration
-    // Reset downstream gates
-    const g = loadGates(); g.safe=g.diffuser=g.pairs=g.findings=false; saveGates(g); applyGates(); });
+    h1,
+    h2 {
+      margin: 8px 0
+    }
 
-  // Initial open state
-  applyGates();
-  // If all previous gates done, auto show findings on load
-  const maybeShowFindings = ()=>{ const g=loadGates(); if(g.findings) showFindings(); };
-  maybeShowFindings();
+    .card {
+      border: 1px solid var(--edge);
+      border-radius: 14px;
+      background: var(--panel);
+      padding: 16px
+    }
 
-  // When Findings gate opens later
-  const obs = new MutationObserver(()=>{ const el = document.getElementById('sec-findings'); if(el && el.classList.contains('open')){ showFindings(); } });
-  obs.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','style']});
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
 
-</script>
+    label {
+      display: block;
+      font-size: .95rem;
+      opacity: .95;
+      margin: 8px 0 4px
+    }
+
+    input,
+    button,
+    select {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--edge);
+      background: #102536;
+      color: #fff
+    }
+
+    input::placeholder {
+      color: #9ec4df
+    }
+
+    button.primary {
+      border: 2px solid var(--accent);
+      background: linear-gradient(180deg, #10324a, #0f2a3f);
+      font-weight: 700
+    }
+
+    button[disabled] {
+      opacity: .5;
+      filter: grayscale(10%)
+    }
+
+    .hint {
+      opacity: .9
+    }
+
+    .success {
+      color: #48e1a8
+    }
+
+    .warn {
+      color: #ffb3b3
+    }
+
+    .hr {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #27475f, transparent);
+      margin: 2px 0
+    }
+
+    .gate {
+      display: none
+    }
+
+    .gate.open {
+      display: block
+    }
+
+    .section-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #123047;
+      border: 1px solid #1d4764;
+      color: #8bd1ff;
+      font-size: .8rem
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end
+    }
+
+    /* River photo */
+    .photo-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center
+    }
+
+    .photo-box img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--edge);
+      border-radius: 12px;
+      background: #0b1621
+    }
+
+    /* Minesweeper */
+    .ms-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      margin: 8px 0
+    }
+
+    .ms-grid {
+      display: grid;
+      gap: 6px;
+      justify-content: center;
+      margin: 12px 0
+    }
+
+    .ms-cell {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--edge);
+      background: #14334a
+    }
+
+    .ms-cell.revealed {
+      background: #1f4e6e
+    }
+
+    .ms-cell.flag {
+      background: #2b3b2f
+    }
+
+    .ms-cell.mine.revealed {
+      background: #6e1f1f
+    }
+
+    .ms-cell.unsafe {
+      outline: 2px solid #c44
+    }
+
+    /* Queens */
+    .q-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px
+    }
+
+    .q-board {
+      display: grid;
+      grid-template-columns: repeat(5, 64px);
+      gap: 6px
+    }
+
+    .q-cell {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      background: #14334a;
+      border: 1px solid var(--edge);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer
+    }
+
+    .q-cell.conflict {
+      box-shadow: inset 0 0 0 2px #c44
+    }
+
+    /* Pairs */
+    .pairs {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+      justify-content: center;
+      margin: 16px 0
+    }
+
+    .cardx {
+      width: 100px;
+      height: 120px;
+      border-radius: 10px;
+      background: #14334a;
+      border: 1px solid var(--edge);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer
+    }
+
+    .cardx.revealed {
+      background: #1f4e6e
+    }
+
+    .cardx.matched {
+      background: #215f4d
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>🔷 Sapphire Heist</h1>
+    <p class="hint">A clear, linear flow. Progress saves on this device.</p>
+
+    <!-- A) Landing / Google Form integration (no Apps Script) -->
+    <section class="card" id="sec-landing">
+      <h2>🪪 Agent Check‑In</h2>
+      <p class="hint">Enter details to begin. This posts to a Google <b>Form</b> (which writes to a Sheet).</p>
+      <form id="reg-form" method="POST" action="GOOGLE_FORM_ACTION" target="gform_iframe" style="margin:0">
+        <div class="row">
+          <div style="flex:1 1 240px;min-width:240px">
+            <label for="name">Name</label>
+            <input id="name" name="entry.NAME_ENTRY_ID" placeholder="Jane Doe" autocomplete="name">
+          </div>
+          <div style="flex:1 1 240px;min-width:240px">
+            <label for="codename">Codename</label>
+            <input id="codename" name="entry.CODENAME_ENTRY_ID" placeholder="SAPPHIRE-FOX">
+          </div>
+          <div style="flex:1 1 240px;min-width:240px">
+            <label for="dept">Department</label>
+            <input id="dept" name="entry.DEPT_ENTRY_ID" placeholder="R&D / Security / Ops">
+          </div>
+        </div>
+        <div class="section-actions" style="margin-top:10px">
+          <button id="start" class="primary" type="submit">Start Mission</button>
+          <span id="reg-status" class="hint"></span>
+        </div>
+      </form>
+      <iframe name="gform_iframe" id="gform_iframe" style="display:none"></iframe>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- B) Lindholmen River View Photo riddle (with Cipher Code photo) -->
+    <section class="card gate" id="sec-river">
+      <h2>📸 Lindholmen River View — Photo Riddle</h2>
+      <div class="photo-box">
+        <img id="cipher-photo" src="assets/buildings.jpg" alt="Cipher photo" />
+        <div class="row" style="width:100%;justify-content:center">
+          <input id="river-answer" placeholder="Enter the answer" style="min-width:260px">
+          <button id="river-submit" class="primary" type="button">Submit</button>
+        </div>
+        <span id="river-msg" class="hint"></span>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- C) Minesweeper (Doorway sequence) -->
+    <section class="card gate" id="sec-mines">
+      <h2>🧨 Minesweeper</h2>
+      <p class="hint">Reveal all safe cells (no mines). Use Flag mode to mark suspected mines.</p>
+      <div class="ms-controls">
+        <button id="ms-reset">Reset</button>
+        <button id="ms-flag" class="primary" type="button">Flag mode: OFF</button>
+        <span id="ms-msg" class="hint"></span>
+      </div>
+      <div id="ms-grid" class="ms-grid"></div>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- D) Queens Protocol (Doorway sequence) -->
+    <section class="card gate" id="sec-queens">
+      <h2>♛ Queens Protocol</h2>
+      <p class="hint">Place <b>5 queens</b> on a 5×5 board so that none attack each other.</p>
+      <div class="q-wrap">
+        <div id="q-board" class="q-board"></div>
+        <div class="section-actions">
+          <button id="q-reset">Reset</button>
+          <span id="q-msg" class="hint"></span>
+        </div>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- E) Quick Pairs (kept as third game) -->
+    <section class="card gate" id="sec-pairs">
+      <h2>🃏 Quick Pairs</h2>
+      <p class="hint">Flip to find all 3 pairs.</p>
+      <div class="pairs" id="pairs"></div>
+      <div class="section-actions">
+        <button id="pairs-reset" type="button">Reset</button>
+        <span id="pairs-msg" class="hint"></span>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- F) Findings -->
+    <section class="card gate" id="sec-findings">
+      <h2>📜 Findings</h2>
+      <div id="findings-body" class="hint"></div>
+      <div class="footer-actions" style="margin-top:10px">
+        <button id="restart" type="button">Restart (keep registration)</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const LS = { name: 'qc26.name', code: 'qc26.codename', dept: 'qc26.dept', gates: 'qc26.gates' };
+    function loadGates() { try { return JSON.parse(localStorage.getItem(LS.gates) || '{}') } catch { return {} } }
+    function saveGates(g) { try { localStorage.setItem(LS.gates, JSON.stringify(g)) } catch { } }
+    const gates = loadGates();
+    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-queens', !!gates.queens); toggle('#sec-pairs', !!gates.pairs); toggle('#sec-findings', !!gates.findings); }
+    function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
+    function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
+
+    // ---------- Landing (Google Form) ----------
+    (function prefill() {
+      const p = new URLSearchParams(location.search);
+      const name = p.get('name') || localStorage.getItem(LS.name) || '';
+      const code = p.get('codename') || localStorage.getItem(LS.code) || '';
+      const dept = p.get('department') || localStorage.getItem(LS.dept) || '';
+      $('#name') && ($('#name').value = name);
+      $('#codename') && ($('#codename').value = code);
+      $('#dept') && ($('#dept').value = dept);
+    })();
+    const regForm = $('#reg-form'), regStatus = $('#reg-status'), gFrame = $('#gform_iframe');
+    if (regForm) {
+      regForm.addEventListener('submit', (e) => {
+        const name = ($('#name')?.value || '').trim();
+        const code = ($('#codename')?.value || '').trim();
+        const dept = ($('#dept')?.value || '').trim();
+        if (!name) { e.preventDefault(); regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
+        localStorage.setItem(LS.name, name); localStorage.setItem(LS.code, code); localStorage.setItem(LS.dept, dept);
+        regStatus.textContent = 'Submitting…'; regStatus.className = 'hint';
+        const onLoad = () => { regStatus.textContent = 'Registered. Good luck, Agent.'; regStatus.className = 'hint success'; openGate('river'); gFrame.removeEventListener('load', onLoad); };
+        gFrame.addEventListener('load', onLoad);
+      });
+    }
+
+    // ---------- B) River View (Cipher photo + same answer) ----------
+    // Set this to the SAME answer you used before (case-insensitive).
+    const RIVER_ANSWER = 'REPLACE_WITH_PREVIOUS_ANSWER';
+    $('#river-submit')?.addEventListener('click', () => {
+      const val = ($('#river-answer')?.value || '').trim().toLowerCase();
+      if (!val) { $('#river-msg').textContent = 'Enter an answer.'; $('#river-msg').className = 'hint warn'; return; }
+      if (val === RIVER_ANSWER.toLowerCase()) {
+        $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success'; openGate('mines');
+      } else {
+        $('#river-msg').textContent = 'Not quite. Look closely at the photo.'; $('#river-msg').className = 'hint warn';
+      }
+    });
+
+    // ---------- C) Minesweeper ----------
+    const msGrid = $('#ms-grid'); const msMsg = $('#ms-msg'); const msFlagBtn = $('#ms-flag');
+    let MS_ROWS = 6, MS_COLS = 6, MS_MINES = 6, msFlag = false, msField = [], msRevealed = 0, msEnded = false;
+    function msIndex(r, c) { return r * MS_COLS + c }
+    function msNeighbors(r, c) { const d = [-1, 0, 1]; const out = []; for (let dr of d) { for (let dc of d) { if (dr === 0 && dc === 0) continue; const nr = r + dr, nc = c + dc; if (nr >= 0 && nr < MS_ROWS && nc >= 0 && nc < MS_COLS) out.push([nr, nc]); } } return out }
+    function msBuild() {
+      msField = []; msRevealed = 0; msEnded = false; msMsg.textContent = ''; msMsg.className = 'hint';
+      // init cells
+      for (let r = 0; r < MS_ROWS; r++) { for (let c = 0; c < MS_COLS; c++) { msField.push({ r, c, mine: false, adj: 0, rev: false, flag: false }); } }
+      // place mines
+      let placed = 0; while (placed < MS_MINES) { const i = Math.floor(Math.random() * msField.length); if (!msField[i].mine) { msField[i].mine = true; placed++; } }
+      // adj counts
+      for (const cell of msField) { cell.adj = msNeighbors(cell.r, cell.c).reduce((n, [nr, nc]) => n + (msField[msIndex(nr, nc)].mine ? 1 : 0), 0); }
+      // render grid
+      msGrid.style.gridTemplateColumns = `repeat(${MS_COLS}, 40px)`;
+      msGrid.innerHTML = '';
+      for (const cell of msField) {
+        const d = document.createElement('div'); d.className = 'ms-cell'; d.dataset.idx = msIndex(cell.r, cell.c);
+        d.onclick = () => msClick(cell);
+        d.oncontextmenu = (ev) => { ev.preventDefault(); msToggleFlag(cell); };
+        msGrid.appendChild(d);
+      }
+    }
+    function msToggleFlag(cell) { if (msEnded || cell.rev) return; cell.flag = !cell.flag; redrawCell(cell); updateMsStatus(); }
+    function msClick(cell) { if (msEnded) return; if (msFlag) { msToggleFlag(cell); return; } if (cell.flag || cell.rev) return; if (cell.mine) { cell.rev = true; msEnded = true; revealAllMines(cell); msMsg.textContent = 'Boom! Try again.'; msMsg.className = 'hint warn'; return; } msFlood(cell); updateMsStatus(); }
+    function msFlood(start) {
+      const stack = [start]; while (stack.length) { const cell = stack.pop(); if (cell.rev || cell.flag) continue; cell.rev = true; msRevealed++; redrawCell(cell); if (cell.adj === 0) { for (const [nr, nc] of msNeighbors(cell.r, cell.c)) { const n = msField[msIndex(nr, nc)]; if (!n.rev && !n.flag && !n.mine) stack.push(n); } } }
+      function revealAllMines(trigger) {
+        for (const cell of msField) { if (cell.mine) { cell.rev = true; redrawCell(cell); if (cell === trigger) { const d = msGrid.querySelector(`[data-idx='${msIndex(cell.r, cell.c)}']`); d.classList.add('unsafe'); } } }
+        function redrawCell(cell) { const d = msGrid.querySelector(`[data-idx='${msIndex(cell.r, cell.c)}']`); if (!d) return; d.className = 'ms-cell' + (cell.rev ? ' revealed' : '') + (cell.flag ? ' flag' : '') + (cell.mine && cell.rev ? ' mine' : ''); d.textContent = cell.rev ? (cell.mine ? '💣' : (cell.adj || '')) : (cell.flag ? '🚩' : ''); }
+        function updateMsStatus() {
+          const safeTotal = MS_ROWS * MS_COLS - MS_MINES; if (msRevealed >= safeTotal && !msEnded) { msEnded = true; msMsg.textContent = 'Cleared!'; msMsg.className = 'hint success'; openGate('queens'); }
+          const flags = msField.filter(c => c.flag).length; msFlagBtn.textContent = 'Flag mode: ' + (msFlag ? 'ON' : 'OFF') + `  |  🚩 ${flags}/${MS_MINES}`;
+        }
+        $('#ms-reset')?.addEventListener('click', msBuild);
+        $('#ms-flag')?.addEventListener('click', () => { msFlag = !msFlag; updateMsStatus(); });
+
+        // ---------- D) Queens Protocol ----------
+        const qBoard = $('#q-board'); const qMsg = $('#q-msg'); const Q_N = 5; let qState = [];
+        function qBuild() {
+          qState = Array.from({ length: Q_N }, () => Array(Q_N).fill(0)); qBoard.innerHTML = ''; qMsg.textContent = 'Place 5 queens.'; qMsg.className = 'hint';
+          for (let r = 0; r < Q_N; r++) { for (let c = 0; c < Q_N; c++) { const d = document.createElement('div'); d.className = 'q-cell'; d.dataset.r = r; d.dataset.c = c; d.onclick = () => qToggle(r, c); qBoard.appendChild(d); } }
+          qRender();
+        }
+        function qToggle(r, c) { qState[r][c] = qState[r][c] ? 0 : 1; qRender(); qValidate(); }
+        function qRender() {
+          const cells = qBoard.querySelectorAll('.q-cell'); cells.forEach(el => { const r = +el.dataset.r, c = +el.dataset.c; const has = qState[r][c] === 1; el.textContent = has ? '♛' : ''; el.classList.remove('conflict'); });
+          // mark conflicts
+          const positions = []; for (let r = 0; r < Q_N; r++) { for (let c = 0; c < Q_N; c++) { if (qState[r][c]) positions.push([r, c]); } }
+          for (let i = 0; i < positions.length; i++) { for (let j = i + 1; j < positions.length; j++) { const [r1, c1] = positions[i], [r2, c2] = positions[j]; if (r1 === r2 || c1 === c2 || Math.abs(r1 - r2) === Math.abs(c1 - c2)) { const e1 = qBoard.querySelector(`.q-cell[data-r='${r1}'][data-c='${c1}']`); const e2 = qBoard.querySelector(`.q-cell[data-r='${r2}'][data-c='${c2}']`); e1 && e1.classList.add('conflict'); e2 && e2.classList.add('conflict'); } } }
+        }
+        function qValidate() {
+          const count = qState.flat().reduce((a, b) => a + b, 0); if (count < 5) { qMsg.textContent = `Place ${5 - count} more`; qMsg.className = 'hint'; return; }
+          if (count > 5) { qMsg.textContent = 'Only 5 queens allowed'; qMsg.className = 'hint warn'; return; }
+          // exactly 5 placed
+          // Check conflicts
+          for (let r = 0; r < Q_N; r++) { for (let c = 0; c < Q_N; c++) { if (qState[r][c] === 1) { if (qAttacks(r, c) > 1) { qMsg.textContent = 'Queens are attacking — adjust.'; qMsg.className = 'hint warn'; return; } } } }
+          qMsg.textContent = 'Protocol satisfied!'; qMsg.className = 'hint success'; openGate('pairs');
+        }
+        function qAttacks(r, c) {
+          let n = 0; // count itself + others seen in lines
+          const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]; for (const [dr, dc] of dirs) { let rr = r, cc = c; while (rr >= 0 && rr < Q_N && cc >= 0 && cc < Q_N) { if (qState[rr][cc] === 1) n++; rr += dr; cc += dc; } }
+          return n;
+        }
+        $('#q-reset')?.addEventListener('click', qBuild);
+
+        // ---------- E) Pairs ----------
+        const pairsEl = $('#pairs'); const pairsMsg = $('#pairs-msg'); const pairsReset = $('#pairs-reset');
+        let deck = [], first = null, lock = false, matches = 0;
+        function buildPairs() {
+          const icons = ['\ud83d\udd0d', '\ud83d\udd11', '\ud83d\udd0e']; deck = icons.concat(icons).map((v, i) => ({ id: i, icon: v, rev: false, mat: false }));
+          for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
+          renderPairs(); matches = 0; first = null; lock = false; pairsMsg.textContent = 'Find all 3 pairs.'; pairsMsg.className = 'hint';
+        }
+        function renderPairs() { if (!pairsEl) return; pairsEl.innerHTML = ''; deck.forEach(card => { const d = document.createElement('div'); d.className = 'cardx' + (card.rev ? ' revealed' : '') + (card.mat ? ' matched' : ''); d.textContent = card.rev || card.mat ? card.icon : '◆'; d.onclick = () => flipCard(card.id); pairsEl.appendChild(d); }); }
+        function flipCard(id) { if (lock) return; const c = deck.find(x => x.id === id); if (!c || c.rev || c.mat) return; c.rev = true; renderPairs(); if (!first) { first = c; return; } lock = true; setTimeout(() => { if (first.icon === c.icon) { first.mat = c.mat = true; matches++; if (matches === 3) { pairsMsg.textContent = 'All pairs found!'; pairsMsg.className = 'hint success'; openGate('findings'); } } else { first.rev = c.rev = false; } first = null; lock = false; renderPairs(); }, 450); }
+        pairsReset?.addEventListener('click', buildPairs);
+
+        // ---------- Findings & Restart ----------
+        function showFindings() {
+          const name = localStorage.getItem(LS.name) || '', code = localStorage.getItem(LS.code) || '', dept = localStorage.getItem(LS.dept) || '';
+          const g = loadGates(); const steps = [['Registration', true], ['River View', !!g.river], ['Minesweeper', !!g.mines], ['Queens Protocol', !!g.queens], ['Quick Pairs', !!g.pairs]];
+          const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
+      <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
+      <p class='hint'>Case closed. 🎉</p>`;
+          const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
+        }
+        function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
+        $('#restart')?.addEventListener('click', () => {
+          const keep = { name: localStorage.getItem(LS.name), code: localStorage.getItem(LS.code), dept: localStorage.getItem(LS.dept) };
+          localStorage.removeItem(LS.gates); localStorage.setItem(LS.name, keep.name || ''); localStorage.setItem(LS.code, keep.code || ''); localStorage.setItem(LS.dept, keep.dept || '');
+          location.reload();
+        });
+
+        // ---------- Boot ----------
+        applyGates();
+        // If user already passed stages, show findings content when visible
+        const obs = new MutationObserver(() => { const el = $('#sec-findings'); if (el && el.classList.contains('open')) showFindings(); });
+        obs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+        // Initialize games when their sections open the first time
+        const initObs = new MutationObserver(() => {
+          if ($('#sec-mines')?.classList.contains('open') && !msGrid.hasChildNodes()) msBuild();
+          if ($('#sec-queens')?.classList.contains('open') && !qBoard.hasChildNodes()) qBuild();
+          if ($('#sec-pairs')?.classList.contains('open') && !pairsEl.hasChildNodes()) buildPairs();
+        });
+        initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+  </script>
 </body>
+
 </html>

@@ -1,98 +1,318 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QCPD Clearance</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sapphire Heist</title>
+<style>
+  :root {
+    --edge:#243546; --bg:#0b1218; --panel:#0d1a24; --ink:#cfe6f7; --ok:#29d49a; --accent:#2ea8ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Arial}
+  .wrap{max-width:920px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+  h1,h2{margin:8px 0}
+  .card{border:1px solid var(--edge);border-radius:14px;background:var(--panel);padding:16px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  label{display:block;font-size:.95rem;opacity:.95;margin:8px 0 4px}
+  input,button,select{padding:10px 12px;border-radius:10px;border:1px solid var(--edge);background:#102536;color:#fff}
+  input::placeholder{color:#9ec4df}
+  button.primary{border:2px solid var(--accent);background:linear-gradient(180deg,#10324a,#0f2a3f);font-weight:700}
+  button[disabled]{opacity:.5;filter:grayscale(10%)}
+  .hint{opacity:.9}
+  .success{color:#48e1a8}
+  .warn{color:#ffb3b3}
+  .hr{height:1px;background:linear-gradient(90deg,transparent,#27475f,transparent);margin:2px 0}
+  .gate{display:none}
+  .gate.open{display:block}
+  .section-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#123047;border:1px solid #1d4764;color:#8bd1ff;font-size:.8rem}
+
+  /* Safe Sweep */
+  .safe-grid{display:grid;grid-template-columns:repeat(3,90px);gap:12px;justify-content:center;margin:16px 0}
+  .safe-btn{width:90px;height:90px;border-radius:12px;font-size:1.4rem;background:#14334a;border:1px solid var(--edge);cursor:pointer}
+  .safe-btn.active{background:#1a4968;box-shadow:inset 0 0 0 2px #2ea8ff}
+
+  /* Diffuser (Simon pads) */
+  .pads{display:grid;grid-template-columns:repeat(2,140px);gap:12px;justify-content:center;margin:16px 0}
+  .pad{width:140px;height:140px;border-radius:16px;border:1px solid var(--edge);cursor:pointer;opacity:.95}
+  .pad.pad0{background:#b84444}
+  .pad.pad1{background:#3e7cc2}
+  .pad.pad2{background:#49a86d}
+  .pad.pad3{background:#c2a73e}
+  .pad.flash{filter:brightness(1.6)}
+
+  /* Pairs mini-game */
+  .pairs{display:grid;grid-template-columns:repeat(4,100px);gap:10px;justify-content:center;margin:16px 0}
+  .cardx{width:100px;height:120px;border-radius:10px;background:#14334a;border:1px solid var(--edge);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer}
+  .cardx.revealed{background:#1f4e6e}
+  .cardx.matched{background:#215f4d}
+
+  .footer-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+</style>
 </head>
+<body>
+<div class="wrap">
+  <h1>🔷 Sapphire Heist</h1>
+  <p class="hint">Simple flow. Progress is saved on this device. Use clear buttons below to move ahead.</p>
 
-<body class="landing">
-  <!-- Inline icon path for lock -->
-  <svg width="0" height="0" style="position:absolute">
-    <defs>
-      <path id="lock"
-        d="M8 3a4 4 0 0 1 8 0v3h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1V3zm2 3h4V3a2 2 0 1 0-4 0v3z" />
-    </defs>
-  </svg>
+  <!-- ================= A) Landing / Registration ================= -->
+  <section class="card" id="sec-landing">
+    <h2>🪪 Agent Check‑In</h2>
+    <p class="hint">Enter your details to begin. Submitting adds a row to a linked Google Sheet (via Google <b>Form</b>, no Apps Script).</p>
 
-  <div class="center">
-    <div class="card">
-      <header>
-        <h1 style="margin:0">Database Clearance</h1><span class="badge">QCPD</span>
-        <!-- <h2 style="margin:0">Secure Watchdog Access Gateway</h2><span class="badge">SWAG</span> -->
-        <!-- <span class="badge">Access gateway</span> -->
-      </header>
-      <p style="margin-bottom:14px;color:var(--muted)">
-        Enter your credentials to access the database.
-      </p>
-
-      <form id="clearanceForm" class="grid" autocomplete="on">
-        <div class="span2">
-          <label for="fName">Name</label>
-          <input id="fName" name="name" required placeholder="Your name" />
+    <!-- IMPORTANT: Replace GOOGLE_FORM_ACTION and entry IDs below. See README for steps. -->
+    <form id="reg-form" method="POST" action="GOOGLE_FORM_ACTION" target="gform_iframe" style="margin:0">
+      <div class="row">
+        <div style="flex:1 1 240px;min-width:240px">
+          <label for="name">Name</label>
+          <input id="name" name="entry.NAME_ENTRY_ID" placeholder="Jane Doe" autocomplete="name">
         </div>
-
-        <div>
-          <label for="fCode">Codename</label>
-          <input id="fCode" name="codename" placeholder="Any Cool Codename" />
+        <div style="flex:1 1 240px;min-width:240px">
+          <label for="codename">Codename</label>
+          <input id="codename" name="entry.CODENAME_ENTRY_ID" placeholder="SAPPHIRE-FOX">
         </div>
-
-        <div>
-          <label for="fDept">Department</label>
-          <select id="fDept" name="department">
-            <option value="">Select department</option>
-            <option>Forensics Lab</option>
-            <option>Cyber Unit</option>
-            <option>Surveillance</option>
-            <option>Narcotics</option>
-            <option>Homicide</option>
-            <option>Special Operations</option>
-            <option>Evidence Control</option>
-            <option>Harbor Patrol</option>
-            <option>Internal Affairs</option>
-          </select>
+        <div style="flex:1 1 240px;min-width:240px">
+          <label for="dept">Department</label>
+          <input id="dept" name="entry.DEPT_ENTRY_ID" placeholder="R&D / Security / Ops">
         </div>
+      </div>
+      <div class="section-actions" style="margin-top:10px">
+        <button id="start" class="primary" type="submit">Start Mission</button>
+        <span id="reg-status" class="hint"></span>
+      </div>
+    </form>
+    <iframe name="gform_iframe" id="gform_iframe" style="display:none"></iframe>
+  </section>
 
-        <div class="span2" style="display:flex;justify-content:flex-end;gap:10px;align-items:center;margin-top:6px">
-          <button id="enterBtn" type="submit" class="lock-btn" disabled>
-            <span class="lock" aria-hidden="true"></span>
-            Enter database
-          </button>
-        </div>
-      </form>
+  <div class="hr"></div>
+
+  <!-- ================= B) Lindholmen River View Photo Riddle ================= -->
+  <section class="card gate" id="sec-river">
+    <h2>📸 Lindholmen River View — Puzzle</h2>
+    <p class="hint">Keep your existing riddle/photo section here. On success, call <code>completeRiver()</code> to open the next stage.</p>
+    <div id="river-placeholder" class="hint" style="padding:8px;border:1px dashed #27475f;border-radius:8px;margin-top:8px">
+      Placeholder: Insert your current River View puzzle markup/script here, or load it via <code>&lt;iframe src="photo.html"&gt;</code> and when solved run <code>localStorage.setItem('qc26.gates', JSON.stringify({...existing, river:true}))</code> and call <code>completeRiver()</code>.
     </div>
-  </div>
+    <div class="section-actions" style="margin-top:10px">
+      <button id="river-done" class="primary" type="button">Mark River Puzzle as Solved</button>
+      <span id="river-status" class="hint"></span>
+    </div>
+  </section>
 
-  <footer class="footer">Confidential data - QCPD</footer>
+  <div class="hr"></div>
 
-  <script>
-    const form = document.getElementById('clearanceForm');
-    const btn = document.getElementById('enterBtn');
-    const nameField = document.getElementById('fName');
+  <!-- ================= C) Safe Sweep ================= -->
+  <section class="card gate" id="sec-safe">
+    <h2>🔐 Safe Sweep</h2>
+    <p class="hint">Sweep the keypad in the correct pattern to release the lock.</p>
+    <div class="safe-grid" id="safe-grid"></div>
+    <div class="section-actions">
+      <button id="safe-reset" type="button">Reset</button>
+      <button id="safe-submit" class="primary" type="button">Open Safe</button>
+      <span id="safe-msg" class="hint"></span>
+    </div>
+    <div id="safe-reward" style="display:none;margin-top:8px">
+      <span class="badge">SAFE OPENED</span>
+      <p class="success">Great work. Proceed to the Diffuser.</p>
+    </div>
+  </section>
 
-    function updateLock() {
-      const ok = nameField.value.trim().length > 0;
-      // Enable/disable button
-      btn.disabled = !ok;
-      // Lock color handled via CSS states; force visibility by toggling a class
-      btn.classList.toggle('is-unlocked', ok);
-      btn.classList.toggle('is-locked', !ok);
-    }
-    nameField.addEventListener('input', updateLock); updateLock();
+  <div class="hr"></div>
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const agent = {
-        name: document.getElementById('fName').value.trim(),
-        codename: document.getElementById('fCode').value.trim(),
-        department: document.getElementById('fDept').value
-      };
-      localStorage.setItem('qcpd.agent', JSON.stringify(agent));
-      location.href = 'game.html';
+  <!-- ================= D) Diffuser game (Simon-style) ================= -->
+  <section class="card gate" id="sec-diffuser">
+    <h2>💣 Diffuser</h2>
+    <p class="hint">Memorize the flashing pattern and repeat it to stabilize the device.</p>
+    <div class="pads">
+      <div class="pad pad0" data-k="0"></div>
+      <div class="pad pad1" data-k="1"></div>
+      <div class="pad pad2" data-k="2"></div>
+      <div class="pad pad3" data-k="3"></div>
+    </div>
+    <div class="section-actions">
+      <button id="diff-play" class="primary" type="button">Play Pattern</button>
+      <button id="diff-reset" type="button">Reset</button>
+      <span id="diff-msg" class="hint"></span>
+    </div>
+  </section>
+
+  <div class="hr"></div>
+
+  <!-- ================= E) New Mini‑Game: Pairs (3 pairs, fast) ================= -->
+  <section class="card gate" id="sec-pairs">
+    <h2>🃏 Quick Pairs</h2>
+    <p class="hint">Flip to find all 3 pairs.</p>
+    <div class="pairs" id="pairs"></div>
+    <div class="section-actions">
+      <button id="pairs-reset" type="button">Reset</button>
+      <span id="pairs-msg" class="hint"></span>
+    </div>
+  </section>
+
+  <div class="hr"></div>
+
+  <!-- ================= F) Findings ================= -->
+  <section class="card gate" id="sec-findings">
+    <h2>📜 Findings</h2>
+    <div id="findings-body" class="hint"></div>
+    <div class="footer-actions" style="margin-top:10px">
+      <button id="restart" type="button">Restart (clear progress)</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  // ================= Utilities & State =================
+  const $ = (s) => document.querySelector(s);
+  const LS = {
+    name:'qc26.name', code:'qc26.codename', dept:'qc26.dept', gates:'qc26.gates'
+  };
+  function loadGates(){ try{return JSON.parse(localStorage.getItem(LS.gates)||'{}')}catch{return{}} }
+  function saveGates(g){ try{localStorage.setItem(LS.gates, JSON.stringify(g))}catch{} }
+  const gates = loadGates();
+
+  // Prefill landing from URL or LS
+  (function prefill(){
+    const p = new URLSearchParams(location.search);
+    const name = p.get('name') || localStorage.getItem(LS.name) || '';
+    const code = p.get('codename') || localStorage.getItem(LS.code) || '';
+    const dept = p.get('department') || localStorage.getItem(LS.dept) || '';
+    if($('#name')) $('#name').value = name;
+    if($('#codename')) $('#codename').value = code;
+    if($('#dept')) $('#dept').value = dept;
+  })();
+
+  // Handle Google Form submit without navigation
+  const regForm = document.getElementById('reg-form');
+  const regStatus = document.getElementById('reg-status');
+  const gFrame = document.getElementById('gform_iframe');
+  if (regForm){
+    regForm.addEventListener('submit', (e) => {
+      // Save locally
+      const name = (document.getElementById('name')?.value||'').trim();
+      const code = (document.getElementById('codename')?.value||'').trim();
+      const dept = (document.getElementById('dept')?.value||'').trim();
+      if(!name){ e.preventDefault(); regStatus.textContent='Please enter your name.'; regStatus.className='hint warn'; return; }
+      localStorage.setItem(LS.name, name);
+      localStorage.setItem(LS.code, code);
+      localStorage.setItem(LS.dept, dept);
+      regStatus.textContent = 'Submitting…';
+      regStatus.className = 'hint';
+      // When the hidden iframe loads, assume the form POST returned
+      const onLoad = () => { regStatus.textContent = 'Registered. Good luck, Agent.'; regStatus.className='hint success'; openGate('river'); gFrame.removeEventListener('load', onLoad); };
+      gFrame.addEventListener('load', onLoad);
     });
-  </script>
-</body>
+  }
 
+  // Gate helpers
+  function applyGates(){
+    toggle('#sec-river', !!gates.river);
+    toggle('#sec-safe', !!gates.safe);
+    toggle('#sec-diffuser', !!gates.diffuser);
+    toggle('#sec-pairs', !!gates.pairs);
+    toggle('#sec-findings', !!gates.findings);
+  }
+  function toggle(sel, on){ const el=$(sel); if(!el) return; el.classList.toggle('open', !!on); el.style.display = on? 'block':'none'; }
+  function openGate(key){ gates[key]=true; saveGates(gates); applyGates(); }
+
+  // ============== B) River View integration ==============
+  $('#river-done')?.addEventListener('click', () => completeRiver());
+  function completeRiver(){ $('#river-status').textContent='River puzzle solved.'; $('#river-status').className='hint success'; openGate('safe'); }
+
+  // ============== C) Safe Sweep ==============
+  const safeGrid = $('#safe-grid');
+  const safeMsg = $('#safe-msg');
+  const safeReward = $('#safe-reward');
+  const target = [1,5,9,8];
+  let current = [];
+  if (safeGrid){
+    for (let i=1;i<=9;i++){
+      const b=document.createElement('button');
+      b.className='safe-btn'; b.textContent=i; b.dataset.k=i;
+      b.onclick=()=>{ b.classList.add('active'); current.push(Number(b.dataset.k)); if(!isPrefix(current,target)){ safeMsg.textContent='Wrong path — reset.'; safeMsg.className='hint warn'; } else { safeMsg.textContent = 'Path: '+current.join('‑'); safeMsg.className='hint'; } };
+      safeGrid.appendChild(b);
+    }
+    $('#safe-reset').onclick=()=>{ current=[]; safeMsg.textContent='Cleared.'; safeMsg.className='hint'; safeGrid.querySelectorAll('.safe-btn').forEach(x=>x.classList.remove('active')); };
+    $('#safe-submit').onclick=()=>{ if(eq(current,target)){ safeMsg.textContent='Unlocked!'; safeMsg.className='hint success'; safeReward.style.display='block'; openGate('diffuser'); } else { safeMsg.textContent='Access denied. Reset.'; safeMsg.className='hint warn'; } };
+  }
+  function isPrefix(a,b){ if(a.length>b.length) return false; for(let i=0;i<a.length;i++){ if(a[i]!==b[i]) return false; } return true; }
+  function eq(a,b){ return a.length===b.length && a.every((v,i)=>v===b[i]); }
+
+  // ============== D) Diffuser (Simon-style) ==============
+  const pads = Array.from(document.querySelectorAll('.pad'));
+  const diffMsg = $('#diff-msg');
+  const diffPlay = $('#diff-play');
+  const diffReset = $('#diff-reset');
+  let pattern = [];
+  let input = [];
+  function seedFromName(){
+    const name = (localStorage.getItem(LS.name)||'Agent');
+    let h=0; for(let i=0;i<name.length;i++){ h=(h*31 + name.charCodeAt(i))>>>0; }
+    const arr=[]; for(let i=0;i<4;i++){ h = (h*1664525 + 1013904223)>>>0; arr.push(h%4); }
+    return arr; // length 4 pattern, deterministic per name
+  }
+  function flashPad(i, t=400){ return new Promise(res=>{ const el=pads[i]; if(!el) return res(); el.classList.add('flash'); setTimeout(()=>{ el.classList.remove('flash'); setTimeout(res, 130); }, t); }); }
+  async function playPattern(){ diffMsg.textContent='Watch…'; input=[]; for (let i=0;i<pattern.length;i++){ await flashPad(pattern[i]); } diffMsg.textContent='Repeat the pattern.'; }
+  function clickPad(i){ if(!gates.diffuser) return; input.push(i); const soFar = input.length; if (pattern[soFar-1]!==i){ diffMsg.textContent='Wrong step — Reset and try again.'; diffMsg.className='hint warn'; return; } if (soFar===pattern.length){ diffMsg.textContent='Diffuser stabilized!'; diffMsg.className='hint success'; openGate('pairs'); } }
+  pads.forEach((p)=>{ p.addEventListener('click',()=> clickPad(Number(p.dataset.k))); });
+  if (diffPlay){ diffPlay.onclick=()=>{ pattern = seedFromName(); diffMsg.className='hint'; playPattern(); }; }
+  if (diffReset){ diffReset.onclick=()=>{ input=[]; diffMsg.textContent='Reset.'; diffMsg.className='hint'; }; }
+
+  // ============== E) Pairs game (3 pairs) ==============
+  const pairsEl = $('#pairs');
+  const pairsMsg = $('#pairs-msg');
+  const pairsReset = $('#pairs-reset');
+  let deck = [];
+  let first=null, lock=false, matches=0;
+  function buildPairs(){
+    const icons = ['\ud83d\udd0d','\ud83d\udd11','\ud83d\udd0e']; // 🔍 🔑 🔎
+    deck = icons.concat(icons).map((v,i)=>({id:i,icon:v,rev:false,mat:false}));
+    // shuffle
+    for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+    renderPairs(); matches=0; first=null; lock=false; pairsMsg.textContent='Find all 3 pairs.'; pairsMsg.className='hint';
+  }
+  function renderPairs(){ if(!pairsEl) return; pairsEl.innerHTML=''; deck.forEach(card=>{ const d=document.createElement('div'); d.className='cardx'+(card.rev?' revealed':'')+(card.mat?' matched':''); d.textContent = card.rev||card.mat ? card.icon : '◆'; d.onclick = ()=> flipCard(card.id); pairsEl.appendChild(d); }); }
+  function flipCard(id){ if(lock) return; const c = deck.find(x=>x.id===id); if(!c||c.rev||c.mat) return; c.rev=true; renderPairs(); if(!first){ first=c; return; } lock=true; setTimeout(()=>{ if(first.icon===c.icon){ first.mat=c.mat=true; matches++; pairsMsg.textContent = matches===3? 'All pairs found!':''; if(matches===3){ pairsMsg.className='hint success'; openGate('findings'); } } else { first.rev=c.rev=false; } first=null; lock=false; renderPairs(); }, 500); }
+  if(pairsEl){ buildPairs(); }
+  pairsReset?.addEventListener('click', buildPairs);
+
+  // ============== F) Findings ==============
+  function showFindings(){
+    const name = localStorage.getItem(LS.name)||'';
+    const code = localStorage.getItem(LS.code)||'';
+    const dept = localStorage.getItem(LS.dept)||'';
+    const gb = loadGates();
+    const steps = [
+      ['Registration', true],
+      ['River View', !!gb.river],
+      ['Safe Sweep', !!gb.safe],
+      ['Diffuser', !!gb.diffuser],
+      ['Quick Pairs', !!gb.pairs]
+    ];
+    const html = `
+      <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
+      <ul>${steps.map(([k,v])=>`<li>${v? '✅':'⬜'} ${k}</li>`).join('')}</ul>
+      <p class="hint">Great job! Take a victory photo in your photo booth if you like.</p>`;
+    const fb = document.getElementById('findings-body'); if(fb) fb.innerHTML = html;
+  }
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+  // Restart
+  document.getElementById('restart')?.addEventListener('click', ()=>{ localStorage.removeItem(LS.gates); openGate('river'); // keep registration
+    // Reset downstream gates
+    const g = loadGates(); g.safe=g.diffuser=g.pairs=g.findings=false; saveGates(g); applyGates(); });
+
+  // Initial open state
+  applyGates();
+  // If all previous gates done, auto show findings on load
+  const maybeShowFindings = ()=>{ const g=loadGates(); if(g.findings) showFindings(); };
+  maybeShowFindings();
+
+  // When Findings gate opens later
+  const obs = new MutationObserver(()=>{ const el = document.getElementById('sec-findings'); if(el && el.classList.contains('open')){ showFindings(); } });
+  obs.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','style']});
+
+</script>
+</body>
 </html>

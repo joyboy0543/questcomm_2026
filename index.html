@@ -127,6 +127,11 @@
       justify-content: flex-end
     }
 
+    .hl {
+      color: #8bd1ff;
+      font-weight: 700
+    }
+
     /* Photo */
     .photo-box {
       display: flex;
@@ -229,12 +234,7 @@
       justify-content: center
     }
 
-    .hl {
-      color: #8bd1ff;
-      font-weight: 700
-    }
-
-    /* ---------- Diffuser Protocol (7x7 regions) ---------- */
+    /* ---------- Diffuser Protocol (7x7 regions + jewels) ---------- */
     .q-wrap {
       display: flex;
       flex-direction: column;
@@ -267,10 +267,12 @@
       overflow: hidden;
     }
 
-    .diff-cell .shape {
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, .4);
-      transform: translateY(1px);
+    .diff-cell .jewel {
+      width: 64%;
+      height: 64%;
+      display: block;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
     }
 
     .diff-cell.attacked {
@@ -287,34 +289,66 @@
       min-height: 1.2rem
     }
 
-    /* Pairs */
-    .pairs {
-      display: grid;
-      grid-template-columns: repeat(4, 100px);
-      gap: 10px;
-      justify-content: center;
-      margin: 16px 0
-    }
-
-    .cardx {
-      width: 100px;
-      height: 120px;
-      border-radius: 10px;
-      background: #14334a;
-      border: 1px solid var(--edge);
+    /* ---------- Pattern Lab (Simon) ---------- */
+    .pat-wrap {
       display: flex;
+      flex-direction: column;
       align-items: center;
+      gap: 10px
+    }
+
+    .pat-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, 120px);
       justify-content: center;
-      font-size: 2rem;
-      cursor: pointer
+      margin: 10px 0;
     }
 
-    .cardx.revealed {
-      background: #1f4e6e
+    .pad {
+      width: 120px;
+      height: 120px;
+      border-radius: 18px;
+      border: 2px solid #1b3a4f;
+      cursor: pointer;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, .25), 0 2px 6px rgba(0, 0, 0, .3);
+      transition: transform .06s ease, filter .06s ease, box-shadow .12s ease;
     }
 
-    .cardx.matched {
-      background: #215f4d
+    .pad0 {
+      background: #4cc9f0
+    }
+
+    /* cyan */
+    .pad1 {
+      background: #ef6b6b
+    }
+
+    /* red */
+    .pad2 {
+      background: #ffd166
+    }
+
+    /* yellow */
+    .pad3 {
+      background: #43aa8b
+    }
+
+    /* green/teal */
+    .pad.lit {
+      filter: brightness(1.35) saturate(1.15);
+      transform: scale(1.03)
+    }
+
+    .pat-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center
+    }
+
+    .pat-status {
+      min-height: 1.2rem
     }
   </style>
 </head>
@@ -324,7 +358,7 @@
     <h1>🔷 Sapphire Heist</h1>
     <p class="hint">A clear, linear flow. Progress saves on this device.</p>
 
-    <!-- A) Landing (Forms hooked later) -->
+    <!-- A) Landing (Forms wired later) -->
     <section class="card" id="sec-landing">
       <h2>🪪 Agent Check‑In</h2>
       <p class="hint">Enter details to begin. This will post to a Google <b>Form</b> later.</p>
@@ -368,7 +402,7 @@
 
     <div class="hr"></div>
 
-    <!-- C) Safe Sweep (mines) -->
+    <!-- C) Safe Sweep -->
     <section class="card gate" id="sec-mines">
       <h2>🧨 Safe Sweep</h2>
       <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
@@ -386,7 +420,7 @@
 
     <div class="hr"></div>
 
-    <!-- D) Diffuser -->
+    <!-- D) Diffuser Protocol -->
     <section class="card gate" id="sec-diffuser">
       <h2>💥 Diffuser Protocol</h2>
       <ol class="status" style="text-align:left;max-width:560px;margin:0 auto">
@@ -407,14 +441,26 @@
 
     <div class="hr"></div>
 
-    <!-- E) Pairs -->
-    <section class="card gate" id="sec-pairs">
-      <h2>🃏 Quick Pairs</h2>
-      <p class="hint">Flip to find all 3 pairs.</p>
-      <div class="pairs" id="pairs"></div>
-      <div class="section-actions">
-        <button id="pairs-reset" type="button">Reset</button>
-        <span id="pairs-msg" class="hint"></span>
+    <!-- E) Pattern Lab (Simon) -->
+    <section class="card gate" id="sec-pattern">
+      <h2>🎛️ Pattern Lab</h2>
+      <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
+        <li>Watch the pads flash and <b>repeat the sequence</b>.</li>
+        <li>Each round adds one more step. Reach the final length to proceed.</li>
+        <li>Use sound for timing. Good luck, Agent.</li>
+      </ol>
+      <div class="pat-wrap">
+        <div class="pat-grid">
+          <button class="pad pad0" data-i="0" aria-label="pad cyan"></button>
+          <button class="pad pad1" data-i="1" aria-label="pad red"></button>
+          <button class="pad pad2" data-i="2" aria-label="pad yellow"></button>
+          <button class="pad pad3" data-i="3" aria-label="pad green"></button>
+        </div>
+        <div class="pat-tools">
+          <button id="patStart" class="primary" type="button">Start</button>
+          <button id="patRetry" type="button">Retry</button>
+        </div>
+        <p id="patStatus" class="pat-status"></p>
       </div>
     </section>
 
@@ -437,7 +483,7 @@
     function saveGates(g) { try { localStorage.setItem(LS.gates, JSON.stringify(g)) } catch { } }
     const gates = loadGates();
     function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
-    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-diffuser', !!gates.diffuser); toggle('#sec-pairs', !!gates.pairs); toggle('#sec-findings', !!gates.findings); }
+    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-diffuser', !!gates.diffuser); toggle('#sec-pattern', !!gates.pattern); toggle('#sec-findings', !!gates.findings); }
     function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
 
     // Prefill (kept)
@@ -451,7 +497,7 @@
       $('#dept') && ($('#dept').value = dept);
     })();
 
-    // Registration (leave form wiring for later; still unlock on iframe load)
+    // Registration (we'll wire the real form later; still unlock river on iframe load)
     const regForm = $('#reg-form'), regStatus = $('#reg-status'), gFrame = $('#gform_iframe');
     if (regForm) {
       regForm.addEventListener('submit', (e) => {
@@ -466,7 +512,7 @@
       });
     }
 
-    // River (same key as before)
+    // River
     const RIVER_ANSWER = '243';
     $('#river-submit')?.addEventListener('click', () => {
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
@@ -511,8 +557,6 @@
           }
         }
       }
-
-      function renderAll() { for (const c of cells) renderCell(c); }
 
       function place() {
         board.innerHTML = ''; cells.length = 0; status.textContent = '';
@@ -560,7 +604,7 @@
           cell.el.addEventListener('touchcancel', onEnd, { passive: true });
         }
 
-        renderAll();
+        for (const c of cells) renderCell(c);
       }
 
       function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; renderCell(cell); }
@@ -599,10 +643,9 @@
       place();
     }
 
-    // ---------- Diffuser Protocol (7x7 colored regions) ----------
+    // ---------- Diffuser Protocol (7x7 colored regions + jewels) ----------
     function initDiffuser() {
       const SIZE = 7;
-      // Regions (0..6), same structure as doorway sequence example
       const REGIONS = [
         [0, 0, 0, 1, 1, 1, 2],
         [0, 3, 3, 1, 4, 1, 2],
@@ -613,23 +656,33 @@
         [5, 5, 5, 6, 6, 6, 2]
       ];
       const COLORS = { 0: "#ef6b6b", 1: "#4cc9f0", 2: "#43aa8b", 3: "#f8961e", 4: "#9b5de5", 5: "#ffd166", 6: "#2dd4bf" };
-      const SHAPE_FOR_REGION = { 0: "◇", 1: "▲", 2: "●", 3: "■", 4: "★", 5: "⬣", 6: "✦" };
+
+      // 🔹 Update these paths to match your assets if needed
+      const JEWELS = {
+        0: "assets/jewels/ruby.svg",
+        1: "assets/jewels/sapphire.svg",
+        2: "assets/jewels/emerald.svg",
+        3: "assets/jewels/amber.svg",
+        4: "assets/jewels/amethyst.svg",
+        5: "assets/jewels/topaz.svg",
+        6: "assets/jewels/aquamarine.svg"
+      };
 
       const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
       if (!grid) return;
 
-      // build cells
-      const cells = [...Array(SIZE)].map(() => Array(SIZE).fill(null));
       grid.innerHTML = '';
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
           const el = document.createElement('div');
           el.className = 'diff-cell';
           el.dataset.q = '0';
+          el.dataset.r = String(r);
+          el.dataset.c = String(c);
+          el.dataset.region = String(REGIONS[r][c]);
           el.style.background = COLORS[REGIONS[r][c]];
           el.addEventListener('click', () => toggleQ(el));
           grid.appendChild(el);
-          cells[r][c] = el;
         }
       }
 
@@ -637,41 +690,37 @@
       function render(el) {
         el.innerHTML = '';
         if (el.dataset.q === '1') {
-          const r = el._r, c = el._c; // (optional if you want coords)
-          const shape = document.createElement('span');
-          // Pick shape based on region color (stable visuals)
-          shape.textContent = SHAPE_FOR_REGION[getRegion(el)];
-          shape.className = 'shape';
-          el.appendChild(shape);
+          const reg = Number(el.dataset.region);
+          const img = document.createElement('img');
+          img.className = 'jewel';
+          img.alt = 'diffuser jewel';
+          img.src = JEWELS[reg];
+          img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
+          // Optional subtle glow using region color:
+          const col = el.style.background || '#ffffff';
+          img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
+          el.appendChild(img);
         }
-      }
-      function getRegion(el) {
-        // Work out region by index in grid children (fast & robust)
-        const i = Array.prototype.indexOf.call(grid.children, el);
-        const r = Math.floor(i / SIZE), c = i % SIZE;
-        return REGIONS[r][c];
       }
 
       function clearMarks() { [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked')); }
 
       function validate() {
         clearMarks();
-        // gather placed
         const placed = [];
         for (let i = 0; i < grid.children.length; i++) {
           const el = grid.children[i];
           if (el.dataset.q === '1') {
-            const r = Math.floor(i / SIZE), c = i % SIZE;
+            const r = Number(el.dataset.r), c = Number(el.dataset.c);
             placed.push([r, c, el]);
           }
         }
-
         let ok = true;
 
-        // exactly 7
+        // Exactly 7
         if (placed.length !== 7) ok = false;
 
-        // row/col uniqueness
+        // Row/Col uniqueness
         for (let r = 0; r < SIZE; r++) {
           const k = placed.filter(p => p[0] === r);
           if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
@@ -681,7 +730,7 @@
           if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
         }
 
-        // one per region
+        // One per region
         const seen = new Map();
         for (const [r, c, el] of placed) {
           const reg = REGIONS[r][c];
@@ -689,15 +738,12 @@
           else seen.set(reg, el);
         }
 
-        // cannot touch (8-neighborhood)
-        const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+        // Not touching (8-neighborhood)
         for (let i = 0; i < placed.length; i++) {
           const [r, c, el] = placed[i];
           for (let j = i + 1; j < placed.length; j++) {
             const [rr, cc, el2] = placed[j];
-            if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) {
-              ok = false; el.classList.add('attacked'); el2.classList.add('attacked');
-            }
+            if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) { ok = false; el.classList.add('attacked'); el2.classList.add('attacked'); }
           }
         }
 
@@ -707,7 +753,7 @@
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
           status.innerHTML = 'The <span class="hl">Seven</span> diffusers have been placed. Threats neutralized. Over!';
-          openGate('pairs');
+          openGate('pattern');
         } else {
           status.textContent = 'Conflicts detected — adjust placements.';
         }
@@ -718,47 +764,114 @@
       });
     }
 
-    // ---------- Pairs ----------
-    const pairsEl = $('#pairs'), pairsMsg = $('#pairs-msg'); let deck = [], first = null, lock = false, matches = 0;
-    function buildPairs() {
-      if (!pairsEl) return;
-      const icons = ['🔍', '🔑', '🔎'];
-      deck = icons.concat(icons).map((v, i) => ({ id: i, icon: v, rev: false, mat: false }));
-      for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
-      matches = 0; first = null; lock = false; pairsMsg.textContent = 'Find all 3 pairs.'; pairsMsg.className = 'hint';
-      renderPairs();
-    }
-    function renderPairs() {
-      pairsEl.innerHTML = '';
-      deck.forEach(card => {
-        const d = document.createElement('div');
-        d.className = 'cardx' + (card.rev ? ' revealed' : '') + (card.mat ? ' matched' : '');
-        d.textContent = (card.rev || card.mat) ? card.icon : '◆';
-        d.onclick = () => flipCard(card.id);
-        pairsEl.appendChild(d);
+    // ---------- Pattern Lab (Simon) ----------
+    function initPatternLab() {
+      const pads = Array.from(document.querySelectorAll('.pad'));
+      const btnStart = $('#patStart'), btnRetry = $('#patRetry'), status = $('#patStatus');
+
+      if (pads.length !== 4) return;
+      // WebAudio
+      const FREQ = [523.25, 659.25, 784.0, 440.0]; // C5, E5, G5, A4
+      let actx = null, osc = null, gain = null;
+      function ensureAudio() {
+        if (actx) return;
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        gain = actx.createGain(); gain.gain.value = 0.001; gain.connect(actx.destination);
+        osc = actx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 440; osc.connect(gain); osc.start();
+      }
+      function beep(i, dur = 350) {
+        try {
+          ensureAudio();
+          osc.frequency.value = FREQ[i];
+          const now = actx.currentTime;
+          gain.gain.cancelScheduledValues(now);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + dur / 1000);
+        } catch { }
+      }
+      function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+      function light(i, ms = 350) { pads[i].classList.add('lit'); beep(i, ms); return sleep(ms).then(() => pads[i].classList.remove('lit')); }
+
+      // Game state
+      let seq = [], step = 0, round = 0, playing = false, accepting = false;
+      const TARGET_LEN = 7; // total length to win
+
+      async function playSequence() {
+        playing = true; accepting = false;
+        await sleep(350);
+        for (let i = 0; i < seq.length; i++) {
+          await light(seq[i], 380);
+          await sleep(160);
+        }
+        playing = false; accepting = true; step = 0;
+        status.textContent = `Your turn (round ${round}/${TARGET_LEN})`;
+      }
+
+      function nextRound() {
+        seq.push(Math.floor(Math.random() * 4));
+        round = seq.length;
+        status.textContent = `Observe the pattern (round ${round}/${TARGET_LEN})…`;
+        playSequence();
+      }
+
+      function resetGame() {
+        seq = []; step = 0; round = 0; playing = false; accepting = false;
+        status.textContent = 'Press Start to begin.';
+      }
+
+      // Input
+      pads.forEach(p => {
+        p.addEventListener('click', async (e) => {
+          const i = Number(p.dataset.i);
+          if (!accepting) return;
+          // immediate feedback
+          p.classList.add('lit'); beep(i, 180); setTimeout(() => p.classList.remove('lit'), 120);
+
+          if (i === seq[step]) {
+            step++;
+            if (step === seq.length) {
+              if (seq.length >= TARGET_LEN) {
+                status.innerHTML = 'Pattern complete. <span class="hl">Access granted</span>.';
+                openGate('findings');
+                accepting = false;
+              } else {
+                status.textContent = 'Good. Next round…';
+                setTimeout(nextRound, 600);
+              }
+            }
+          } else {
+            accepting = false;
+            status.textContent = 'Mismatch — retry the sequence.';
+          }
+        });
       });
+
+      // Controls
+      btnStart?.addEventListener('click', () => {
+        resetGame();
+        nextRound();
+      });
+      btnRetry?.addEventListener('click', () => {
+        if (seq.length === 0) { resetGame(); return; }
+        status.textContent = 'Replaying pattern…';
+        playSequence();
+      });
+
+      // Initialize text
+      if (!seq.length) status.textContent = 'Press Start to begin.';
     }
-    function flipCard(id) {
-      if (lock) return;
-      const c = deck.find(x => x.id === id);
-      if (!c || c.rev || c.mat) return;
-      c.rev = true; renderPairs();
-      if (!first) { first = c; return; }
-      lock = true;
-      setTimeout(() => {
-        if (first.icon === c.icon) {
-          first.mat = c.mat = true; matches++;
-          if (matches === 3) { pairsMsg.textContent = 'All pairs found!'; pairsMsg.className = 'hint success'; openGate('findings'); }
-        } else { first.rev = c.rev = false; }
-        first = null; lock = false; renderPairs();
-      }, 450);
-    }
-    $('#pairs-reset')?.addEventListener('click', buildPairs);
 
     // Findings & Restart
     function showFindings() {
       const name = localStorage.getItem(LS.name) || '', code = localStorage.getItem(LS.code) || '', dept = localStorage.getItem(LS.dept) || '';
-      const g = loadGates(); const steps = [['Registration', true], ['River View', !!g.river], ['Safe Sweep', !!g.mines], ['Diffuser Protocol', !!g.diffuser], ['Quick Pairs', !!g.pairs]];
+      const g = loadGates(); const steps = [
+        ['Registration', true],
+        ['River View', !!g.river],
+        ['Safe Sweep', !!g.mines],
+        ['Diffuser Protocol', !!g.diffuser],
+        ['Pattern Lab', !!g.pattern]
+      ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
 <p class='hint'>Case closed. 🎉</p>`;
@@ -772,14 +885,14 @@
       location.reload();
     });
 
-    // Boot
+    // Boot gates
     applyGates();
 
     // Initialize sections the first time they open
     const initObs = new MutationObserver(() => {
       if ($('#sec-mines')?.classList.contains('open') && !$('#mswBoard')?.hasChildNodes()) initSafeSweep();
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) initDiffuser();
-      if ($('#sec-pairs')?.classList.contains('open') && !pairsEl?.hasChildNodes()) buildPairs();
+      if ($('#sec-pattern')?.classList.contains('open')) initPatternLab();
       if ($('#sec-findings')?.classList.contains('open')) showFindings();
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });

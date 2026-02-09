@@ -12,7 +12,9 @@
       --panel: #0d1a24;
       --ink: #cfe6f7;
       --ok: #29d49a;
-      --accent: #2ea8ff
+      --accent: #2ea8ff;
+      --bad: #ff7a7a;
+      --good: #48e1a8;
     }
 
     * {
@@ -91,7 +93,7 @@
     }
 
     .success {
-      color: #48e1a8
+      color: var(--good)
     }
 
     .warn {
@@ -118,16 +120,6 @@
       flex-wrap: wrap
     }
 
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: #123047;
-      border: 1px solid #1d4764;
-      color: #8bd1ff;
-      font-size: .8rem
-    }
-
     .footer-actions {
       display: flex;
       gap: 8px;
@@ -151,52 +143,98 @@
       background: #0b1621
     }
 
-    /* Minesweeper */
-    .ms-controls {
+    /* ---------- Safe Sweep (Minesweeper 4x4, 3 bombs) ---------- */
+    .jlatin-wrap {
       display: flex;
-      gap: 8px;
-      align-items: center;
-      justify-content: center;
-      margin: 8px 0
+      flex-direction: column;
+      gap: 10px;
+      align-items: center
     }
 
-    .ms-grid {
+    .jlatin-title {
+      margin: 6px 0 0
+    }
+
+    .status {
+      opacity: .95
+    }
+
+    .msw-board {
       display: grid;
-      gap: 6px;
+      gap: 8px;
       justify-content: center;
-      margin: 12px 0
+      margin: 8px 0 4px;
+      grid-template-columns: repeat(4, 56px);
     }
 
-    .ms-cell {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
+    .msw-cell {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      border: 1px solid var(--edge);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
-      border: 1px solid var(--edge);
-      background: #14334a
+      background: #14334a;
+      transition: transform .05s ease, background .2s ease, box-shadow .2s ease;
+      user-select: none;
     }
 
-    .ms-cell.revealed {
+    .msw-cell:hover {
+      box-shadow: 0 0 0 2px #1e4e6b inset
+    }
+
+    .msw-cell.revealed {
       background: #1f4e6e
     }
 
-    .ms-cell.flag {
+    .msw-cell.flag {
       background: #2b3b2f
     }
 
-    .ms-cell.mine.revealed {
-      background: #6e1f1f
+    .msw-cell.boom {
+      background: #5a1d1d !important
     }
 
-    .ms-cell.unsafe {
-      outline: 2px solid #c44
+    .msw-cell .n1 {
+      color: #9be7ff
     }
 
-    /* Queens */
+    .msw-cell .n2 {
+      color: #8df2c8
+    }
+
+    .msw-cell .n3 {
+      color: #ffd580
+    }
+
+    .msw-cell .n4 {
+      color: #ff9dbb
+    }
+
+    .msw-cell .n5 {
+      color: #d0b3ff
+    }
+
+    .msw-cell .n6 {
+      color: #ffe07e
+    }
+
+    .jlatin-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center
+    }
+
+    .hl {
+      color: #8bd1ff;
+      font-weight: 700
+    }
+
+    /* ---------- Diffuser Protocol (7x7 regions) ---------- */
     .q-wrap {
       display: flex;
       flex-direction: column;
@@ -204,27 +242,49 @@
       gap: 8px
     }
 
-    .q-board {
+    .q-grid {
       display: grid;
-      grid-template-columns: repeat(5, 64px);
-      gap: 6px
+      gap: 6px;
+      justify-content: center
     }
 
-    .q-cell {
-      width: 64px;
-      height: 64px;
+    .q-grid.small {
+      grid-template-columns: repeat(7, 52px)
+    }
+
+    .diff-cell {
+      width: 52px;
+      height: 52px;
       border-radius: 8px;
-      background: #14334a;
       border: 1px solid var(--edge);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      cursor: pointer
+      font-size: 26px;
+      cursor: pointer;
+      filter: saturate(1) brightness(.92);
+      position: relative;
+      overflow: hidden;
     }
 
-    .q-cell.conflict {
-      box-shadow: inset 0 0 0 2px #c44
+    .diff-cell .shape {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+      transform: translateY(1px);
+    }
+
+    .diff-cell.attacked {
+      box-shadow: inset 0 0 0 3px #c44
+    }
+
+    .q-tools {
+      display: flex;
+      gap: 8px;
+      justify-content: center
+    }
+
+    .q-status {
+      min-height: 1.2rem
     }
 
     /* Pairs */
@@ -264,12 +324,10 @@
     <h1>🔷 Sapphire Heist</h1>
     <p class="hint">A clear, linear flow. Progress saves on this device.</p>
 
-    <!-- A) Landing / Google Form integration -->
+    <!-- A) Landing (Forms hooked later) -->
     <section class="card" id="sec-landing">
       <h2>🪪 Agent Check‑In</h2>
-      <p class="hint">Enter details to begin. This posts to a Google <b>Form</b> (which writes to a Sheet).</p>
-
-      <!-- Replace action with your /formResponse URL and entry IDs below -->
+      <p class="hint">Enter details to begin. This will post to a Google <b>Form</b> later.</p>
       <form id="reg-form" method="POST" action="ACTION_FORM_RESPONSE_URL" target="gform_iframe" style="margin:0">
         <div class="row">
           <div style="flex:1 1 240px;min-width:240px">
@@ -310,30 +368,40 @@
 
     <div class="hr"></div>
 
-    <!-- C) Minesweeper -->
+    <!-- C) Safe Sweep (mines) -->
     <section class="card gate" id="sec-mines">
-      <h2>🧨 Minesweeper</h2>
-      <p class="hint">Reveal all safe cells (no mines). Use Flag mode to mark suspected mines.</p>
-      <div class="ms-controls">
-        <button id="ms-reset" type="button">Reset</button>
-        <button id="ms-flag" class="primary" type="button">Flag mode: OFF</button>
-        <span id="ms-msg" class="hint"></span>
+      <h2>🧨 Safe Sweep</h2>
+      <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
+        <li>Don’t tap on the cells that hide bombs.</li>
+        <li>Tapping a safe cell shows how many bombs surround it.</li>
+        <li>Clear the field to reveal the code.</li>
+        <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag.</li>
+      </ol>
+      <div class="msw-board" id="mswBoard"></div>
+      <p class="status" id="mswStatus"></p>
+      <div class="jlatin-tools">
+        <button id="mswClear" type="button">Clear</button>
       </div>
-      <div id="ms-grid" class="ms-grid"></div>
     </section>
 
     <div class="hr"></div>
 
-    <!-- D) Queens -->
-    <section class="card gate" id="sec-queens">
-      <h2>♛ Queens Protocol</h2>
-      <p class="hint">Place <b>5 queens</b> on a 5×5 board so that none attack each other.</p>
+    <!-- D) Diffuser -->
+    <section class="card gate" id="sec-diffuser">
+      <h2>💥 Diffuser Protocol</h2>
+      <ol class="status" style="text-align:left;max-width:560px;margin:0 auto">
+        <li>Place <b>7 diffusers</b> on the 7×7 board.</li>
+        <li>No two diffusers can share a <b>row</b> or a <b>column</b>.</li>
+        <li>Diffusers <b>cannot touch</b> — not even diagonally.</li>
+        <li>Each <b>colored region</b> must contain <b>exactly one</b> diffuser.</li>
+      </ol>
       <div class="q-wrap">
-        <div id="q-board" class="q-board"></div>
-        <div class="section-actions">
-          <button id="q-reset" type="button">Reset</button>
-          <span id="q-msg" class="hint"></span>
+        <div id="diff-grid" class="q-grid small"></div>
+        <div class="q-tools">
+          <button id="qCheck" type="button">Check</button>
+          <button id="qClear" type="button">Clear</button>
         </div>
+        <p id="qStatus" class="q-status"></p>
       </div>
     </section>
 
@@ -365,16 +433,14 @@
   <script>
     const $ = s => document.querySelector(s);
     const LS = { name: 'qc26.name', code: 'qc26.codename', dept: 'qc26.dept', gates: 'qc26.gates' };
-
     function loadGates() { try { return JSON.parse(localStorage.getItem(LS.gates) || '{}') } catch { return {} } }
     function saveGates(g) { try { localStorage.setItem(LS.gates, JSON.stringify(g)) } catch { } }
     const gates = loadGates();
-
     function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
-    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-queens', !!gates.queens); toggle('#sec-pairs', !!gates.pairs); toggle('#sec-findings', !!gates.findings); }
+    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-diffuser', !!gates.diffuser); toggle('#sec-pairs', !!gates.pairs); toggle('#sec-findings', !!gates.findings); }
     function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
 
-    // ---------- Prefill ----------
+    // Prefill (kept)
     (function prefill() {
       const p = new URLSearchParams(location.search);
       const name = p.get('name') || localStorage.getItem(LS.name) || '';
@@ -385,7 +451,7 @@
       $('#dept') && ($('#dept').value = dept);
     })();
 
-    // ---------- Registration form / Google Forms ----------
+    // Registration (leave form wiring for later; still unlock on iframe load)
     const regForm = $('#reg-form'), regStatus = $('#reg-status'), gFrame = $('#gform_iframe');
     if (regForm) {
       regForm.addEventListener('submit', (e) => {
@@ -393,156 +459,264 @@
         const code = ($('#codename')?.value || '').trim();
         const dept = ($('#dept')?.value || '').trim();
         if (!name) { e.preventDefault(); regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
-
-        localStorage.setItem(LS.name, name);
-        localStorage.setItem(LS.code, code);
-        localStorage.setItem(LS.dept, dept);
-
-        regStatus.textContent = 'Submitting…';
-        regStatus.className = 'hint';
-
-        // OPTIONAL: optimistic unlock so players don’t wait on Google
-        // openGate('river');
-
-        const onLoad = () => {
-          regStatus.textContent = 'Registered. Good luck, Agent.';
-          regStatus.className = 'hint success';
-          openGate('river');
-          gFrame.removeEventListener('load', onLoad);
-        };
+        localStorage.setItem(LS.name, name); localStorage.setItem(LS.code, code); localStorage.setItem(LS.dept, dept);
+        regStatus.textContent = 'Submitting…'; regStatus.className = 'hint';
+        const onLoad = () => { regStatus.textContent = 'Registered. Good luck, Agent.'; regStatus.className = 'hint success'; openGate('river'); gFrame.removeEventListener('load', onLoad); };
         gFrame.addEventListener('load', onLoad);
       });
     }
 
-    // ---------- River ----------
+    // River (same key as before)
     const RIVER_ANSWER = '243';
     $('#river-submit')?.addEventListener('click', () => {
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
       if (!val) { $('#river-msg').textContent = 'Enter an answer.'; $('#river-msg').className = 'hint warn'; return; }
-      if (val === RIVER_ANSWER.toLowerCase()) {
-        $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success'; openGate('mines');
-      } else {
-        $('#river-msg').textContent = 'Not quite. Look closely at the photo.'; $('#river-msg').className = 'hint warn';
-      }
+      if (val === RIVER_ANSWER.toLowerCase()) { $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success'; openGate('mines'); }
+      else { $('#river-msg').textContent = 'Not quite. Look closely at the photo.'; $('#river-msg').className = 'hint warn'; }
     });
 
-    // ---------- Minesweeper ----------
-    const msGrid = $('#ms-grid'), msMsg = $('#ms-msg'), msFlagBtn = $('#ms-flag');
-    let MS_ROWS = 6, MS_COLS = 6, MS_MINES = 6, msFlag = false, msField = [], msRevealed = 0, msEnded = false;
-    function msIndex(r, c) { return r * MS_COLS + c }
-    function msNeighbors(r, c) {
-      const d = [-1, 0, 1], out = [];
-      for (let dr of d) for (let dc of d) {
-        if (dr === 0 && dc === 0) continue;
-        const nr = r + dr, nc = c + dc;
-        if (nr >= 0 && nr < MS_ROWS && nc >= 0 && nc < MS_COLS) out.push([nr, nc]);
-      }
-      return out;
-    }
-    function msBuild() {
-      if (!msGrid) return;
-      msField = []; msRevealed = 0; msEnded = false; msMsg.textContent = ''; msMsg.className = 'hint';
-      for (let r = 0; r < MS_ROWS; r++) for (let c = 0; c < MS_COLS; c++) msField.push({ r, c, mine: false, adj: 0, rev: false, flag: false });
-      let placed = 0; while (placed < MS_MINES) { const i = Math.floor(Math.random() * msField.length); if (!msField[i].mine) { msField[i].mine = true; placed++; } }
-      for (const cell of msField) cell.adj = msNeighbors(cell.r, cell.c).reduce((n, [nr, nc]) => n + (msField[msIndex(nr, nc)].mine ? 1 : 0), 0);
-      msGrid.style.gridTemplateColumns = `repeat(${MS_COLS},40px)`;
-      msGrid.innerHTML = '';
-      for (const cell of msField) {
-        const d = document.createElement('div'); d.className = 'ms-cell'; d.dataset.idx = msIndex(cell.r, cell.c);
-        d.onclick = () => msClick(cell);
-        d.oncontextmenu = (ev) => { ev.preventDefault(); msToggleFlag(cell); };
-        msGrid.appendChild(d);
-      }
-      updateMsStatus();
-    }
-    function redrawCell(cell) {
-      const d = msGrid.querySelector(`[data-idx='${msIndex(cell.r, cell.c)}']`); if (!d) return;
-      d.className = 'ms-cell' + (cell.rev ? ' revealed' : '') + (cell.flag ? ' flag' : '') + (cell.mine && cell.rev ? ' mine' : '');
-      d.textContent = cell.rev ? (cell.mine ? '💣' : (cell.adj || '')) : (cell.flag ? '🚩' : '');
-    }
-    function revealAllMines(trigger) {
-      for (const cell of msField) {
-        if (cell.mine) {
-          cell.rev = true; redrawCell(cell);
-          if (cell === trigger) { msGrid.querySelector(`[data-idx='${msIndex(cell.r, cell.c)}']`)?.classList.add('unsafe'); }
+    // ---------- Safe Sweep (4x4, 3 bombs) ----------
+    function initSafeSweep() {
+      const SIZE = 4, BOMBS = 3;
+      const board = $('#mswBoard'), status = $('#mswStatus'), btnClear = $('#mswClear');
+      if (!board) return;
+
+      // prevent context menu (we use right-click for flags)
+      board.addEventListener('contextmenu', e => e.preventDefault());
+
+      const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+      let cells = []; // {r,c,bomb,revealed,flag,count,el}
+      const idx = (r, c) => r * SIZE + c;
+
+      function neighbors(cell) {
+        const out = [];
+        for (const [dr, dc] of dirs) {
+          const r = cell.r + dr, c = cell.c + dc;
+          if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]);
         }
+        return out;
       }
-    }
-    function updateMsStatus() {
-      const safeTotal = MS_ROWS * MS_COLS - MS_MINES;
-      if (msRevealed >= safeTotal && !msEnded) { msEnded = true; msMsg.textContent = 'Cleared!'; msMsg.className = 'hint success'; openGate('queens'); }
-      const flags = msField.filter(c => c.flag).length;
-      if (msFlagBtn) msFlagBtn.textContent = 'Flag mode: ' + (msFlag ? 'ON' : 'OFF') + `  |  🚩 ${flags}/${MS_MINES}`;
-    }
-    function msToggleFlag(cell) { if (msEnded || cell.rev) return; cell.flag = !cell.flag; redrawCell(cell); updateMsStatus(); }
-    function msFlood(start) {
-      const stack = [start];
-      while (stack.length) {
-        const cell = stack.pop();
-        if (cell.rev || cell.flag) continue;
-        cell.rev = true; msRevealed++; redrawCell(cell);
-        if (cell.adj === 0) {
-          for (const [nr, nc] of msNeighbors(cell.r, cell.c)) {
-            const n = msField[msIndex(nr, nc)];
-            if (!n.rev && !n.flag && !n.mine) stack.push(n);
+
+      function renderCell(cell) {
+        const el = cell.el;
+        el.innerHTML = ''; el.className = 'msw-cell';
+        if (cell.flag) el.classList.add('flag');
+        if (cell.revealed) {
+          el.classList.add('revealed');
+          if (!cell.bomb && cell.count > 0) {
+            const span = document.createElement('span');
+            span.textContent = cell.count;
+            span.className = 'n' + cell.count;
+            el.appendChild(span);
           }
         }
       }
-    }
-    function msClick(cell) {
-      if (msEnded) return;
-      if (msFlag) { msToggleFlag(cell); return; }
-      if (cell.flag || cell.rev) return;
-      if (cell.mine) { cell.rev = true; msEnded = true; revealAllMines(cell); msMsg.textContent = 'Boom! Try again.'; msMsg.className = 'hint warn'; return; }
-      msFlood(cell); updateMsStatus();
-    }
-    $('#ms-reset')?.addEventListener('click', msBuild);
-    $('#ms-flag')?.addEventListener('click', () => { msFlag = !msFlag; updateMsStatus(); });
 
-    // ---------- Queens ----------
-    const qBoard = $('#q-board'), qMsg = $('#q-msg'), Q_N = 5; let qState = [];
-    function qBuild() {
-      if (!qBoard) return;
-      qState = Array.from({ length: Q_N }, () => Array(Q_N).fill(0));
-      qBoard.innerHTML = ''; qMsg.textContent = 'Place 5 queens.'; qMsg.className = 'hint';
-      for (let r = 0; r < Q_N; r++) for (let c = 0; c < Q_N; c++) {
-        const d = document.createElement('div'); d.className = 'q-cell'; d.dataset.r = r; d.dataset.c = c; d.onclick = () => qToggle(r, c); qBoard.appendChild(d);
+      function renderAll() { for (const c of cells) renderCell(c); }
+
+      function place() {
+        board.innerHTML = ''; cells.length = 0; status.textContent = '';
+        // random bombs
+        const pool = [...Array(SIZE * SIZE).keys()];
+        for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
+        const bombs = new Set(pool.slice(0, BOMBS));
+
+        // build grid
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            const el = document.createElement('div');
+            el.className = 'msw-cell'; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `cell ${r + 1},${c + 1}`);
+            const cell = { r, c, el, bomb: bombs.has(idx(r, c)), revealed: false, flag: false, count: 0 };
+            cells.push(cell); board.appendChild(el);
+          }
+        }
+        // counts
+        for (const cell of cells) cell.count = neighbors(cell).filter(n => n.bomb).length;
+
+        // interactions
+        for (const cell of cells) {
+          // click -> reveal
+          cell.el.addEventListener('click', () => { if (!cell.flag) reveal(cell); });
+          // right-click -> flag
+          cell.el.addEventListener('mousedown', (e) => { if (e.button === 2) { e.preventDefault(); toggleFlag(cell); } });
+          // double-click alt
+          cell.el.addEventListener('dblclick', () => { if (!cell.revealed) toggleFlag(cell); });
+
+          // long-press mobile -> flag
+          let tId = null, sx = 0, sy = 0; const HOLD_MS = 420, LEEWAY = 8;
+          const onStart = (e) => {
+            if (cell.revealed) return; if (!e.touches || e.touches.length !== 1) return;
+            const t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tId);
+            tId = setTimeout(() => { toggleFlag(cell); tId = null; }, HOLD_MS);
+          };
+          const onMove = (e) => {
+            if (!tId || !e.touches || e.touches.length !== 1) return;
+            const t = e.touches[0]; if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) { clearTimeout(tId); tId = null; }
+          };
+          const onEnd = () => { if (tId) { clearTimeout(tId); tId = null; } };
+          cell.el.addEventListener('touchstart', onStart, { passive: true });
+          cell.el.addEventListener('touchmove', onMove, { passive: true });
+          cell.el.addEventListener('touchend', onEnd, { passive: true });
+          cell.el.addEventListener('touchcancel', onEnd, { passive: true });
+        }
+
+        renderAll();
       }
-      qRender();
-    }
-    function qToggle(r, c) { qState[r][c] = qState[r][c] ? 0 : 1; qRender(); qValidate(); }
-    function qRender() {
-      const cells = qBoard.querySelectorAll('.q-cell');
-      cells.forEach(el => {
-        const r = +el.dataset.r, c = +el.dataset.c;
-        const has = qState[r][c] === 1;
-        el.textContent = has ? '♛' : '';
-        el.classList.remove('conflict');
-      });
-      const pos = []; for (let r = 0; r < Q_N; r++) for (let c = 0; c < Q_N; c++) if (qState[r][c]) pos.push([r, c]);
-      for (let i = 0; i < pos.length; i++) for (let j = i + 1; j < pos.length; j++) {
-        const [r1, c1] = pos[i], [r2, c2] = pos[j];
-        if (r1 === r2 || c1 === c2 || Math.abs(r1 - r2) === Math.abs(c1 - c2)) {
-          qBoard.querySelector(`.q-cell[data-r='${r1}'][data-c='${c1}']`)?.classList.add('conflict');
-          qBoard.querySelector(`.q-cell[data-r='${r2}'][data-c='${c2}']`)?.classList.add('conflict');
+
+      function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; renderCell(cell); }
+
+      function reveal(cell) {
+        if (cell.revealed || cell.flag) return;
+        cell.revealed = true;
+
+        if (cell.bomb) {
+          cell.el.classList.add('boom');
+          status.textContent = 'Boom! Resetting…';
+          setTimeout(() => { place(); }, 350);
+          return;
+        }
+
+        // flood zeroes
+        if (cell.count === 0) {
+          for (const n of neighbors(cell)) {
+            if (!n.revealed && !n.flag && !n.bomb) reveal(n);
+          }
+        }
+        renderCell(cell);
+        checkWin();
+      }
+
+      function checkWin() {
+        const safeTotal = cells.filter(c => !c.bomb).length;
+        const revealedSafe = cells.filter(c => c.revealed && !c.bomb).length;
+        if (revealedSafe === safeTotal) {
+          status.innerHTML = '<span><span class="hl">Three</span> bombs were diffused in front of the doorway.</span>';
+          openGate('diffuser');
         }
       }
+
+      $('#mswClear')?.addEventListener('click', place);
+      place();
     }
-    function qAttacks(r, c) {
-      let n = 0; const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
-      for (const [dr, dc] of dirs) { let rr = r, cc = c; while (rr >= 0 && rr < Q_N && cc >= 0 && cc < Q_N) { if (qState[rr][cc] === 1) n++; rr += dr; cc += dc; } }
-      return n;
-    }
-    function qValidate() {
-      const count = qState.flat().reduce((a, b) => a + b, 0);
-      if (count < 5) { qMsg.textContent = `Place ${5 - count} more`; qMsg.className = 'hint'; return; }
-      if (count > 5) { qMsg.textContent = 'Only 5 queens allowed'; qMsg.className = 'hint warn'; return; }
-      for (let r = 0; r < Q_N; r++) for (let c = 0; c < Q_N; c++) {
-        if (qState[r][c] === 1 && qAttacks(r, c) > 1) { qMsg.textContent = 'Queens are attacking — adjust.'; qMsg.className = 'hint warn'; return; }
+
+    // ---------- Diffuser Protocol (7x7 colored regions) ----------
+    function initDiffuser() {
+      const SIZE = 7;
+      // Regions (0..6), same structure as doorway sequence example
+      const REGIONS = [
+        [0, 0, 0, 1, 1, 1, 2],
+        [0, 3, 3, 1, 4, 1, 2],
+        [0, 3, 4, 4, 4, 1, 2],
+        [5, 3, 4, 6, 4, 1, 2],
+        [5, 3, 6, 6, 4, 2, 2],
+        [5, 5, 6, 6, 6, 2, 2],
+        [5, 5, 5, 6, 6, 6, 2]
+      ];
+      const COLORS = { 0: "#ef6b6b", 1: "#4cc9f0", 2: "#43aa8b", 3: "#f8961e", 4: "#9b5de5", 5: "#ffd166", 6: "#2dd4bf" };
+      const SHAPE_FOR_REGION = { 0: "◇", 1: "▲", 2: "●", 3: "■", 4: "★", 5: "⬣", 6: "✦" };
+
+      const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
+      if (!grid) return;
+
+      // build cells
+      const cells = [...Array(SIZE)].map(() => Array(SIZE).fill(null));
+      grid.innerHTML = '';
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const el = document.createElement('div');
+          el.className = 'diff-cell';
+          el.dataset.q = '0';
+          el.style.background = COLORS[REGIONS[r][c]];
+          el.addEventListener('click', () => toggleQ(el));
+          grid.appendChild(el);
+          cells[r][c] = el;
+        }
       }
-      qMsg.textContent = 'Protocol satisfied!'; qMsg.className = 'hint success'; openGate('pairs');
+
+      function toggleQ(el) { el.dataset.q = (el.dataset.q === '1') ? '0' : '1'; render(el); }
+      function render(el) {
+        el.innerHTML = '';
+        if (el.dataset.q === '1') {
+          const r = el._r, c = el._c; // (optional if you want coords)
+          const shape = document.createElement('span');
+          // Pick shape based on region color (stable visuals)
+          shape.textContent = SHAPE_FOR_REGION[getRegion(el)];
+          shape.className = 'shape';
+          el.appendChild(shape);
+        }
+      }
+      function getRegion(el) {
+        // Work out region by index in grid children (fast & robust)
+        const i = Array.prototype.indexOf.call(grid.children, el);
+        const r = Math.floor(i / SIZE), c = i % SIZE;
+        return REGIONS[r][c];
+      }
+
+      function clearMarks() { [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked')); }
+
+      function validate() {
+        clearMarks();
+        // gather placed
+        const placed = [];
+        for (let i = 0; i < grid.children.length; i++) {
+          const el = grid.children[i];
+          if (el.dataset.q === '1') {
+            const r = Math.floor(i / SIZE), c = i % SIZE;
+            placed.push([r, c, el]);
+          }
+        }
+
+        let ok = true;
+
+        // exactly 7
+        if (placed.length !== 7) ok = false;
+
+        // row/col uniqueness
+        for (let r = 0; r < SIZE; r++) {
+          const k = placed.filter(p => p[0] === r);
+          if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
+        }
+        for (let c = 0; c < SIZE; c++) {
+          const k = placed.filter(p => p[1] === c);
+          if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
+        }
+
+        // one per region
+        const seen = new Map();
+        for (const [r, c, el] of placed) {
+          const reg = REGIONS[r][c];
+          if (seen.has(reg)) { ok = false; el.classList.add('attacked'); seen.get(reg).classList.add('attacked'); }
+          else seen.set(reg, el);
+        }
+
+        // cannot touch (8-neighborhood)
+        const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+        for (let i = 0; i < placed.length; i++) {
+          const [r, c, el] = placed[i];
+          for (let j = i + 1; j < placed.length; j++) {
+            const [rr, cc, el2] = placed[j];
+            if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) {
+              ok = false; el.classList.add('attacked'); el2.classList.add('attacked');
+            }
+          }
+        }
+
+        return ok;
+      }
+
+      btnCheck?.addEventListener('click', () => {
+        if (validate()) {
+          status.innerHTML = 'The <span class="hl">Seven</span> diffusers have been placed. Threats neutralized. Over!';
+          openGate('pairs');
+        } else {
+          status.textContent = 'Conflicts detected — adjust placements.';
+        }
+      });
+      btnClear?.addEventListener('click', () => {
+        for (const el of grid.children) { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); }
+        status.textContent = '';
+      });
     }
-    $('#q-reset')?.addEventListener('click', qBuild);
 
     // ---------- Pairs ----------
     const pairsEl = $('#pairs'), pairsMsg = $('#pairs-msg'); let deck = [], first = null, lock = false, matches = 0;
@@ -572,23 +746,25 @@
       if (!first) { first = c; return; }
       lock = true;
       setTimeout(() => {
-        if (first.icon === c.icon) { first.mat = c.mat = true; matches++; if (matches === 3) { pairsMsg.textContent = 'All pairs found!'; pairsMsg.className = 'hint success'; openGate('findings'); } }
-        else { first.rev = c.rev = false; }
+        if (first.icon === c.icon) {
+          first.mat = c.mat = true; matches++;
+          if (matches === 3) { pairsMsg.textContent = 'All pairs found!'; pairsMsg.className = 'hint success'; openGate('findings'); }
+        } else { first.rev = c.rev = false; }
         first = null; lock = false; renderPairs();
       }, 450);
     }
     $('#pairs-reset')?.addEventListener('click', buildPairs);
 
-    // ---------- Findings & Restart ----------
+    // Findings & Restart
     function showFindings() {
       const name = localStorage.getItem(LS.name) || '', code = localStorage.getItem(LS.code) || '', dept = localStorage.getItem(LS.dept) || '';
-      const g = loadGates(); const steps = [['Registration', true], ['River View', !!g.river], ['Minesweeper', !!g.mines], ['Queens Protocol', !!g.queens], ['Quick Pairs', !!g.pairs]];
+      const g = loadGates(); const steps = [['Registration', true], ['River View', !!g.river], ['Safe Sweep', !!g.mines], ['Diffuser Protocol', !!g.diffuser], ['Quick Pairs', !!g.pairs]];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
 <p class='hint'>Case closed. 🎉</p>`;
       const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
     }
-    function escapeHtml(s) { return (s || '').replace(/[&<>\"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
+    function escapeHtml(s) { return (s || '').replace(/[&<>\"']/g, c => ({ "&": "&amp;", "<": "&lt;", " >": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
     $('#restart')?.addEventListener('click', () => {
       const keep = { name: localStorage.getItem(LS.name), code: localStorage.getItem(LS.code), dept: localStorage.getItem(LS.dept) };
       localStorage.removeItem(LS.gates);
@@ -596,20 +772,15 @@
       location.reload();
     });
 
-    // ---------- Boot ----------
+    // Boot
     applyGates();
 
-    // Show findings content when visible
-    const findingsObs = new MutationObserver(() => {
-      const el = $('#sec-findings'); if (el && el.classList.contains('open')) showFindings();
-    });
-    findingsObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
-
-    // Initialize games when their sections open the first time
+    // Initialize sections the first time they open
     const initObs = new MutationObserver(() => {
-      if ($('#sec-mines')?.classList.contains('open') && !msGrid.hasChildNodes()) msBuild();
-      if ($('#sec-queens')?.classList.contains('open') && !qBoard.hasChildNodes()) qBuild();
-      if ($('#sec-pairs')?.classList.contains('open') && !pairsEl.hasChildNodes()) buildPairs();
+      if ($('#sec-mines')?.classList.contains('open') && !$('#mswBoard')?.hasChildNodes()) initSafeSweep();
+      if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) initDiffuser();
+      if ($('#sec-pairs')?.classList.contains('open') && !pairsEl?.hasChildNodes()) buildPairs();
+      if ($('#sec-findings')?.classList.contains('open')) showFindings();
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
   </script>

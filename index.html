@@ -289,65 +289,125 @@
       min-height: 1.2rem
     }
 
-    /* ---------- Pattern Lab (Simon) ---------- */
-    .pat-wrap {
+    /* ---------- Micro‑Maze Escape ---------- */
+    .maze-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center
+    }
+
+    .maze-grid {
+      display: grid;
+      gap: 2px;
+      justify-content: center
+    }
+
+    .maze-cell {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      background: #102738;
+      border: 1px solid #1b3a4f;
+      position: relative;
+    }
+
+    .maze-cell.wall {
+      background: #0a1822;
+      border-color: #0f2836
+    }
+
+    .maze-cell.start {
+      box-shadow: 0 0 0 2px #74e3ff inset
+    }
+
+    .maze-cell.exit {
+      box-shadow: 0 0 0 2px #7fff9f inset
+    }
+
+    .maze-player {
+      position: absolute;
+      inset: 6px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #4cc9f0, #226c8c);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+      transition: transform .08s ease;
+    }
+
+    /* ---------- Jewel Shift (2048‑lite) ---------- */
+    .shift-wrap {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px
     }
 
-    .pat-grid {
+    .shift-board {
       display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(2, 120px);
+      gap: 10px;
       justify-content: center;
-      margin: 10px 0;
+      background: #0e2130;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--edge);
+      grid-template-columns: repeat(4, 84px);
     }
 
-    .pad {
-      width: 120px;
-      height: 120px;
-      border-radius: 18px;
-      border: 2px solid #1b3a4f;
-      cursor: pointer;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, .25), 0 2px 6px rgba(0, 0, 0, .3);
-      transition: transform .06s ease, filter .06s ease, box-shadow .12s ease;
+    .tile {
+      width: 84px;
+      height: 84px;
+      border-radius: 12px;
+      background: #132c3f;
+      border: 1px solid #1b3a4f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    .pad0 {
-      background: #4cc9f0
+    .tile img {
+      width: 62%;
+      height: 62%;
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35))
     }
 
-    /* cyan */
-    .pad1 {
-      background: #ef6b6b
+    .tile.l0 {
+      background: #163b56
     }
 
-    /* red */
-    .pad2 {
-      background: #ffd166
+    .tile.l1 {
+      background: #204562
     }
 
-    /* yellow */
-    .pad3 {
-      background: #43aa8b
+    .tile.l2 {
+      background: #2a5070
     }
 
-    /* green/teal */
-    .pad.lit {
-      filter: brightness(1.35) saturate(1.15);
-      transform: scale(1.03)
+    .tile.l3 {
+      background: #345b7d
     }
 
-    .pat-tools {
+    .tile.l4 {
+      background: #3d688f
+    }
+
+    .tile.l5 {
+      background: #46739c
+    }
+
+    .tile.l6 {
+      background: #5080ad
+    }
+
+    .shift-tools {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center
     }
 
-    .pat-status {
+    .shift-status {
       min-height: 1.2rem
     }
   </style>
@@ -361,20 +421,20 @@
     <!-- A) Landing (Forms wired later) -->
     <section class="card" id="sec-landing">
       <h2>🪪 Agent Check‑In</h2>
-      <p class="hint">Enter details to begin. This will post to a Google <b>Form</b> later.</p>
-      <form id="reg-form" method="POST" action="ACTION_FORM_RESPONSE_URL" target="gform_iframe" style="margin:0">
+      <p class="hint">Enter details to begin. (We’ll connect Google Forms later.)</p>
+      <form id="reg-form" action="#" method="POST" style="margin:0">
         <div class="row">
           <div style="flex:1 1 240px;min-width:240px">
             <label for="name">Name</label>
-            <input id="name" name="entry.ENTRY_ID_NAME" placeholder="Jane Doe" autocomplete="name">
+            <input id="name" placeholder="Jane Doe" autocomplete="name">
           </div>
           <div style="flex:1 1 240px;min-width:240px">
             <label for="codename">Codename</label>
-            <input id="codename" name="entry.ENTRY_ID_CODENAME" placeholder="SAPPHIRE-FOX">
+            <input id="codename" placeholder="SAPPHIRE-FOX">
           </div>
           <div style="flex:1 1 240px;min-width:240px">
             <label for="dept">Department</label>
-            <input id="dept" name="entry.ENTRY_ID_DEPT" placeholder="R&amp;D / Security / Ops">
+            <input id="dept" placeholder="R&amp;D / Security / Ops">
           </div>
         </div>
         <div class="section-actions" style="margin-top:10px">
@@ -391,7 +451,7 @@
     <section class="card gate" id="sec-river">
       <h2>📸 Lindholmen River View — Photo Riddle</h2>
       <div class="photo-box">
-        <img id="cipher-photo" src="assets/buildings.jpg" alt="Cipher photo" />
+        <img src="assets/buildings.jpg" alt="Cipher photo" />
         <div class="row" style="width:100%;justify-content:center">
           <input id="river-answer" placeholder="Enter the answer" style="min-width:260px">
           <button id="river-submit" class="primary" type="button">Submit</button>
@@ -441,32 +501,46 @@
 
     <div class="hr"></div>
 
-    <!-- E) Pattern Lab (Simon) -->
-    <section class="card gate" id="sec-pattern">
-      <h2>🎛️ Pattern Lab</h2>
+    <!-- E) Micro‑Maze Escape -->
+    <section class="card gate" id="sec-maze">
+      <h2>🛰️ Micro‑Maze Escape</h2>
       <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
-        <li>Watch the pads flash and <b>repeat the sequence</b>.</li>
-        <li>Each round adds one more step. Reach the final length to proceed.</li>
-        <li>Use sound for timing. Good luck, Agent.</li>
+        <li>Guide the probe from <b>Start</b> (cyan) to <b>Exit</b> (green).</li>
+        <li>Tap a neighboring cell or use <b>arrow keys</b> to move.</li>
+        <li>Use <b>New Maze</b> for a fresh layout.</li>
       </ol>
-      <div class="pat-wrap">
-        <div class="pat-grid">
-          <button class="pad pad0" data-i="0" aria-label="pad cyan"></button>
-          <button class="pad pad1" data-i="1" aria-label="pad red"></button>
-          <button class="pad pad2" data-i="2" aria-label="pad yellow"></button>
-          <button class="pad pad3" data-i="3" aria-label="pad green"></button>
+      <div class="maze-wrap">
+        <div id="maze-grid" class="maze-grid"></div>
+        <div class="section-actions">
+          <button id="mazeNew" type="button">New Maze</button>
+          <button id="mazeReset" type="button">Reset</button>
         </div>
-        <div class="pat-tools">
-          <button id="patStart" class="primary" type="button">Start</button>
-          <button id="patRetry" type="button">Retry</button>
-        </div>
-        <p id="patStatus" class="pat-status"></p>
+        <p id="mazeStatus" class="status"></p>
       </div>
     </section>
 
     <div class="hr"></div>
 
-    <!-- F) Findings -->
+    <!-- F) Jewel Shift (2048‑lite) -->
+    <section class="card gate" id="sec-shift">
+      <h2>💎 Jewel Shift</h2>
+      <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
+        <li>Swipe (mobile) or use <b>arrow keys</b> to slide jewels.</li>
+        <li>Matching jewels <b>merge</b> into a higher tier.</li>
+        <li>Reach the <b>target tier</b> to proceed.</li>
+      </ol>
+      <div class="shift-wrap">
+        <div id="shiftBoard" class="shift-board"></div>
+        <div class="shift-tools">
+          <button id="shiftNew" type="button">New Game</button>
+        </div>
+        <p id="shiftStatus" class="shift-status"></p>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- G) Findings -->
     <section class="card gate" id="sec-findings">
       <h2>📜 Findings</h2>
       <div id="findings-body" class="hint"></div>
@@ -483,10 +557,10 @@
     function saveGates(g) { try { localStorage.setItem(LS.gates, JSON.stringify(g)) } catch { } }
     const gates = loadGates();
     function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
-    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-diffuser', !!gates.diffuser); toggle('#sec-pattern', !!gates.pattern); toggle('#sec-findings', !!gates.findings); }
+    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-diffuser', !!gates.diffuser); toggle('#sec-maze', !!gates.maze); toggle('#sec-shift', !!gates.shift); toggle('#sec-findings', !!gates.findings); }
     function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
 
-    // Prefill (kept)
+    // Prefill (keep local)
     (function prefill() {
       const p = new URLSearchParams(location.search);
       const name = p.get('name') || localStorage.getItem(LS.name) || '';
@@ -497,18 +571,18 @@
       $('#dept') && ($('#dept').value = dept);
     })();
 
-    // Registration (we'll wire the real form later; still unlock river on iframe load)
-    const regForm = $('#reg-form'), regStatus = $('#reg-status'), gFrame = $('#gform_iframe');
+    // Registration (for now unlock immediately so we can test games)
+    const regForm = $('#reg-form'), regStatus = $('#reg-status');
     if (regForm) {
       regForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         const name = ($('#name')?.value || '').trim();
         const code = ($('#codename')?.value || '').trim();
         const dept = ($('#dept')?.value || '').trim();
-        if (!name) { e.preventDefault(); regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
+        if (!name) { regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
         localStorage.setItem(LS.name, name); localStorage.setItem(LS.code, code); localStorage.setItem(LS.dept, dept);
-        regStatus.textContent = 'Submitting…'; regStatus.className = 'hint';
-        const onLoad = () => { regStatus.textContent = 'Registered. Good luck, Agent.'; regStatus.className = 'hint success'; openGate('river'); gFrame.removeEventListener('load', onLoad); };
-        gFrame.addEventListener('load', onLoad);
+        regStatus.textContent = 'Registered locally. Good luck, Agent.'; regStatus.className = 'hint success';
+        openGate('river');
       });
     }
 
@@ -527,123 +601,60 @@
       const board = $('#mswBoard'), status = $('#mswStatus'), btnClear = $('#mswClear');
       if (!board) return;
 
-      // prevent context menu (we use right-click for flags)
       board.addEventListener('contextmenu', e => e.preventDefault());
-
       const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
       let cells = []; // {r,c,bomb,revealed,flag,count,el}
       const idx = (r, c) => r * SIZE + c;
 
       function neighbors(cell) {
-        const out = [];
-        for (const [dr, dc] of dirs) {
-          const r = cell.r + dr, c = cell.c + dc;
-          if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]);
-        }
-        return out;
+        const out = []; for (const [dr, dc] of dirs) { const r = cell.r + dr, c = cell.c + dc; if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]); } return out;
       }
-
       function renderCell(cell) {
-        const el = cell.el;
-        el.innerHTML = ''; el.className = 'msw-cell';
+        const el = cell.el; el.innerHTML = ''; el.className = 'msw-cell';
         if (cell.flag) el.classList.add('flag');
         if (cell.revealed) {
           el.classList.add('revealed');
-          if (!cell.bomb && cell.count > 0) {
-            const span = document.createElement('span');
-            span.textContent = cell.count;
-            span.className = 'n' + cell.count;
-            el.appendChild(span);
-          }
+          if (!cell.bomb && cell.count > 0) { const span = document.createElement('span'); span.textContent = cell.count; span.className = 'n' + cell.count; el.appendChild(span); }
         }
       }
-
       function place() {
         board.innerHTML = ''; cells.length = 0; status.textContent = '';
-        // random bombs
         const pool = [...Array(SIZE * SIZE).keys()];
         for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
         const bombs = new Set(pool.slice(0, BOMBS));
-
-        // build grid
-        for (let r = 0; r < SIZE; r++) {
-          for (let c = 0; c < SIZE; c++) {
-            const el = document.createElement('div');
-            el.className = 'msw-cell'; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `cell ${r + 1},${c + 1}`);
-            const cell = { r, c, el, bomb: bombs.has(idx(r, c)), revealed: false, flag: false, count: 0 };
-            cells.push(cell); board.appendChild(el);
-          }
-        }
-        // counts
+        for (let r = 0; r < SIZE; r++) { for (let c = 0; c < SIZE; c++) { const el = document.createElement('div'); el.className = 'msw-cell'; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `cell ${r + 1},${c + 1}`); const cell = { r, c, el, bomb: bombs.has(idx(r, c)), revealed: false, flag: false, count: 0 }; cells.push(cell); board.appendChild(el); } }
         for (const cell of cells) cell.count = neighbors(cell).filter(n => n.bomb).length;
-
-        // interactions
         for (const cell of cells) {
-          // click -> reveal
           cell.el.addEventListener('click', () => { if (!cell.flag) reveal(cell); });
-          // right-click -> flag
           cell.el.addEventListener('mousedown', (e) => { if (e.button === 2) { e.preventDefault(); toggleFlag(cell); } });
-          // double-click alt
           cell.el.addEventListener('dblclick', () => { if (!cell.revealed) toggleFlag(cell); });
-
-          // long-press mobile -> flag
           let tId = null, sx = 0, sy = 0; const HOLD_MS = 420, LEEWAY = 8;
-          const onStart = (e) => {
-            if (cell.revealed) return; if (!e.touches || e.touches.length !== 1) return;
-            const t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tId);
-            tId = setTimeout(() => { toggleFlag(cell); tId = null; }, HOLD_MS);
-          };
-          const onMove = (e) => {
-            if (!tId || !e.touches || e.touches.length !== 1) return;
-            const t = e.touches[0]; if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) { clearTimeout(tId); tId = null; }
-          };
+          const onStart = e => { if (cell.revealed) return; if (!e.touches || e.touches.length !== 1) return; const t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tId); tId = setTimeout(() => { toggleFlag(cell); tId = null; }, HOLD_MS); };
+          const onMove = e => { if (!tId || !e.touches || e.touches.length !== 1) return; const t = e.touches[0]; if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) { clearTimeout(tId); tId = null; } };
           const onEnd = () => { if (tId) { clearTimeout(tId); tId = null; } };
           cell.el.addEventListener('touchstart', onStart, { passive: true });
           cell.el.addEventListener('touchmove', onMove, { passive: true });
           cell.el.addEventListener('touchend', onEnd, { passive: true });
           cell.el.addEventListener('touchcancel', onEnd, { passive: true });
         }
-
         for (const c of cells) renderCell(c);
       }
-
       function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; renderCell(cell); }
-
       function reveal(cell) {
-        if (cell.revealed || cell.flag) return;
-        cell.revealed = true;
-
-        if (cell.bomb) {
-          cell.el.classList.add('boom');
-          status.textContent = 'Boom! Resetting…';
-          setTimeout(() => { place(); }, 350);
-          return;
-        }
-
-        // flood zeroes
-        if (cell.count === 0) {
-          for (const n of neighbors(cell)) {
-            if (!n.revealed && !n.flag && !n.bomb) reveal(n);
-          }
-        }
-        renderCell(cell);
-        checkWin();
+        if (cell.revealed || cell.flag) return; cell.revealed = true;
+        if (cell.bomb) { cell.el.classList.add('boom'); status.textContent = 'Boom! Resetting…'; setTimeout(() => { place(); }, 350); return; }
+        if (cell.count === 0) { for (const n of neighbors(cell)) { if (!n.revealed && !n.flag && !n.bomb) reveal(n); } }
+        renderCell(cell); checkWin();
       }
-
       function checkWin() {
-        const safeTotal = cells.filter(c => !c.bomb).length;
-        const revealedSafe = cells.filter(c => c.revealed && !c.bomb).length;
-        if (revealedSafe === safeTotal) {
-          status.innerHTML = '<span><span class="hl">Three</span> bombs were diffused in front of the doorway.</span>';
-          openGate('diffuser');
-        }
+        const safeTotal = cells.filter(c => !c.bomb).length; const revealedSafe = cells.filter(c => c.revealed && !c.bomb).length;
+        if (revealedSafe === safeTotal) { status.innerHTML = ' <span><span class="hl">Three</span> bombs were diffused in front of the doorway.</span>'; openGate('diffuser'); }
       }
-
       $('#mswClear')?.addEventListener('click', place);
       place();
     }
 
-    // ---------- Diffuser Protocol (7x7 colored regions + jewels) ----------
+    // ---------- Diffuser Protocol (7x7 colored regions + contrasting jewels) ----------
     function initDiffuser() {
       const SIZE = 7;
       const REGIONS = [
@@ -657,15 +668,20 @@
       ];
       const COLORS = { 0: "#ef6b6b", 1: "#4cc9f0", 2: "#43aa8b", 3: "#f8961e", 4: "#9b5de5", 5: "#ffd166", 6: "#2dd4bf" };
 
-      // 🔹 Update these paths to match your assets if needed
+      /* Contrast mapping (edit if you prefer different pairings):
+         0 red    -> diamond (blue)         1 cyan   -> ruby (red)
+         2 teal   -> amethyst (purple)      3 orange -> emerald (green)
+         4 purple -> hex (orange)           5 yellow -> star (blue)
+         6 aqua   -> diamond (blue) (reused)
+      */
       const JEWELS = {
-        0: "assets/jewels/ruby.svg",
-        1: "assets/jewels/sapphire.svg",
-        2: "assets/jewels/emerald.svg",
-        3: "assets/jewels/amber.svg",
-        4: "assets/jewels/amethyst.svg",
-        5: "assets/jewels/topaz.svg",
-        6: "assets/jewels/aquamarine.svg"
+        0: "assets/jewels/diamond.svg",
+        1: "assets/jewels/ruby.svg",
+        2: "assets/jewels/amethyst.svg",
+        3: "assets/jewels/emerald.svg",
+        4: "assets/jewels/hex.svg",
+        5: "assets/jewels/star.svg",
+        6: "assets/jewels/diamond.svg"
       };
 
       const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
@@ -696,9 +712,8 @@
           img.alt = 'diffuser jewel';
           img.src = JEWELS[reg];
           img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
-          // Optional subtle glow using region color:
           const col = el.style.background || '#ffffff';
-          img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
+          img.style.filter = `drop-shadow(0 0 6px ${col}80)`; // glow with region color
           el.appendChild(img);
         }
       }
@@ -717,10 +732,8 @@
         }
         let ok = true;
 
-        // Exactly 7
         if (placed.length !== 7) ok = false;
 
-        // Row/Col uniqueness
         for (let r = 0; r < SIZE; r++) {
           const k = placed.filter(p => p[0] === r);
           if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
@@ -730,7 +743,6 @@
           if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
         }
 
-        // One per region
         const seen = new Map();
         for (const [r, c, el] of placed) {
           const reg = REGIONS[r][c];
@@ -738,7 +750,6 @@
           else seen.set(reg, el);
         }
 
-        // Not touching (8-neighborhood)
         for (let i = 0; i < placed.length; i++) {
           const [r, c, el] = placed[i];
           for (let j = i + 1; j < placed.length; j++) {
@@ -753,7 +764,7 @@
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
           status.innerHTML = 'The <span class="hl">Seven</span> diffusers have been placed. Threats neutralized. Over!';
-          openGate('pattern');
+          openGate('maze');
         } else {
           status.textContent = 'Conflicts detected — adjust placements.';
         }
@@ -764,102 +775,245 @@
       });
     }
 
-    // ---------- Pattern Lab (Simon) ----------
-    function initPatternLab() {
-      const pads = Array.from(document.querySelectorAll('.pad'));
-      const btnStart = $('#patStart'), btnRetry = $('#patRetry'), status = $('#patStatus');
+    // ---------- Micro‑Maze Escape ----------
+    function initMaze() {
+      const gridEl = $('#maze-grid'), status = $('#mazeStatus'), btnNew = $('#mazeNew'), btnReset = $('#mazeReset');
+      if (!gridEl) return;
 
-      if (pads.length !== 4) return;
-      // WebAudio
-      const FREQ = [523.25, 659.25, 784.0, 440.0]; // C5, E5, G5, A4
-      let actx = null, osc = null, gain = null;
-      function ensureAudio() {
-        if (actx) return;
-        actx = new (window.AudioContext || window.webkitAudioContext)();
-        gain = actx.createGain(); gain.gain.value = 0.001; gain.connect(actx.destination);
-        osc = actx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 440; osc.connect(gain); osc.start();
-      }
-      function beep(i, dur = 350) {
-        try {
-          ensureAudio();
-          osc.frequency.value = FREQ[i];
-          const now = actx.currentTime;
-          gain.gain.cancelScheduledValues(now);
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(0.18, now + 0.01);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + dur / 1000);
-        } catch { }
-      }
-      function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-      function light(i, ms = 350) { pads[i].classList.add('lit'); beep(i, ms); return sleep(ms).then(() => pads[i].classList.remove('lit')); }
+      const N = 7; // cells
+      const W = 2 * N - 1; // include walls (odd grid)
+      gridEl.style.gridTemplateColumns = `repeat(${W}, 34px)`;
 
-      // Game state
-      let seq = [], step = 0, round = 0, playing = false, accepting = false;
-      const TARGET_LEN = 7; // total length to win
+      let player = { r: 0, c: 0 };
+      let start = { r: 0, c: 0 }, exit = { r: W - 1, c: W - 1 };
 
-      async function playSequence() {
-        playing = true; accepting = false;
-        await sleep(350);
-        for (let i = 0; i < seq.length; i++) {
-          await light(seq[i], 380);
-          await sleep(160);
+      function buildMaze() {
+        // Initialize with walls
+        const grid = [...Array(W)].map(() => Array(W).fill(1)); // 1=wall, 0=path
+        // carve recursive backtracker on cell coordinates (odd indices are walls; we use even indices for cells)
+        const visited = [...Array(N)].map(() => Array(N).fill(false));
+        function neighbors(r, c) {
+          const out = [];
+          const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+          for (const [dr, dc] of dirs) {
+            const rr = r + dr, cc = c + dc; if (rr >= 0 && rr < N && cc >= 0 && cc < N && !visited[rr][cc]) out.push([rr, cc]);
+          }
+          return out.sort(() => Math.random() - 0.5);
         }
-        playing = false; accepting = true; step = 0;
-        status.textContent = `Your turn (round ${round}/${TARGET_LEN})`;
+        function carve(r, c) {
+          visited[r][c] = true;
+          grid[2 * r][2 * c] = 0;
+          for (const [rr, cc] of neighbors(r, c)) {
+            if (!visited[rr][cc]) {
+              // knock wall between
+              grid[r + rr][c + cc] = 0; // because r,rr are consecutive in cell space -> in wall space it's odd index
+              carve(rr, cc);
+            }
+          }
+        }
+        carve(0, 0);
+
+        // Render
+        gridEl.innerHTML = '';
+        for (let r = 0; r < W; r++) {
+          for (let c = 0; c < W; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'maze-cell' + (grid[r][c] ? ' wall' : '');
+            if (!grid[r][c]) {
+              cell.addEventListener('click', () => tryMoveTo(r, c));
+            }
+            gridEl.appendChild(cell);
+          }
+        }
+        // Mark start & exit on path coordinates (even,even) ends
+        start = { r: 0, c: 0 }; exit = { r: W - 1, c: W - 1 };
+        cellAt(start).classList.add('start');
+        cellAt(exit).classList.add('exit');
+        player = { r: start.r, c: start.c };
+        placePlayer();
+        status.textContent = 'Find the exit.';
       }
 
-      function nextRound() {
-        seq.push(Math.floor(Math.random() * 4));
-        round = seq.length;
-        status.textContent = `Observe the pattern (round ${round}/${TARGET_LEN})…`;
-        playSequence();
+      function cellAt(p) { return gridEl.children[p.r * (2 * N - 1) + p.c]; }
+      function placePlayer() {
+        // Remove old marker
+        [...gridEl.querySelectorAll('.maze-player')].forEach(n => n.remove());
+        const dot = document.createElement('div'); dot.className = 'maze-player';
+        cellAt(player).appendChild(dot);
       }
 
-      function resetGame() {
-        seq = []; step = 0; round = 0; playing = false; accepting = false;
-        status.textContent = 'Press Start to begin.';
+      function isPath(r, c) {
+        if (r < 0 || c < 0 || r >= W || c >= W) return false;
+        const cell = gridEl.children[r * W + c];
+        return cell && !cell.classList.contains('wall');
+      }
+
+      function tryMoveTo(r, c) {
+        // Only allow moving to direct neighbors (Manhattan distance 1)
+        const d = Math.abs(r - player.r) + Math.abs(c - player.c);
+        if (d !== 1) return;
+        if (isPath(r, c)) {
+          player = { r, c }; placePlayer();
+          if (player.r === exit.r && player.c === exit.c) {
+            status.innerHTML = 'Route clear. <span class="hl">Exit reached.</span>';
+            openGate('shift');
+          }
+        }
+      }
+
+      function moveBy(dr, dc) {
+        const nr = player.r + dr, nc = player.c + dc;
+        if (isPath(nr, nc)) tryMoveTo(nr, nc);
+      }
+
+      // Controls
+      btnNew?.addEventListener('click', buildMaze);
+      btnReset?.addEventListener('click', () => { player = { r: start.r, c: start.c }; placePlayer(); status.textContent = 'Find the exit.'; });
+
+      // Keyboard
+      window.addEventListener('keydown', (e) => {
+        if (!$('#sec-maze')?.classList.contains('open')) return;
+        const k = e.key;
+        if (k === 'ArrowUp') moveBy(-1, 0);
+        else if (k === 'ArrowDown') moveBy(1, 0);
+        else if (k === 'ArrowLeft') moveBy(0, -1);
+        else if (k === 'ArrowRight') moveBy(0, 1);
+      });
+
+      buildMaze();
+    }
+
+    // ---------- Jewel Shift (2048‑lite with jewel svgs) ----------
+    function initShift() {
+      const boardEl = $('#shiftBoard'), status = $('#shiftStatus'), btnNew = $('#shiftNew');
+      if (!boardEl) return;
+
+      const SIZE = 4;
+      boardEl.innerHTML = '';
+      boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
+
+      // Jewel icons by level (0..6)
+      const ICONS = [
+        "assets/jewels/diamond.svg",  // l0
+        "assets/jewels/emerald.svg",  // l1
+        "assets/jewels/ruby.svg",     // l2
+        "assets/jewels/hex.svg",      // l3
+        "assets/jewels/star.svg",     // l4
+        "assets/jewels/amethyst.svg", // l5
+        "assets/jewels/diamond.svg"   // l6 (repeat if ever reached)
+      ];
+      const TARGET_LEVEL = 5; // reach amethyst to win
+
+      let grid = [], moved = false;
+
+      function newGrid() {
+        grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null));
+        spawn(); spawn();
+        render();
+        status.textContent = 'Slide to merge matching jewels.';
+      }
+
+      function spawn() {
+        const empty = [];
+        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] == null) empty.push([r, c]);
+        if (!empty.length) return;
+        const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+        grid[r][c] = Math.random() < 0.9 ? 0 : 1; // like 2 or 4
+      }
+
+      function render() {
+        boardEl.innerHTML = '';
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            const el = document.createElement('div');
+            el.className = 'tile ' + (grid[r][c] == null ? '' : ('l' + grid[r][c]));
+            if (grid[r][c] != null) {
+              const img = document.createElement('img');
+              img.src = ICONS[Math.min(grid[r][c], ICONS.length - 1)];
+              img.alt = 'jewel';
+              el.appendChild(img);
+            }
+            boardEl.appendChild(el);
+          }
+        }
+      }
+
+      function slideLine(line) {
+        // remove nulls
+        const vals = line.filter(v => v != null);
+        for (let i = 0; i < vals.length - 1; i++) {
+          if (vals[i] === vals[i + 1]) {
+            vals[i] += 1; vals.splice(i + 1, 1); moved = true;
+          }
+        }
+        while (vals.length < SIZE) vals.push(null);
+        return vals;
+      }
+
+      function rotateCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[c][n - 1 - r] = g[r][c]; return o; }
+      function rotateCCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[n - 1 - c][r] = g[r][c]; return o; }
+      function flipH(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[r][n - 1 - c] = g[r][c]; return o; }
+
+      function move(dir) {
+        moved = false;
+        let g = grid.map(row => row.slice());
+        if (dir === 'left') {
+          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
+        } else if (dir === 'right') {
+          g = flipH(g);
+          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
+          g = flipH(g);
+        } else if (dir === 'up') {
+          g = rotateCCW(g);
+          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
+          g = rotateCW(g);
+        } else if (dir === 'down') {
+          g = rotateCW(g);
+          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
+          g = rotateCCW(g);
+        }
+        if (JSON.stringify(g) !== JSON.stringify(grid)) { grid = g; moved = true; }
+        if (moved) { spawn(); render(); checkWinLose(); }
+      }
+
+      function checkWinLose() {
+        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
+          status.innerHTML = 'Target tier reached. <span class="hl">Vault sequence accepted.</span>';
+          openGate('findings'); return;
+        }
+        // moves available?
+        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+          if (grid[r][c] == null) return;
+          if (r + 1 < SIZE && grid[r][c] === grid[r + 1][c]) return;
+          if (c + 1 < SIZE && grid[r][c] === grid[r][c + 1]) return;
+        }
+        status.textContent = 'No moves left — try a new game.';
       }
 
       // Input
-      pads.forEach(p => {
-        p.addEventListener('click', async (e) => {
-          const i = Number(p.dataset.i);
-          if (!accepting) return;
-          // immediate feedback
-          p.classList.add('lit'); beep(i, 180); setTimeout(() => p.classList.remove('lit'), 120);
-
-          if (i === seq[step]) {
-            step++;
-            if (step === seq.length) {
-              if (seq.length >= TARGET_LEN) {
-                status.innerHTML = 'Pattern complete. <span class="hl">Access granted</span>.';
-                openGate('findings');
-                accepting = false;
-              } else {
-                status.textContent = 'Good. Next round…';
-                setTimeout(nextRound, 600);
-              }
-            }
-          } else {
-            accepting = false;
-            status.textContent = 'Mismatch — retry the sequence.';
-          }
-        });
+      window.addEventListener('keydown', (e) => {
+        if (!$('#sec-shift')?.classList.contains('open')) return;
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
+        if (e.key === 'ArrowLeft') move('left');
+        else if (e.key === 'ArrowRight') move('right');
+        else if (e.key === 'ArrowUp') move('up');
+        else if (e.key === 'ArrowDown') move('down');
       });
 
-      // Controls
-      btnStart?.addEventListener('click', () => {
-        resetGame();
-        nextRound();
-      });
-      btnRetry?.addEventListener('click', () => {
-        if (seq.length === 0) { resetGame(); return; }
-        status.textContent = 'Replaying pattern…';
-        playSequence();
-      });
+      // Touch swipe
+      let touchStart = null;
+      boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+      boardEl.addEventListener('touchend', e => {
+        if (!touchStart) return;
+        const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y);
+        const ax = Math.abs(dx), ay = Math.abs(dy);
+        if (Math.max(ax, ay) < 24) { touchStart = null; return; }
+        if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up');
+        touchStart = null;
+      }, { passive: true });
 
-      // Initialize text
-      if (!seq.length) status.textContent = 'Press Start to begin.';
+      btnNew?.addEventListener('click', newGrid);
+      newGrid();
     }
 
     // Findings & Restart
@@ -870,7 +1024,8 @@
         ['River View', !!g.river],
         ['Safe Sweep', !!g.mines],
         ['Diffuser Protocol', !!g.diffuser],
-        ['Pattern Lab', !!g.pattern]
+        ['Micro‑Maze Escape', !!g.maze],
+        ['Jewel Shift', !!g.shift],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
@@ -885,14 +1040,15 @@
       location.reload();
     });
 
-    // Boot gates
+    // Boot
     applyGates();
 
     // Initialize sections the first time they open
     const initObs = new MutationObserver(() => {
       if ($('#sec-mines')?.classList.contains('open') && !$('#mswBoard')?.hasChildNodes()) initSafeSweep();
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) initDiffuser();
-      if ($('#sec-pattern')?.classList.contains('open')) initPatternLab();
+      if ($('#sec-maze')?.classList.contains('open') && !$('#maze-grid')?.hasChildNodes()) initMaze();
+      if ($('#sec-shift')?.classList.contains('open') && !$('#shiftBoard')?.hasChildNodes()) initShift();
       if ($('#sec-findings')?.classList.contains('open')) showFindings();
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });

@@ -764,7 +764,7 @@
         sessionStorage.setItem(SS.name, name);
         sessionStorage.setItem(SS.code, code);
         sessionStorage.setItem(SS.dept, dept);
-        regStatus.textContent = 'Access granted. Good luck, Agent.'; regStatus.className = 'hint success';
+        regStatus.textContent = 'Access granted.'; regStatus.className = 'hint success';
         openGate('river'); toast('Evidence unlocked: Lindholmen River View Photo and note relating to it. Proceed below.');
       });
     }
@@ -775,8 +775,8 @@
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
       if (!val) { $('#river-msg').textContent = 'Enter the 3-digit code.'; $('#river-msg').className = 'hint warn'; return; }
       if (val === RIVER_ANSWER.toLowerCase()) {
-        $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success';
-        openGate('mines'); toast('✅ Amazing find, Detective! Let\'s proceed to the next evidence: Safe Sweep.');
+        $('#river-msg').textContent = '✅ Amazing find, Detective! Let\'s proceed to the next evidence: Safe Sweep.'; $('#river-msg').className = 'hint success';
+        openGate('mines'); toast('Correct!');
       } else {
         $('#river-msg').textContent = 'Not quite. Open the photo and review again.'; $('#river-msg').className = 'hint warn';
       }
@@ -898,7 +898,7 @@
       }
       function checkWin() {
         const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length;
-        if (rev === safe) { status.innerHTML = 'Field clear! The malware has been located. The first location revealed is \"A cabinet opposite to a conference room.\" '; openGate('diffuser'); toast('✅ Next piece of evidence unlocked: Diffuser Protocol.'); }
+        if (rev === safe) { status.innerHTML = ' ✅ Field clear! The malware has been located. The first location revealed is \"A cabinet opposite to a conference room\". ✅ Next piece of evidence unlocked: Diffuser Protocol.'; openGate('diffuser'); toast('Wonderful!'); }
       }
       $('#mswClear')?.addEventListener('click', place);
       place();
@@ -983,8 +983,8 @@
 
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
-          status.innerHTML = 'Well placed! The malware has been diabled. The second location revealed is \"A place to enlighten knowledge, the one with a green couch.\" ';
-          openGate('locate'); toast('✅ Next evidence unlocked: Locate the Jewel.');
+          status.innerHTML = '✅ Well placed! The malware has been diabled. The second location revealed is \"A place to enlighten knowledge, the one with a green couch\". Next evidence unlocked: Locate the Jewel. ';
+          openGate('locate'); toast('That was amazing!');
         } else {
           status.textContent = 'Conflicts detected — adjust placements.';
         }
@@ -1054,9 +1054,9 @@
       function checkWinLose() {
         for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
           if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
-            status.innerHTML = `Target reached: <span class="hl">${TIER_NAMES[TARGET_LEVEL]}</span>.`;
+            status.innerHTML = '✅ That is some great skill you have detective! The malware has been erased. The third location revealed is \"A place with a great view, all year round. The closed chair on the far end of the kitchen\". Head to these locations to find out what they hide, hopefully an answer to use at the final location that was found in the evidence note. The findings are also collected below for reference.';
             gates.findings = true; saveGates(gates); applyGates();
-            toast('✅ Findings are collected below. Head to these locations to find out what they hide, Hopefully an answer for the final step.'); showFindings(); return;
+            toast('Target reached!'); showFindings(); return;
           }
         }
         for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
@@ -1094,11 +1094,10 @@
     function showFindings() {
       const name = sessionStorage.getItem(SS.name) || '', code = sessionStorage.getItem(SS.code) || '', dept = sessionStorage.getItem(SS.dept) || '';
       const g = loadGates(); const steps = [
-        ['Registration', true],
-        ['River View', !!g.river],
-        ['Safe Sweep', !!g.mines],
-        ['Diffuser Protocol', !!g.diffuser],
-        ['Locate the Jewel', !!g.locate],
+        ['River View -                3-digit code : 243', !!g.river],
+        ['Safe Sweep -                Location     : Cabinet opposite to a meeting room', !!g.mines],
+        ['Diffuser Protocol -         Location     : Place with books and a green counch', !!g.diffuser],
+        ['Locate the Jewel -          Location     : Closed chair at the far end of the kitchen', !!g.locate],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>

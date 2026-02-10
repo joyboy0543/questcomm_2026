@@ -1101,7 +1101,7 @@
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
-<p class='hint'>Case closed. 🎉</p>`;
+<p class='hint'>Digital evidence decoded. 🎉</p>`;
       const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
     }
     function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }

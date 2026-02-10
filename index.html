@@ -77,6 +77,10 @@
       color: #9ec4df
     }
 
+    select {
+      min-width: 220px
+    }
+
     button.primary {
       border: 2px solid var(--accent);
       background: linear-gradient(180deg, #10324a, #0f2a3f);
@@ -132,20 +136,167 @@
       font-weight: 700
     }
 
-    /* Photo */
+    /* ---------- Toast ---------- */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: #0f2030;
+      color: #d9f1ff;
+      border: 1px solid #275070;
+      border-radius: 10px;
+      padding: 10px 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      max-width: 86vw;
+      text-align: center;
+      font-size: .95rem;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    /* ---------- Photo (big thumbnail with zoom icon) ---------- */
     .photo-box {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       align-items: center
     }
 
-    .photo-box img {
-      max-width: 100%;
-      height: auto;
+    .zoom-thumb {
+      position: relative;
+      width: min(780px, 94vw);
       border: 1px solid var(--edge);
       border-radius: 12px;
-      background: #0b1621
+      overflow: hidden;
+      cursor: zoom-in;
+      background: #0b1621;
+    }
+
+    .zoom-thumb img {
+      display: block;
+      width: 100%;
+      height: auto
+    }
+
+    .zoom-badge {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      background: rgba(16, 37, 54, .8);
+      border: 1px solid #2b5676;
+      color: #cfe6f7;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .9rem;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .zoom-badge .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      border-radius: 4px;
+      border: 1px solid #2b5676;
+      background: linear-gradient(180deg, #123650, #0f2a3e);
+      position: relative
+    }
+
+    .zoom-badge .icon::before {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border: 2px solid #87cfff;
+      border-radius: 3px;
+    }
+
+    /* ---------- Lightbox Viewer ---------- */
+    .lb-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 10, 16, .75);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998
+    }
+
+    .lb-panel {
+      width: min(96vw, 1100px);
+      height: min(86vh, 800px);
+      background: #0b1320;
+      border: 1px solid #27475f;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .lb-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-bottom: 1px solid #1f3a50;
+      background: #0f1a28
+    }
+
+    .lb-title {
+      font-weight: 600
+    }
+
+    .lb-close {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #2b4c66;
+      background: #102536;
+      color: #cfe6f7;
+      cursor: pointer
+    }
+
+    .lb-view {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #07111b
+    }
+
+    .zoom-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      max-width: none;
+      user-select: none;
+      touch-action: none
+    }
+
+    .lb-tools {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      border-top: 1px solid #1f3a50;
+      background: #0f1a28;
+      justify-content: center
+    }
+
+    .lb-tools button {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #2b4c66;
+      background: #102536;
+      color: #cfe6f7;
+      cursor: pointer
     }
 
     /* ---------- Safe Sweep (Minesweeper 4x4, 3 bombs) ---------- */
@@ -169,7 +320,7 @@
       gap: 8px;
       justify-content: center;
       margin: 8px 0 4px;
-      grid-template-columns: repeat(4, 56px);
+      grid-template-columns: repeat(4, 56px)
     }
 
     .msw-cell {
@@ -184,7 +335,7 @@
       cursor: pointer;
       background: #14334a;
       transition: transform .05s ease, background .2s ease, box-shadow .2s ease;
-      user-select: none;
+      user-select: none
     }
 
     .msw-cell:hover {
@@ -260,11 +411,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
       cursor: pointer;
       filter: saturate(1) brightness(.92);
       position: relative;
-      overflow: hidden;
+      overflow: hidden
     }
 
     .diff-cell .jewel {
@@ -272,7 +422,7 @@
       height: 64%;
       display: block;
       pointer-events: none;
-      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35))
     }
 
     .diff-cell.attacked {
@@ -289,52 +439,7 @@
       min-height: 1.2rem
     }
 
-    /* ---------- Micro‑Maze Escape ---------- */
-    .maze-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center
-    }
-
-    .maze-grid {
-      display: grid;
-      gap: 2px;
-      justify-content: center
-    }
-
-    .maze-cell {
-      width: 34px;
-      height: 34px;
-      border-radius: 6px;
-      background: #102738;
-      border: 1px solid #1b3a4f;
-      position: relative;
-    }
-
-    .maze-cell.wall {
-      background: #0a1822;
-      border-color: #0f2836
-    }
-
-    .maze-cell.start {
-      box-shadow: 0 0 0 2px #74e3ff inset
-    }
-
-    .maze-cell.exit {
-      box-shadow: 0 0 0 2px #7fff9f inset
-    }
-
-    .maze-player {
-      position: absolute;
-      inset: 6px;
-      border-radius: 8px;
-      background: linear-gradient(180deg, #4cc9f0, #226c8c);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
-      transition: transform .08s ease;
-    }
-
-    /* ---------- Jewel Shift (2048‑lite) ---------- */
+    /* ---------- Locate Jewel (2048‑lite) ---------- */
     .shift-wrap {
       display: flex;
       flex-direction: column;
@@ -350,7 +455,7 @@
       padding: 12px;
       border-radius: 14px;
       border: 1px solid var(--edge);
-      grid-template-columns: repeat(4, 84px);
+      grid-template-columns: repeat(4, 84px)
     }
 
     .tile {
@@ -363,7 +468,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      overflow: hidden
     }
 
     .tile img {
@@ -410,15 +515,42 @@
     .shift-status {
       min-height: 1.2rem
     }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      margin: 6px 0 2px
+    }
+
+    .legend .badge {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #123047;
+      border: 1px solid #1d4764;
+      color: #cfe6f7;
+      font-size: .85rem
+    }
+
+    .legend .badge img {
+      width: 18px;
+      height: 18px;
+      display: inline-block
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <h1>🔷 Sapphire Heist</h1>
-    <p class="hint">A clear, linear flow. Progress saves on this device.</p>
+    <p class="hint">A clear, linear flow. Progress saves in this tab (refresh is safe). Closing the tab resets.</p>
 
-    <!-- A) Landing (Forms wired later) -->
+    <!-- A) Landing -->
     <section class="card" id="sec-landing">
       <h2>🪪 Agent Check‑In</h2>
       <p class="hint">Enter details to begin. (We’ll connect Google Forms later.)</p>
@@ -434,7 +566,13 @@
           </div>
           <div style="flex:1 1 240px;min-width:240px">
             <label for="dept">Department</label>
-            <input id="dept" placeholder="R&amp;D / Security / Ops">
+            <select id="dept">
+              <option value="" disabled selected>Select department</option>
+              <option>Field Operations</option>
+              <option>Cyber Division</option>
+              <option>Forensics Unit</option>
+              <option>Special Tasks</option>
+            </select>
           </div>
         </div>
         <div class="section-actions" style="margin-top:10px">
@@ -442,7 +580,6 @@
           <span id="reg-status" class="hint"></span>
         </div>
       </form>
-      <iframe name="gform_iframe" id="gform_iframe" style="display:none"></iframe>
     </section>
 
     <div class="hr"></div>
@@ -451,7 +588,11 @@
     <section class="card gate" id="sec-river">
       <h2>📸 Lindholmen River View — Photo Riddle</h2>
       <div class="photo-box">
-        <img src="assets/buildings.jpg" alt="Cipher photo" />
+        <figure class="zoom-thumb" id="river-thumb" aria-label="Tap to inspect">
+          <img src="assets/buildings.jpg" alt="Buildings panorama preview">
+          <figcaption class="zoom-badge"><span class="icon"></span>Tap to inspect</figcaption>
+        </figure>
+
         <div class="row" style="width:100%;justify-content:center">
           <input id="river-answer" placeholder="Enter the answer" style="min-width:260px">
           <button id="river-submit" class="primary" type="button">Submit</button>
@@ -468,7 +609,7 @@
       <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
         <li>Don’t tap on the cells that hide bombs.</li>
         <li>Tapping a safe cell shows how many bombs surround it.</li>
-        <li>Clear the field to reveal the code.</li>
+        <li>Clear the field to proceed.</li>
         <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag.</li>
       </ol>
       <div class="msw-board" id="mswBoard"></div>
@@ -501,34 +642,24 @@
 
     <div class="hr"></div>
 
-    <!-- E) Micro‑Maze Escape -->
-    <section class="card gate" id="sec-maze">
-      <h2>🛰️ Micro‑Maze Escape</h2>
-      <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
-        <li>Guide the probe from <b>Start</b> (cyan) to <b>Exit</b> (green).</li>
-        <li>Tap a neighboring cell or use <b>arrow keys</b> to move.</li>
-        <li>Use <b>New Maze</b> for a fresh layout.</li>
-      </ol>
-      <div class="maze-wrap">
-        <div id="maze-grid" class="maze-grid"></div>
-        <div class="section-actions">
-          <button id="mazeNew" type="button">New Maze</button>
-          <button id="mazeReset" type="button">Reset</button>
-        </div>
-        <p id="mazeStatus" class="status"></p>
-      </div>
-    </section>
-
-    <div class="hr"></div>
-
-    <!-- F) Jewel Shift (2048‑lite) -->
-    <section class="card gate" id="sec-shift">
-      <h2>💎 Jewel Shift</h2>
-      <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
+    <!-- E) Locate Jewel (2048‑lite) -->
+    <section class="card gate" id="sec-locate">
+      <h2>💎 Locate Jewel</h2>
+      <ol class="status" style="text-align:left;max-width:620px;margin:0 auto">
         <li>Swipe (mobile) or use <b>arrow keys</b> to slide jewels.</li>
-        <li>Matching jewels <b>merge</b> into a higher tier.</li>
-        <li>Reach the <b>target tier</b> to proceed.</li>
+        <li>When two identical jewels collide, they <b>merge</b> into the <b>next tier</b>.</li>
+        <li><b>Goal:</b> Reach the target tier <b>Amethyst</b> to proceed.</li>
       </ol>
+
+      <div class="legend" aria-hidden="true">
+        <span class="badge"><img src="assets/jewels/diamond.svg" alt="">Diamond</span>
+        <span class="badge"><img src="assets/jewels/emerald.svg" alt="">Emerald</span>
+        <span class="badge"><img src="assets/jewels/ruby.svg" alt="">Ruby</span>
+        <span class="badge"><img src="assets/jewels/hex.svg" alt="">Hex</span>
+        <span class="badge"><img src="assets/jewels/star.svg" alt="">Star</span>
+        <span class="badge"><img src="assets/jewels/amethyst.svg" alt=""><b>Amethyst</b> (target)</span>
+      </div>
+
       <div class="shift-wrap">
         <div id="shiftBoard" class="shift-board"></div>
         <div class="shift-tools">
@@ -540,62 +671,171 @@
 
     <div class="hr"></div>
 
-    <!-- G) Findings -->
-    <section class="card gate" id="sec-findings">
+    <!-- F) Findings -->
+    <section class="card" id="sec-findings" style="display:none">
       <h2>📜 Findings</h2>
       <div id="findings-body" class="hint"></div>
       <div class="footer-actions" style="margin-top:10px">
-        <button id="restart" type="button">Restart (keep registration)</button>
+        <button id="restart" type="button">Restart (keep this tab)</button>
       </div>
     </section>
   </div>
 
-  <script>
-    const $ = s => document.querySelector(s);
-    const LS = { name: 'qc26.name', code: 'qc26.codename', dept: 'qc26.dept', gates: 'qc26.gates' };
-    function loadGates() { try { return JSON.parse(localStorage.getItem(LS.gates) || '{}') } catch { return {} } }
-    function saveGates(g) { try { localStorage.setItem(LS.gates, JSON.stringify(g)) } catch { } }
-    const gates = loadGates();
-    function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
-    function applyGates() { toggle('#sec-river', !!gates.river); toggle('#sec-mines', !!gates.mines); toggle('#sec-diffuser', !!gates.diffuser); toggle('#sec-maze', !!gates.maze); toggle('#sec-shift', !!gates.shift); toggle('#sec-findings', !!gates.findings); }
-    function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    // Prefill (keep local)
+  <script>
+    // ---------- Session-scoped storage (refresh keeps; closing tab resets) ----------
+    const SS = {
+      name: 'qc26s.name',
+      code: 'qc26s.code',
+      dept: 'qc26s.dept',
+      gates: 'qc26s.gates'
+    };
+    const $ = s => document.querySelector(s);
+    function loadGates() { try { return JSON.parse(sessionStorage.getItem(SS.gates) || '{}') } catch { return {} } }
+    function saveGates(g) { try { sessionStorage.setItem(SS.gates, JSON.stringify(g)) } catch { } }
+    function toast(msg) { const t = $('#toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+    const gates = loadGates();  // gate keys: river, mines, diffuser, locate, findings
+    function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
+    function applyGates() {
+      toggle('#sec-river', !!gates.river);
+      toggle('#sec-mines', !!gates.mines);
+      toggle('#sec-diffuser', !!gates.diffuser);
+      toggle('#sec-locate', !!gates.locate);
+      // Findings card behaves like a terminal summary; show only when unlocked
+      const findings = $('#sec-findings');
+      if (findings) findings.style.display = gates.findings ? 'block' : 'none';
+    }
+    function openGate(key) {
+      gates[key] = true; saveGates(gates); applyGates();
+    }
+
+    // ---------- Prefill from query or prior session ----------
     (function prefill() {
       const p = new URLSearchParams(location.search);
-      const name = p.get('name') || localStorage.getItem(LS.name) || '';
-      const code = p.get('codename') || localStorage.getItem(LS.code) || '';
-      const dept = p.get('department') || localStorage.getItem(LS.dept) || '';
+      const name = p.get('name') || sessionStorage.getItem(SS.name) || '';
+      const code = p.get('codename') || sessionStorage.getItem(SS.code) || '';
+      const dept = p.get('department') || sessionStorage.getItem(SS.dept) || '';
       $('#name') && ($('#name').value = name);
       $('#codename') && ($('#codename').value = code);
-      $('#dept') && ($('#dept').value = dept);
+      if (dept && $('#dept')) $('#dept').value = dept;
     })();
 
-    // Registration (for now unlock immediately so we can test games)
+    // On first load with no gates, show landing; otherwise resume where left
+    if (!sessionStorage.getItem(SS.gates)) {
+      // Start fresh (landing only)
+      ['river', 'mines', 'diffuser', 'locate', 'findings'].forEach(k => delete gates[k]);
+      saveGates(gates);
+    }
+    applyGates();
+
+    // ---------- Registration ----------
     const regForm = $('#reg-form'), regStatus = $('#reg-status');
     if (regForm) {
       regForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = ($('#name')?.value || '').trim();
         const code = ($('#codename')?.value || '').trim();
-        const dept = ($('#dept')?.value || '').trim();
+        const dept = $('#dept')?.value || '';
         if (!name) { regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
-        localStorage.setItem(LS.name, name); localStorage.setItem(LS.code, code); localStorage.setItem(LS.dept, dept);
-        regStatus.textContent = 'Registered locally. Good luck, Agent.'; regStatus.className = 'hint success';
-        openGate('river');
+        if (!dept) { regStatus.textContent = 'Select a department.'; regStatus.className = 'hint warn'; return; }
+        sessionStorage.setItem(SS.name, name);
+        sessionStorage.setItem(SS.code, code);
+        sessionStorage.setItem(SS.dept, dept);
+        regStatus.textContent = 'Registered in this tab. Good luck, Agent.'; regStatus.className = 'hint success';
+        openGate('river'); toast('✅ Next unlocked: River View. Proceed below.');
       });
     }
 
-    // River
+    // ---------- River answer ----------
     const RIVER_ANSWER = '243';
     $('#river-submit')?.addEventListener('click', () => {
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
       if (!val) { $('#river-msg').textContent = 'Enter an answer.'; $('#river-msg').className = 'hint warn'; return; }
-      if (val === RIVER_ANSWER.toLowerCase()) { $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success'; openGate('mines'); }
-      else { $('#river-msg').textContent = 'Not quite. Look closely at the photo.'; $('#river-msg').className = 'hint warn'; }
+      if (val === RIVER_ANSWER.toLowerCase()) {
+        $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success';
+        openGate('mines'); toast('✅ Next unlocked: Safe Sweep.');
+      } else {
+        $('#river-msg').textContent = 'Not quite. Open the photo and review again.'; $('#river-msg').className = 'hint warn';
+      }
     });
 
-    // ---------- Safe Sweep (4x4, 3 bombs) ----------
+    // ---------- Lightbox viewer (option A) ----------
+    (function setupLightbox() {
+      const thumb = $('#river-thumb');
+      function openLightbox() {
+        const backdrop = document.createElement('div'); backdrop.className = 'lb-backdrop';
+        const panel = document.createElement('div'); panel.className = 'lb-panel'; backdrop.appendChild(panel);
+
+        const header = document.createElement('div'); header.className = 'lb-header';
+        const title = document.createElement('div'); title.className = 'lb-title'; title.textContent = 'Photo Forensics — buildings.jpg';
+        const close = document.createElement('button'); close.className = 'lb-close'; close.textContent = 'Close';
+        header.append(title, close);
+
+        const view = document.createElement('div'); view.className = 'lb-view';
+        const img = document.createElement('img'); img.className = 'zoom-img'; img.src = 'assets/buildings.jpg'; img.alt = 'Buildings panorama';
+        view.appendChild(img);
+
+        const tools = document.createElement('div'); tools.className = 'lb-tools';
+        const zOut = document.createElement('button'); zOut.textContent = '−';
+        const zReset = document.createElement('button'); zReset.textContent = 'Reset';
+        const zIn = document.createElement('button'); zIn.textContent = '+';
+        tools.append(zOut, zReset, zIn);
+
+        panel.append(header, view, tools);
+        document.body.appendChild(backdrop);
+
+        const Z_MIN = 0.5, Z_MAX = 4, STEP = 0.25;
+        let scale = 1, pos = { x: 0, y: 0 }, drag = null, startDist = 0, startScale = 1;
+        function apply() { img.style.transform = `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) scale(${scale})`; }
+        function fitToView() {
+          const vw = view.clientWidth, vh = view.clientHeight;
+          const iw = img.naturalWidth || vw, ih = img.naturalHeight || vh;
+          const fit = Math.min(vw / iw, vh / ih);
+          scale = Math.max(Z_MIN, Math.min(1, fit)); pos = { x: 0, y: 0 }; apply();
+        }
+        function setScale(next, cx, cy) {
+          const old = scale; scale = Math.min(Z_MAX, Math.max(Z_MIN, next));
+          const rect = view.getBoundingClientRect();
+          const dx = (cx - rect.left) - rect.width / 2, dy = (cy - rect.top) - rect.height / 2;
+          pos.x = pos.x + dx * (1 / old - 1 / scale); pos.y = pos.y + dy * (1 / old - 1 / scale); apply();
+        }
+        if (img.complete) fitToView(); else img.onload = fitToView;
+
+        view.addEventListener('wheel', (e) => { e.preventDefault(); setScale(scale + (e.deltaY < 0 ? STEP : -STEP), e.clientX, e.clientY); }, { passive: false });
+        view.addEventListener('dblclick', (e) => { e.preventDefault(); const t = scale < 2 ? Math.min(Z_MAX, scale + 1) : 1; setScale(t, e.clientX, e.clientY); if (t === 1) { pos = { x: 0, y: 0 }; apply(); } });
+
+        view.addEventListener('pointerdown', (e) => { view.setPointerCapture(e.pointerId); drag = { x: e.clientX - pos.x, y: e.clientY - pos.y }; });
+        view.addEventListener('pointermove', (e) => { if (!drag) return; pos.x = e.clientX - drag.x; pos.y = e.clientY - drag.y; apply(); });
+        view.addEventListener('pointerup', () => { drag = null; });
+
+        const pts = new Map();
+        view.addEventListener('pointerdown', e => pts.set(e.pointerId, e));
+        view.addEventListener('pointermove', e => {
+          if (pts.has(e.pointerId)) pts.set(e.pointerId, e);
+          if (pts.size === 2) {
+            const [a, b] = [...pts.values()]; const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+            if (!startDist) { startDist = dist; startScale = scale; }
+            const cx = (a.clientX + b.clientX) / 2, cy = (a.clientY + b.clientY) / 2;
+            setScale(startScale * (dist / startDist), cx, cy);
+          }
+        }, { passive: false });
+        view.addEventListener('pointerup', e => { pts.delete(e.pointerId); if (pts.size < 2) startDist = 0; });
+
+        zIn.addEventListener('click', () => { const r = view.getBoundingClientRect(); setScale(scale + STEP, r.left + r.width / 2, r.top + r.height / 2); });
+        zOut.addEventListener('click', () => { const r = view.getBoundingClientRect(); setScale(scale - STEP, r.left + r.width / 2, r.top + r.height / 2); });
+        zReset.addEventListener('click', fitToView);
+
+        function closeModal() { backdrop.remove(); }
+        close.addEventListener('click', closeModal);
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); }, { once: true });
+      }
+      thumb?.addEventListener('click', openLightbox);
+    })();
+
+    // ---------- Safe Sweep ----------
     function initSafeSweep() {
       const SIZE = 4, BOMBS = 3;
       const board = $('#mswBoard'), status = $('#mswStatus'), btnClear = $('#mswClear');
@@ -603,24 +843,13 @@
 
       board.addEventListener('contextmenu', e => e.preventDefault());
       const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
-      let cells = []; // {r,c,bomb,revealed,flag,count,el}
-      const idx = (r, c) => r * SIZE + c;
+      let cells = []; const idx = (r, c) => r * SIZE + c;
 
-      function neighbors(cell) {
-        const out = []; for (const [dr, dc] of dirs) { const r = cell.r + dr, c = cell.c + dc; if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]); } return out;
-      }
-      function renderCell(cell) {
-        const el = cell.el; el.innerHTML = ''; el.className = 'msw-cell';
-        if (cell.flag) el.classList.add('flag');
-        if (cell.revealed) {
-          el.classList.add('revealed');
-          if (!cell.bomb && cell.count > 0) { const span = document.createElement('span'); span.textContent = cell.count; span.className = 'n' + cell.count; el.appendChild(span); }
-        }
-      }
+      function neighbors(cell) { const out = []; for (const [dr, dc] of dirs) { const r = cell.r + dr, c = cell.c + dc; if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]); } return out; }
+      function renderCell(cell) { const el = cell.el; el.innerHTML = ''; el.className = 'msw-cell'; if (cell.flag) el.classList.add('flag'); if (cell.revealed) { el.classList.add('revealed'); if (!cell.bomb && cell.count > 0) { const span = document.createElement('span'); span.textContent = cell.count; span.className = 'n' + cell.count; el.appendChild(span); } } }
       function place() {
         board.innerHTML = ''; cells.length = 0; status.textContent = '';
-        const pool = [...Array(SIZE * SIZE).keys()];
-        for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
+        const pool = [...Array(SIZE * SIZE).keys()]; for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
         const bombs = new Set(pool.slice(0, BOMBS));
         for (let r = 0; r < SIZE; r++) { for (let c = 0; c < SIZE; c++) { const el = document.createElement('div'); el.className = 'msw-cell'; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `cell ${r + 1},${c + 1}`); const cell = { r, c, el, bomb: bombs.has(idx(r, c)), revealed: false, flag: false, count: 0 }; cells.push(cell); board.appendChild(el); } }
         for (const cell of cells) cell.count = neighbors(cell).filter(n => n.bomb).length;
@@ -642,19 +871,19 @@
       function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; renderCell(cell); }
       function reveal(cell) {
         if (cell.revealed || cell.flag) return; cell.revealed = true;
-        if (cell.bomb) { cell.el.classList.add('boom'); status.textContent = 'Boom! Resetting…'; setTimeout(() => { place(); }, 350); return; }
+        if (cell.bomb) { cell.el.classList.add('boom'); status.textContent = 'Boom! Resetting…'; setTimeout(() => place(), 350); return; }
         if (cell.count === 0) { for (const n of neighbors(cell)) { if (!n.revealed && !n.flag && !n.bomb) reveal(n); } }
         renderCell(cell); checkWin();
       }
       function checkWin() {
-        const safeTotal = cells.filter(c => !c.bomb).length; const revealedSafe = cells.filter(c => c.revealed && !c.bomb).length;
-        if (revealedSafe === safeTotal) { status.innerHTML = ' <span><span class="hl">Three</span> bombs were diffused in front of the doorway.</span>'; openGate('diffuser'); }
+        const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length;
+        if (rev === safe) { status.innerHTML = 'Field clear. <span class="hl">Three</span> bombs diffused.'; openGate('diffuser'); toast('✅ Next unlocked: Diffuser Protocol.'); }
       }
       $('#mswClear')?.addEventListener('click', place);
       place();
     }
 
-    // ---------- Diffuser Protocol (7x7 colored regions + contrasting jewels) ----------
+    // ---------- Diffuser ----------
     function initDiffuser() {
       const SIZE = 7;
       const REGIONS = [
@@ -667,13 +896,6 @@
         [5, 5, 5, 6, 6, 6, 2]
       ];
       const COLORS = { 0: "#ef6b6b", 1: "#4cc9f0", 2: "#43aa8b", 3: "#f8961e", 4: "#9b5de5", 5: "#ffd166", 6: "#2dd4bf" };
-
-      /* Contrast mapping (edit if you prefer different pairings):
-         0 red    -> diamond (blue)         1 cyan   -> ruby (red)
-         2 teal   -> amethyst (purple)      3 orange -> emerald (green)
-         4 purple -> hex (orange)           5 yellow -> star (blue)
-         6 aqua   -> diamond (blue) (reused)
-      */
       const JEWELS = {
         0: "assets/jewels/diamond.svg",
         1: "assets/jewels/ruby.svg",
@@ -691,11 +913,7 @@
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
           const el = document.createElement('div');
-          el.className = 'diff-cell';
-          el.dataset.q = '0';
-          el.dataset.r = String(r);
-          el.dataset.c = String(c);
-          el.dataset.region = String(REGIONS[r][c]);
+          el.className = 'diff-cell'; el.dataset.q = '0'; el.dataset.r = String(r); el.dataset.c = String(c); el.dataset.region = String(REGIONS[r][c]);
           el.style.background = COLORS[REGIONS[r][c]];
           el.addEventListener('click', () => toggleQ(el));
           grid.appendChild(el);
@@ -707,41 +925,23 @@
         el.innerHTML = '';
         if (el.dataset.q === '1') {
           const reg = Number(el.dataset.region);
-          const img = document.createElement('img');
-          img.className = 'jewel';
-          img.alt = 'diffuser jewel';
-          img.src = JEWELS[reg];
+          const img = document.createElement('img'); img.className = 'jewel'; img.alt = 'diffuser jewel'; img.src = JEWELS[reg];
           img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
           const col = el.style.background || '#ffffff';
-          img.style.filter = `drop-shadow(0 0 6px ${col}80)`; // glow with region color
+          img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
           el.appendChild(img);
         }
       }
-
       function clearMarks() { [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked')); }
-
       function validate() {
         clearMarks();
         const placed = [];
-        for (let i = 0; i < grid.children.length; i++) {
-          const el = grid.children[i];
-          if (el.dataset.q === '1') {
-            const r = Number(el.dataset.r), c = Number(el.dataset.c);
-            placed.push([r, c, el]);
-          }
-        }
+        for (let i = 0; i < grid.children.length; i++) { const el = grid.children[i]; if (el.dataset.q === '1') { const r = +el.dataset.r, c = +el.dataset.c; placed.push([r, c, el]); } }
         let ok = true;
-
         if (placed.length !== 7) ok = false;
 
-        for (let r = 0; r < SIZE; r++) {
-          const k = placed.filter(p => p[0] === r);
-          if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
-        }
-        for (let c = 0; c < SIZE; c++) {
-          const k = placed.filter(p => p[1] === c);
-          if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
-        }
+        for (let r = 0; r < SIZE; r++) { const k = placed.filter(p => p[0] === r); if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); } }
+        for (let c = 0; c < SIZE; c++) { const k = placed.filter(p => p[1] === c); if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); } }
 
         const seen = new Map();
         for (const [r, c, el] of placed) {
@@ -757,14 +957,13 @@
             if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) { ok = false; el.classList.add('attacked'); el2.classList.add('attacked'); }
           }
         }
-
         return ok;
       }
 
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
           status.innerHTML = 'The <span class="hl">Seven</span> diffusers have been placed. Threats neutralized. Over!';
-          openGate('maze');
+          openGate('locate'); toast('✅ Next unlocked: Locate Jewel.');
         } else {
           status.textContent = 'Conflicts detected — adjust placements.';
         }
@@ -775,181 +974,47 @@
       });
     }
 
-    // ---------- Micro‑Maze Escape ----------
-    function initMaze() {
-      const gridEl = $('#maze-grid'), status = $('#mazeStatus'), btnNew = $('#mazeNew'), btnReset = $('#mazeReset');
-      if (!gridEl) return;
-
-      const N = 7; // cells
-      const W = 2 * N - 1; // include walls (odd grid)
-      gridEl.style.gridTemplateColumns = `repeat(${W}, 34px)`;
-
-      let player = { r: 0, c: 0 };
-      let start = { r: 0, c: 0 }, exit = { r: W - 1, c: W - 1 };
-
-      function buildMaze() {
-        // Initialize with walls
-        const grid = [...Array(W)].map(() => Array(W).fill(1)); // 1=wall, 0=path
-        // carve recursive backtracker on cell coordinates (odd indices are walls; we use even indices for cells)
-        const visited = [...Array(N)].map(() => Array(N).fill(false));
-        function neighbors(r, c) {
-          const out = [];
-          const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-          for (const [dr, dc] of dirs) {
-            const rr = r + dr, cc = c + dc; if (rr >= 0 && rr < N && cc >= 0 && cc < N && !visited[rr][cc]) out.push([rr, cc]);
-          }
-          return out.sort(() => Math.random() - 0.5);
-        }
-        function carve(r, c) {
-          visited[r][c] = true;
-          grid[2 * r][2 * c] = 0;
-          for (const [rr, cc] of neighbors(r, c)) {
-            if (!visited[rr][cc]) {
-              // knock wall between
-              grid[r + rr][c + cc] = 0; // because r,rr are consecutive in cell space -> in wall space it's odd index
-              carve(rr, cc);
-            }
-          }
-        }
-        carve(0, 0);
-
-        // Render
-        gridEl.innerHTML = '';
-        for (let r = 0; r < W; r++) {
-          for (let c = 0; c < W; c++) {
-            const cell = document.createElement('div');
-            cell.className = 'maze-cell' + (grid[r][c] ? ' wall' : '');
-            if (!grid[r][c]) {
-              cell.addEventListener('click', () => tryMoveTo(r, c));
-            }
-            gridEl.appendChild(cell);
-          }
-        }
-        // Mark start & exit on path coordinates (even,even) ends
-        start = { r: 0, c: 0 }; exit = { r: W - 1, c: W - 1 };
-        cellAt(start).classList.add('start');
-        cellAt(exit).classList.add('exit');
-        player = { r: start.r, c: start.c };
-        placePlayer();
-        status.textContent = 'Find the exit.';
-      }
-
-      function cellAt(p) { return gridEl.children[p.r * (2 * N - 1) + p.c]; }
-      function placePlayer() {
-        // Remove old marker
-        [...gridEl.querySelectorAll('.maze-player')].forEach(n => n.remove());
-        const dot = document.createElement('div'); dot.className = 'maze-player';
-        cellAt(player).appendChild(dot);
-      }
-
-      function isPath(r, c) {
-        if (r < 0 || c < 0 || r >= W || c >= W) return false;
-        const cell = gridEl.children[r * W + c];
-        return cell && !cell.classList.contains('wall');
-      }
-
-      function tryMoveTo(r, c) {
-        // Only allow moving to direct neighbors (Manhattan distance 1)
-        const d = Math.abs(r - player.r) + Math.abs(c - player.c);
-        if (d !== 1) return;
-        if (isPath(r, c)) {
-          player = { r, c }; placePlayer();
-          if (player.r === exit.r && player.c === exit.c) {
-            status.innerHTML = 'Route clear. <span class="hl">Exit reached.</span>';
-            openGate('shift');
-          }
-        }
-      }
-
-      function moveBy(dr, dc) {
-        const nr = player.r + dr, nc = player.c + dc;
-        if (isPath(nr, nc)) tryMoveTo(nr, nc);
-      }
-
-      // Controls
-      btnNew?.addEventListener('click', buildMaze);
-      btnReset?.addEventListener('click', () => { player = { r: start.r, c: start.c }; placePlayer(); status.textContent = 'Find the exit.'; });
-
-      // Keyboard
-      window.addEventListener('keydown', (e) => {
-        if (!$('#sec-maze')?.classList.contains('open')) return;
-        const k = e.key;
-        if (k === 'ArrowUp') moveBy(-1, 0);
-        else if (k === 'ArrowDown') moveBy(1, 0);
-        else if (k === 'ArrowLeft') moveBy(0, -1);
-        else if (k === 'ArrowRight') moveBy(0, 1);
-      });
-
-      buildMaze();
-    }
-
-    // ---------- Jewel Shift (2048‑lite with jewel svgs) ----------
-    function initShift() {
+    // ---------- Locate Jewel ----------
+    function initLocate() {
       const boardEl = $('#shiftBoard'), status = $('#shiftStatus'), btnNew = $('#shiftNew');
       if (!boardEl) return;
 
-      const SIZE = 4;
-      boardEl.innerHTML = '';
-      boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
-
-      // Jewel icons by level (0..6)
+      const SIZE = 4; boardEl.innerHTML = ''; boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
       const ICONS = [
-        "assets/jewels/diamond.svg",  // l0
-        "assets/jewels/emerald.svg",  // l1
-        "assets/jewels/ruby.svg",     // l2
-        "assets/jewels/hex.svg",      // l3
-        "assets/jewels/star.svg",     // l4
-        "assets/jewels/amethyst.svg", // l5
-        "assets/jewels/diamond.svg"   // l6 (repeat if ever reached)
+        "assets/jewels/diamond.svg",
+        "assets/jewels/emerald.svg",
+        "assets/jewels/ruby.svg",
+        "assets/jewels/hex.svg",
+        "assets/jewels/star.svg",
+        "assets/jewels/amethyst.svg",
+        "assets/jewels/diamond.svg"
       ];
-      const TARGET_LEVEL = 5; // reach amethyst to win
-
+      const TIER_NAMES = ["Diamond", "Emerald", "Ruby", "Hex", "Star", "Amethyst"];
+      const TARGET_LEVEL = 5; // Amethyst
       let grid = [], moved = false;
 
-      function newGrid() {
-        grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null));
-        spawn(); spawn();
-        render();
-        status.textContent = 'Slide to merge matching jewels.';
-      }
-
+      function newGrid() { grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null)); spawn(); spawn(); render(); status.textContent = `Slide to merge. Target: ${TIER_NAMES[TARGET_LEVEL]}.`; }
       function spawn() {
-        const empty = [];
-        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] == null) empty.push([r, c]);
+        const empty = []; for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] == null) empty.push([r, c]);
         if (!empty.length) return;
         const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-        grid[r][c] = Math.random() < 0.9 ? 0 : 1; // like 2 or 4
+        grid[r][c] = Math.random() < 0.9 ? 0 : 1;
       }
-
       function render() {
         boardEl.innerHTML = '';
         for (let r = 0; r < SIZE; r++) {
           for (let c = 0; c < SIZE; c++) {
-            const el = document.createElement('div');
-            el.className = 'tile ' + (grid[r][c] == null ? '' : ('l' + grid[r][c]));
-            if (grid[r][c] != null) {
-              const img = document.createElement('img');
-              img.src = ICONS[Math.min(grid[r][c], ICONS.length - 1)];
-              img.alt = 'jewel';
-              el.appendChild(img);
-            }
+            const el = document.createElement('div'); el.className = 'tile ' + (grid[r][c] == null ? '' : ('l' + grid[r][c]));
+            if (grid[r][c] != null) { const img = document.createElement('img'); const idx = Math.min(grid[r][c], ICONS.length - 1); img.src = ICONS[idx]; img.alt = TIER_NAMES[Math.min(idx, TIER_NAMES.length - 1)] || 'jewel'; el.appendChild(img); }
             boardEl.appendChild(el);
           }
         }
       }
-
       function slideLine(line) {
-        // remove nulls
         const vals = line.filter(v => v != null);
-        for (let i = 0; i < vals.length - 1; i++) {
-          if (vals[i] === vals[i + 1]) {
-            vals[i] += 1; vals.splice(i + 1, 1); moved = true;
-          }
-        }
-        while (vals.length < SIZE) vals.push(null);
-        return vals;
+        for (let i = 0; i < vals.length - 1; i++) { if (vals[i] === vals[i + 1]) { vals[i] += 1; vals.splice(i + 1, 1); moved = true; } }
+        while (vals.length < SIZE) vals.push(null); return vals;
       }
-
       function rotateCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[c][n - 1 - r] = g[r][c]; return o; }
       function rotateCCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[n - 1 - c][r] = g[r][c]; return o; }
       function flipH(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[r][n - 1 - c] = g[r][c]; return o; }
@@ -957,31 +1022,22 @@
       function move(dir) {
         moved = false;
         let g = grid.map(row => row.slice());
-        if (dir === 'left') {
-          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
-        } else if (dir === 'right') {
-          g = flipH(g);
-          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
-          g = flipH(g);
-        } else if (dir === 'up') {
-          g = rotateCCW(g);
-          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
-          g = rotateCW(g);
-        } else if (dir === 'down') {
-          g = rotateCW(g);
-          for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]);
-          g = rotateCCW(g);
-        }
+        if (dir === 'left') { for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); }
+        else if (dir === 'right') { g = flipH(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = flipH(g); }
+        else if (dir === 'up') { g = rotateCCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCW(g); }
+        else if (dir === 'down') { g = rotateCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCCW(g); }
         if (JSON.stringify(g) !== JSON.stringify(grid)) { grid = g; moved = true; }
         if (moved) { spawn(); render(); checkWinLose(); }
       }
 
       function checkWinLose() {
-        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
-          status.innerHTML = 'Target tier reached. <span class="hl">Vault sequence accepted.</span>';
-          openGate('findings'); return;
+        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+          if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
+            status.innerHTML = `Target reached: <span class="hl">${TIER_NAMES[TARGET_LEVEL]}</span>.`;
+            gates.findings = true; saveGates(gates); applyGates();
+            toast('✅ Findings unlocked. Scroll down to conclude.'); showFindings(); return;
+          }
         }
-        // moves available?
         for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
           if (grid[r][c] == null) return;
           if (r + 1 < SIZE && grid[r][c] === grid[r + 1][c]) return;
@@ -990,17 +1046,14 @@
         status.textContent = 'No moves left — try a new game.';
       }
 
-      // Input
       window.addEventListener('keydown', (e) => {
-        if (!$('#sec-shift')?.classList.contains('open')) return;
+        if (!$('#sec-locate')?.classList.contains('open')) return;
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
         if (e.key === 'ArrowLeft') move('left');
         else if (e.key === 'ArrowRight') move('right');
         else if (e.key === 'ArrowUp') move('up');
         else if (e.key === 'ArrowDown') move('down');
       });
-
-      // Touch swipe
       let touchStart = null;
       boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
       boardEl.addEventListener('touchend', e => {
@@ -1018,38 +1071,35 @@
 
     // Findings & Restart
     function showFindings() {
-      const name = localStorage.getItem(LS.name) || '', code = localStorage.getItem(LS.code) || '', dept = localStorage.getItem(LS.dept) || '';
+      const name = sessionStorage.getItem(SS.name) || '', code = sessionStorage.getItem(SS.code) || '', dept = sessionStorage.getItem(SS.dept) || '';
       const g = loadGates(); const steps = [
         ['Registration', true],
         ['River View', !!g.river],
         ['Safe Sweep', !!g.mines],
         ['Diffuser Protocol', !!g.diffuser],
-        ['Micro‑Maze Escape', !!g.maze],
-        ['Jewel Shift', !!g.shift],
+        ['Locate Jewel', !!g.locate],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
 <p class='hint'>Case closed. 🎉</p>`;
       const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
     }
-    function escapeHtml(s) { return (s || '').replace(/[&<>\"']/g, c => ({ "&": "&amp;", "<": "&lt;", " >": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
+    function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
     $('#restart')?.addEventListener('click', () => {
-      const keep = { name: localStorage.getItem(LS.name), code: localStorage.getItem(LS.code), dept: localStorage.getItem(LS.dept) };
-      localStorage.removeItem(LS.gates);
-      localStorage.setItem(LS.name, keep.name || ''); localStorage.setItem(LS.code, keep.code || ''); localStorage.setItem(LS.dept, keep.dept || '');
+      // Clear ONLY session data (this tab). Hard reset back to Landing.
+      sessionStorage.removeItem(SS.gates);
+      sessionStorage.removeItem(SS.name);
+      sessionStorage.removeItem(SS.code);
+      sessionStorage.removeItem(SS.dept);
       location.reload();
     });
 
-    // Boot
-    applyGates();
-
-    // Initialize sections the first time they open
+    // Initialize sections when they first open
     const initObs = new MutationObserver(() => {
       if ($('#sec-mines')?.classList.contains('open') && !$('#mswBoard')?.hasChildNodes()) initSafeSweep();
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) initDiffuser();
-      if ($('#sec-maze')?.classList.contains('open') && !$('#maze-grid')?.hasChildNodes()) initMaze();
-      if ($('#sec-shift')?.classList.contains('open') && !$('#shiftBoard')?.hasChildNodes()) initShift();
-      if ($('#sec-findings')?.classList.contains('open')) showFindings();
+      if ($('#sec-locate')?.classList.contains('open') && !$('#shiftBoard')?.hasChildNodes()) initLocate();
+      if (gates.findings) showFindings();
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
   </script>

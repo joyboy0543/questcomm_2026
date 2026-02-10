@@ -603,23 +603,13 @@
 
         <div class="row" style="width:100%;justify-content:center">
           <input id="river-answer" placeholder="Enter the answer" style="min-width:260px">
-          <button id="river-submit" class="primary" type="button">Submit</button>
+          <button id="river-submit" class="primary" type="button">Check</button>
         </div>
         <span id="river-msg" class="hint"></span>
       </div>
     </section>
 
     <div class="hr"></div>
-
-    <p>
-    <ul>
-      <li><strong>With this, we believe that we have recovered the three 3-digit codes.</strong></li>
-      <li><strong>Based on that, the following evidence should give us to the remaining three locations, where hopefully
-          we will be able
-          to use the codes.</strong></li>
-      <li><strong>Let us solve these to find the locations and unveil the hidden jewels.</strong></li>
-    </ul>
-    </p>
 
     <!-- C) Safe Sweep -->
     <section class="card gate" id="sec-mines">
@@ -667,17 +657,18 @@
       <ol class="status" style="text-align:left;max-width:620px;margin:0 auto">
         <li>Swipe (mobile) or use <b>arrow keys</b> (desktop) to slide jewels.</li>
         <li>When two identical jewels collide, they <b>merge</b> into the <b>next tier</b>.</li>
-        <li><b>Goal:</b> Reach the target tier <b>Amethyst</b> to proceed.</li>
+        <li><b>Goal:</b> Reach the target tier <b>Sapphire</b> to proceed.</li>
       </ol>
 
       <div class="legend" aria-hidden="true">
         <!-- <span class="badge"><img src="assets/jewels/diamond.svg" alt="">Diamond</span> -->
         <span class="badge"><img src="assets/jewels/amethyst.svg" alt="">Amethyst</span>
-        <span class="badge"><img src="assets/jewels/emerald.svg" alt="">Emerald</span>
+        <!-- <span class="badge"><img src="assets/jewels/emerald.svg" alt="">Emerald</span> -->
         <span class="badge"><img src="assets/jewels/ruby.svg" alt="">Ruby</span>
         <span class="badge"><img src="assets/jewels/hex.svg" alt="">Hex</span>
-        <span class="badge"><img src="assets/jewels/star.svg" alt="">Star</span>
-        <span class="badge"><img src="assets/jewels/diamond.svg" alt=""><b>Diamond</b> (target)</span>
+        <span class="badge"><img src="assets/jewels/green_emerald.svg" alt="">Emerald</span>
+        <!-- <span class="badge"><img src="assets/jewels/star.svg" alt="">Star</span> -->
+        <span class="badge"><img src="assets/jewels/diamond.svg" alt=""><b>Sapphire</b> (target)</span>
         <!-- <span class="badge"><img src="assets/jewels/amethyst.svg" alt=""><b>Amethyst</b> (target)</span> -->
       </div>
 
@@ -775,7 +766,7 @@
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
       if (!val) { $('#river-msg').textContent = 'Enter the 3-digit code.'; $('#river-msg').className = 'hint warn'; return; }
       if (val === RIVER_ANSWER.toLowerCase()) {
-        $('#river-msg').textContent = '✅ Amazing find, Detective! Let\'s proceed to the next evidence: Safe Sweep.'; $('#river-msg').className = 'hint success';
+        $('#river-msg').textContent = '✅ Amazing find, Detective! Let\'s proceed to the next evidence: Safe Sweep. With this, we believe that we have recovered the three 3-digit codes. Based on that, the following evidence should give us to the remaining three locations, where hopefully we will be able to use the codes. Let us solve these to find the locations and unveil the hidden jewels.'; $('#river-msg').className = 'hint success';
         openGate('mines'); toast('Correct!');
       } else {
         $('#river-msg').textContent = 'Not quite. Open the photo and review again.'; $('#river-msg').className = 'hint warn';
@@ -898,7 +889,7 @@
       }
       function checkWin() {
         const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length;
-        if (rev === safe) { status.innerHTML = ' ✅ Field clear! The malware has been located. The first location revealed is \"A cabinet opposite to a conference room\". ✅ Next piece of evidence unlocked: Diffuser Protocol.'; openGate('diffuser'); toast('Wonderful!'); }
+        if (rev === safe) { status.innerHTML = ' ✅ Field clear! The malware has been located. The first location revealed is \"A cabinet opposite to a conference room\". Next piece of evidence unlocked: Diffuser Protocol.'; openGate('diffuser'); toast('Wonderful!'); }
       }
       $('#mswClear')?.addEventListener('click', place);
       place();
@@ -1003,15 +994,16 @@
       const SIZE = 4; boardEl.innerHTML = ''; boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
       const ICONS = [
         "assets/jewels/amethyst.svg",
-        "assets/jewels/emerald.svg",
+        // "assets/jewels/emerald.svg",
         "assets/jewels/ruby.svg",
         "assets/jewels/hex.svg",
-        "assets/jewels/star.svg",
+        // "assets/jewels/star.svg",
         "assets/jewels/green_emerald.svg",
         "assets/jewels/diamond.svg"
       ];
-      const TIER_NAMES = ["Amethyst", "Emerald", "Ruby", "Hex", "Star", "Jade", "Diamond"];
-      const TARGET_LEVEL = 6; // Diamond
+      // const TIER_NAMES = ["Amethyst", "Emerald", "Ruby", "Hex", "Star", "Jade", "Diamond"];
+      const TIER_NAMES = ["Amethyst", "Ruby", "Hex", "Emerald", "Diamond"];
+      const TARGET_LEVEL = 4; // Diamond
       let grid = [], moved = false;
 
       function newGrid() { grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null)); spawn(); spawn(); render(); status.textContent = `Slide to merge. Target: ${TIER_NAMES[TARGET_LEVEL]}.`; }
@@ -1101,7 +1093,7 @@
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
-<p class='hint'>Digital evidence decoded. 🎉</p>`;
+<p class='hint'>All digital evidence has been decoded. Congratulations, Detective! 🎉</p>`;
       const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
     }
     function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }

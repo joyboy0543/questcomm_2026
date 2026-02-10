@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Outer octagon border -->
+  <polygon 
+    points="128,16 384,16 496,128 496,384 384,496 128,496 16,384 16,128"
+    fill="#2e5f26"
+    stroke="#000"
+    stroke-width="24"
+    stroke-linejoin="round"
+  />
+
+  <!-- Middle faceted frame -->
+  <polygon 
+    points="160,64 352,64 448,160 448,352 352,448 160,448 64,352 64,160"
+    fill="#3c7a31"
+    stroke="#000"
+    stroke-width="20"
+    stroke-linejoin="round"
+  />
+
+  <!-- Inner gem -->
+  <polygon 
+    points="192,112 320,112 400,192 400,320 320,400 192,400 112,320 112,192"
+    fill="#5aa63f"
+    stroke="#000"
+    stroke-width="18"
+    stroke-linejoin="round"
+  />
+
+  <!-- Light highlight arc -->
+  <path 
+    d="M110 270 Q180 130 330 150"
+    fill="none"
+    stroke="rgba(255,255,255,0.18)"
+    stroke-width="32"
+    stroke-linecap="round"
+  />
+</svg>

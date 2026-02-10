@@ -439,7 +439,7 @@
       min-height: 1.2rem
     }
 
-    /* ---------- Locate Jewel (2048‑lite) ---------- */
+    /* ---------- Locate the Jewel (2048‑lite) ---------- */
     .shift-wrap {
       display: flex;
       flex-direction: column;
@@ -547,13 +547,14 @@
 
 <body>
   <div class="wrap">
-    <h1>🔷 Sapphire Heist</h1>
-    <p class="hint">A clear, linear flow. Progress saves in this tab (refresh is safe). Closing the tab resets.</p>
+    <h1>CASE 7: 🔷 The Sapphire Heist 🔷</h1>
+    <p class="hint">Welcome back, Detective! In QCPD database we gather all evidence related to the cases.</p>
 
     <!-- A) Landing -->
     <section class="card" id="sec-landing">
-      <h2>🪪 Agent Check‑In</h2>
-      <p class="hint">Enter details to begin. (We’ll connect Google Forms later.)</p>
+      <h2>🪪 Agent Check‑In<span class="qcpd_badge">QCPD Database</span> </h2>
+      <p class="hint">Sign-in with your name (required), a codename and a department to explore the digital evidence.
+      </p>
       <form id="reg-form" action="#" method="POST" style="margin:0">
         <div class="row">
           <div style="flex:1 1 240px;min-width:240px">
@@ -576,7 +577,7 @@
           </div>
         </div>
         <div class="section-actions" style="margin-top:10px">
-          <button id="start" class="primary" type="submit">Start Mission</button>
+          <button id="start" class="primary" type="submit">Enter</button>
           <span id="reg-status" class="hint"></span>
         </div>
       </form>
@@ -586,7 +587,14 @@
 
     <!-- B) River -->
     <section class="card gate" id="sec-river">
-      <h2>📸 Lindholmen River View — Photo Riddle</h2>
+      <h2>📸 Lindholmen River View Photo </h2>
+      <p> This message was recovered from the burglar's phone. We think it might be connected to a code. Do you see it?
+      <ul>
+        <li><strong>“The river reflects the view, but not the clue.</strong></li>
+        <li><strong>Above the waterline, three numbers hide in tinted hue,</strong></li>
+        <li><strong>Compare above with what's below, the key is found in the unmatched glow!”</strong></li>
+      </ul>
+      </p>
       <div class="photo-box">
         <figure class="zoom-thumb" id="river-thumb" aria-label="Tap to inspect">
           <img src="assets/buildings.jpg" alt="Buildings panorama preview">
@@ -603,6 +611,16 @@
 
     <div class="hr"></div>
 
+    <p>
+    <ul>
+      <li><strong>With this, we believe that we have recovered the three 3-digit codes.</strong></li>
+      <li><strong>Based on that, the following evidence should give us to the remaining three locations, where hopefully
+          we will be able
+          to use the codes.</strong></li>
+      <li><strong>Let us solve these to find the locations and unveil the hidden jewels.</strong></li>
+    </ul>
+    </p>
+
     <!-- C) Safe Sweep -->
     <section class="card gate" id="sec-mines">
       <h2>🧨 Safe Sweep</h2>
@@ -610,7 +628,8 @@
         <li>Don’t tap on the cells that hide bombs.</li>
         <li>Tapping a safe cell shows how many bombs surround it.</li>
         <li>Clear the field to proceed.</li>
-        <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag.</li>
+        <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag, if you suspect a bomb is under
+          the cell.</li>
       </ol>
       <div class="msw-board" id="mswBoard"></div>
       <p class="status" id="mswStatus"></p>
@@ -642,22 +661,24 @@
 
     <div class="hr"></div>
 
-    <!-- E) Locate Jewel (2048‑lite) -->
+    <!-- E) Locate the Jewel (2048‑lite) -->
     <section class="card gate" id="sec-locate">
-      <h2>💎 Locate Jewel</h2>
+      <h2>💎 Locate the Jewel</h2>
       <ol class="status" style="text-align:left;max-width:620px;margin:0 auto">
-        <li>Swipe (mobile) or use <b>arrow keys</b> to slide jewels.</li>
+        <li>Swipe (mobile) or use <b>arrow keys</b> (desktop) to slide jewels.</li>
         <li>When two identical jewels collide, they <b>merge</b> into the <b>next tier</b>.</li>
         <li><b>Goal:</b> Reach the target tier <b>Amethyst</b> to proceed.</li>
       </ol>
 
       <div class="legend" aria-hidden="true">
-        <span class="badge"><img src="assets/jewels/diamond.svg" alt="">Diamond</span>
+        <!-- <span class="badge"><img src="assets/jewels/diamond.svg" alt="">Diamond</span> -->
+        <span class="badge"><img src="assets/jewels/amethyst.svg" alt="">Amethyst</span>
         <span class="badge"><img src="assets/jewels/emerald.svg" alt="">Emerald</span>
         <span class="badge"><img src="assets/jewels/ruby.svg" alt="">Ruby</span>
         <span class="badge"><img src="assets/jewels/hex.svg" alt="">Hex</span>
         <span class="badge"><img src="assets/jewels/star.svg" alt="">Star</span>
-        <span class="badge"><img src="assets/jewels/amethyst.svg" alt=""><b>Amethyst</b> (target)</span>
+        <span class="badge"><img src="assets/jewels/diamond.svg" alt=""><b>Diamond</b> (target)</span>
+        <!-- <span class="badge"><img src="assets/jewels/amethyst.svg" alt=""><b>Amethyst</b> (target)</span> -->
       </div>
 
       <div class="shift-wrap">
@@ -739,12 +760,12 @@
         const code = ($('#codename')?.value || '').trim();
         const dept = $('#dept')?.value || '';
         if (!name) { regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
-        if (!dept) { regStatus.textContent = 'Select a department.'; regStatus.className = 'hint warn'; return; }
+        // if (!dept) { regStatus.textContent = 'Select a department.'; regStatus.className = 'hint warn'; return; }
         sessionStorage.setItem(SS.name, name);
         sessionStorage.setItem(SS.code, code);
         sessionStorage.setItem(SS.dept, dept);
-        regStatus.textContent = 'Registered in this tab. Good luck, Agent.'; regStatus.className = 'hint success';
-        openGate('river'); toast('✅ Next unlocked: River View. Proceed below.');
+        regStatus.textContent = 'Access granted. Good luck, Agent.'; regStatus.className = 'hint success';
+        openGate('river'); toast('Evidence unlocked: Lindholmen River View Photo and note relating to it. Proceed below.');
       });
     }
 
@@ -752,10 +773,10 @@
     const RIVER_ANSWER = '243';
     $('#river-submit')?.addEventListener('click', () => {
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
-      if (!val) { $('#river-msg').textContent = 'Enter an answer.'; $('#river-msg').className = 'hint warn'; return; }
+      if (!val) { $('#river-msg').textContent = 'Enter the 3-digit code.'; $('#river-msg').className = 'hint warn'; return; }
       if (val === RIVER_ANSWER.toLowerCase()) {
         $('#river-msg').textContent = 'Correct!'; $('#river-msg').className = 'hint success';
-        openGate('mines'); toast('✅ Next unlocked: Safe Sweep.');
+        openGate('mines'); toast('✅ Amazing find, Detective! Let\'s proceed to the next evidence: Safe Sweep.');
       } else {
         $('#river-msg').textContent = 'Not quite. Open the photo and review again.'; $('#river-msg').className = 'hint warn';
       }
@@ -877,7 +898,7 @@
       }
       function checkWin() {
         const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length;
-        if (rev === safe) { status.innerHTML = 'Field clear. <span class="hl">Three</span> bombs diffused.'; openGate('diffuser'); toast('✅ Next unlocked: Diffuser Protocol.'); }
+        if (rev === safe) { status.innerHTML = 'Field clear! The malware has been located. The first location revealed is \"A cabinet opposite to a conference room.\" '; openGate('diffuser'); toast('✅ Next piece of evidence unlocked: Diffuser Protocol.'); }
       }
       $('#mswClear')?.addEventListener('click', place);
       place();
@@ -903,7 +924,7 @@
         3: "assets/jewels/emerald.svg",
         4: "assets/jewels/hex.svg",
         5: "assets/jewels/star.svg",
-        6: "assets/jewels/diamond.svg"
+        6: "assets/jewels/green_emerald.svg"
       };
 
       const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
@@ -962,8 +983,8 @@
 
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
-          status.innerHTML = 'The <span class="hl">Seven</span> diffusers have been placed. Threats neutralized. Over!';
-          openGate('locate'); toast('✅ Next unlocked: Locate Jewel.');
+          status.innerHTML = 'Well placed! The malware has been diabled. The second location revealed is \"A place to enlighten knowledge, the one with a green couch.\" ';
+          openGate('locate'); toast('✅ Next evidence unlocked: Locate the Jewel.');
         } else {
           status.textContent = 'Conflicts detected — adjust placements.';
         }
@@ -974,23 +995,23 @@
       });
     }
 
-    // ---------- Locate Jewel ----------
+    // ---------- Locate the Jewel ----------
     function initLocate() {
       const boardEl = $('#shiftBoard'), status = $('#shiftStatus'), btnNew = $('#shiftNew');
       if (!boardEl) return;
 
       const SIZE = 4; boardEl.innerHTML = ''; boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
       const ICONS = [
-        "assets/jewels/diamond.svg",
+        "assets/jewels/amethyst.svg",
         "assets/jewels/emerald.svg",
         "assets/jewels/ruby.svg",
         "assets/jewels/hex.svg",
         "assets/jewels/star.svg",
-        "assets/jewels/amethyst.svg",
+        "assets/jewels/green_emerald.svg",
         "assets/jewels/diamond.svg"
       ];
-      const TIER_NAMES = ["Diamond", "Emerald", "Ruby", "Hex", "Star", "Amethyst"];
-      const TARGET_LEVEL = 5; // Amethyst
+      const TIER_NAMES = ["Amethyst", "Emerald", "Ruby", "Hex", "Star", "Jade", "Diamond"];
+      const TARGET_LEVEL = 6; // Diamond
       let grid = [], moved = false;
 
       function newGrid() { grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null)); spawn(); spawn(); render(); status.textContent = `Slide to merge. Target: ${TIER_NAMES[TARGET_LEVEL]}.`; }
@@ -1035,7 +1056,7 @@
           if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
             status.innerHTML = `Target reached: <span class="hl">${TIER_NAMES[TARGET_LEVEL]}</span>.`;
             gates.findings = true; saveGates(gates); applyGates();
-            toast('✅ Findings unlocked. Scroll down to conclude.'); showFindings(); return;
+            toast('✅ Findings are collected below. Head to these locations to find out what they hide, Hopefully an answer for the final step.'); showFindings(); return;
           }
         }
         for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
@@ -1077,7 +1098,7 @@
         ['River View', !!g.river],
         ['Safe Sweep', !!g.mines],
         ['Diffuser Protocol', !!g.diffuser],
-        ['Locate Jewel', !!g.locate],
+        ['Locate the Jewel', !!g.locate],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>

@@ -13,6 +13,7 @@
             --ink: #cfe6f7;
             --ok: #29d49a;
             --accent: #2ea8ff;
+            --btn-glow: 0 0 12px rgba(46, 168, 255, 0.55);
         }
 
         body {
@@ -53,6 +54,7 @@
             cursor: pointer;
         }
 
+        /* Video / Canvas */
         video,
         canvas {
             display: block;
@@ -67,85 +69,17 @@
             transform-origin: center center;
         }
 
-        .hint {
-            opacity: .9;
-            font-size: .95rem
-        }
-
-        .notice {
-            width: 100%;
-            max-width: 760px;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #8a4;
-            background: #0d1a24;
-            color: #cfe6f7;
-        }
-
-        .warn {
-            border-color: #a44;
-            background: #2a1111;
-            color: #ffdede;
-        }
-
-        .notice small {
-            opacity: .95;
-        }
-
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .modal {
-            background: #0d1a24;
-            border: 1px solid var(--edge);
-            color: var(--ink);
-            border-radius: 12px;
-            max-width: 760px;
-            width: calc(100% - 24px);
-            padding: 16px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
-        }
-
-        .modal h3 {
-            margin-top: 0;
-        }
-
-        .modal .close {
-            float: right;
-            background: #173247;
-            border: 1px solid #27475f;
-        }
-
-        .modal ol {
-            padding-left: 20px;
-        }
-
-        .modal a {
-            color: #8bd1ff;
-        }
-
-        .photo-container {
-            position: relative;
-            width: 100%;
-            max-width: 660px;
-        }
-
+        /* ===== Bigger, higher-contrast buttons (only Capture/Retake) ===== */
         #capture,
         #retake {
-            font-size: 1.4rem;
-            padding: 18px 26px;
-            min-width: 160px;
-            font-weight: 600;
-            border-radius: 14px;
-            border: 2px solid #2ea8ff;
-            background: linear-gradient(180deg, #10324a, #0f2a3f);
+            font-size: 1.55rem;
+            padding: 22px 32px;
+            min-width: 190px;
+            font-weight: 700;
+            border-radius: 18px;
+            border: 3px solid var(--accent);
+            background: linear-gradient(180deg, #114162, #0d2c42);
+            box-shadow: var(--btn-glow);
         }
 
         #download {
@@ -195,13 +129,13 @@
         @media (orientation:landscape) {
             #retake {
                 left: 50%;
-                top: 14px;
+                top: 20px;
                 transform: translateX(-50%);
             }
 
             #capture {
                 left: 50%;
-                bottom: 14px;
+                bottom: 20px;
                 transform: translateX(-50%);
             }
 
@@ -210,6 +144,111 @@
                 bottom: 14px;
                 transform: none;
             }
+        }
+
+        /* Notices / modal (unchanged) */
+        .hint {
+            opacity: .9;
+            font-size: .95rem
+        }
+
+        .notice {
+            width: 100%;
+            max-width: 760px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #8a4;
+            background: #0d1a24;
+            color: #cfe6f7;
+        }
+
+        .warn {
+            border-color: #a44;
+            background: #2a1111;
+            color: #ffdede;
+        }
+
+        .notice small {
+            opacity: 0.95;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal {
+            background: #0d1a24;
+            border: 1px solid var(--edge);
+            color: var(--ink);
+            border-radius: 12px;
+            max-width: 760px;
+            width: calc(100% - 24px);
+            padding: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .modal h3 {
+            margin-top: 0;
+        }
+
+        .modal .close {
+            float: right;
+            background: #173247;
+            border: 1px solid #27475f;
+        }
+
+        .modal ol {
+            padding-left: 20px;
+        }
+
+        .modal a {
+            color: #8bd1ff;
+        }
+
+        .photo-container {
+            position: relative;
+            width: 100%;
+            max-width: 660px;
+        }
+
+        /* ===== Feedback block shown AFTER capture ===== */
+        #feedback-block {
+            width: 100%;
+            max-width: 660px;
+            display: none;
+            /* hidden until captured */
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        #feedback-area {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            padding: 12px;
+            border-radius: 10px;
+            background: #102536;
+            border: 1px solid var(--edge);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        #feedback-submit {
+            align-self: flex-end;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: #14334a;
+            border: 1px solid var(--accent);
+            box-shadow: var(--btn-glow);
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -222,8 +261,9 @@
 
         <!-- Top controls row -->
         <div class="row">
+            <!-- Name is placeholder only; no 'Detective' prefill -->
             <input id="agent" placeholder="Detective name (caption)">
-            <input id="feedback" placeholder="Feedback (optional)">
+            <!-- Removed top Feedback input as requested -->
             <button id="open">Open Camera</button>
             <button id="flip" disabled>Flip to Front</button>
             <button id="hats" disabled>Hats: 0</button>
@@ -237,6 +277,13 @@
             <button id="retake" disabled>Retake</button>
             <button id="capture" disabled>Capture</button>
             <button id="download" disabled>Download Photo</button>
+        </div>
+
+        <!-- Feedback block appears AFTER capture -->
+        <div id="feedback-block">
+            <textarea id="feedback-area"
+                placeholder="How was your Sapphire Heist adventure? Share a short feedback…"></textarea>
+            <button id="feedback-submit">Submit Feedback</button>
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
@@ -333,10 +380,15 @@
         const helpClose = document.getElementById('help-close');
         const helpBody = document.getElementById('help-body');
         const msg = document.getElementById('msg');
-        const agent = document.getElementById('agent');
-        const feedback = document.getElementById('feedback');
+        const agent = document.getElementById('agent');        // name input
         const envNotice = document.getElementById('env-notice');
 
+        // NEW feedback refs (shown after capture)
+        const feedbackBlock = document.getElementById('feedback-block');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackSubmit = document.getElementById('feedback-submit');
+
+        // Prefill name if provided via QR (still keep local cache)
         if (qp.name) { agent.value = qp.name; try { localStorage.setItem('qcpd.name', qp.name); } catch { } }
         else { try { const s = localStorage.getItem('qcpd.name'); if (s) agent.value = s; } catch { } }
         agent.addEventListener('change', () => {
@@ -344,17 +396,17 @@
             if (v) try { localStorage.setItem('qcpd.name', v); } catch { }
         });
 
-        // Log ONCE at page load (QR scan/open)
+        // Log ONCE at page load (QR scan/open) — feedback initially blank
         window.addEventListener('DOMContentLoaded', () => {
             sendPhotoLog({
                 type: 'photo_open',
                 name: (agent.value || '').trim(),
-                feedback: (feedback?.value || '').trim()
+                feedback: ''
             });
             if (qp.auto) setTimeout(() => openBtn.click(), 350);
         });
 
-        // Debounced updates while typing
+        // Debounced updates while typing name (pre-capture OK)
         let updTimer = null;
         function scheduleUpdate() {
             clearTimeout(updTimer);
@@ -362,12 +414,11 @@
                 sendPhotoLog({
                     type: 'photo_update',
                     name: (agent.value || '').trim(),
-                    feedback: (feedback?.value || '').trim()
+                    feedback: feedbackArea ? feedbackArea.value.trim() : ''
                 });
             }, 500);
         }
         agent.addEventListener('input', scheduleUpdate);
-        feedback?.addEventListener('input', scheduleUpdate);
 
         /* =======================
          * 4) Help + Env
@@ -384,7 +435,9 @@
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 addNotice('<b>Camera API unavailable in this browser.</b><br/>Open in Safari/Chrome or try updating your browser.', true);
             }
-            if (isInAppBrowser()) addNotice('<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.');
+            if (isInAppBrowser()) {
+                addNotice('<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.');
+            }
             addNotice('<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.');
         })();
         function platformHelpHtml() {
@@ -421,58 +474,85 @@
 
         function applyPreviewTransforms() {
             const mirrorScale = mirror ? -1 : 1;
-            vid.style.transform = `scaleX(${mirrorScale})`;
-            can.style.transform = 'none';
+            vid.style.transform = `scaleX(${mirrorScale})`; // mirror only preview for front cam
+            can.style.transform = 'none';                    // never mirror canvas (keeps text normal)
             flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
             hatsBtn.textContent = `Hats: ${hatCount}`;
         }
-        async function stopStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+
+        async function stopStream() {
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        }
+
         async function getBestStream(desiredFacing) {
             try {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
+                    video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: false
                 });
-            } catch (e) { }
+            } catch (e) { /* fallback */ }
+
             const devices = await navigator.mediaDevices.enumerateDevices();
-            const vids = devices.filter(d => d.kind === 'videoinput');
-            if (!vids.length) throw new Error('No camera device found');
+            const videos = devices.filter(d => d.kind === 'videoinput');
+            if (!videos.length) throw new Error('No camera device found');
             const norm = s => (s || '').toLowerCase();
             let pick;
-            if (desiredFacing === 'environment') pick = vids.find(d => norm(d.label).includes('back')) || vids.slice(-1)[0];
-            else pick = vids.find(d => norm(d.label).includes('front')) || vids[0];
+            if (desiredFacing === 'environment') {
+                pick = videos.find(d => norm(d.label).includes('back')) || videos.slice(-1)[0];
+            } else {
+                pick = videos.find(d => norm(d.label).includes('front')) || videos[0];
+            }
             return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId } }, audio: false });
         }
+
         async function checkCameraPermissionState() {
             if (!navigator.permissions || !navigator.permissions.query) return null;
-            try { const st = await navigator.permissions.query({ name: 'camera' }); return st.state; } catch { return null; }
+            try { const status = await navigator.permissions.query({ name: 'camera' }); return status.state; } catch { return null; }
         }
-        function addNotice(html, warn = false) { const d = document.createElement('div'); d.className = 'notice' + (warn ? ' warn' : ''); d.innerHTML = html; envNotice.appendChild(d); }
+
+        function addNotice(html, warn = false) {
+            const div = document.createElement('div');
+            div.className = 'notice' + (warn ? ' warn' : '');
+            div.innerHTML = html;
+            envNotice.appendChild(div);
+        }
+
         function showDeniedNoticeInline() {
-            addNotice('<b>Camera permission is blocked for this site.</b><br/>You must allow it in your <b>browser settings</b>, then reload and tap <b>Open Camera</b>.', true);
+            addNotice(
+                `<b>Camera permission is blocked for this site.</b><br/>
+         You must allow it in your <b>browser settings</b>, then reload and tap <b>Open Camera</b>.`,
+                true
+            );
         }
 
         async function openCamera() {
             try {
                 const state = await checkCameraPermissionState();
                 if (state === 'denied') showDeniedNoticeInline();
+
                 await stopStream();
                 stream = await getBestStream(facing);
                 vid.srcObject = stream;
+
                 await vid.play();
                 capBtn.disabled = true;
                 flipBtn.disabled = false;
                 hatsBtn.disabled = false;
+
                 await new Promise(res => {
                     if (vid.readyState >= 2) return res();
                     vid.onloadedmetadata = () => res();
                     setTimeout(res, 800);
                 });
+
                 capBtn.disabled = false;
-                retakeBtn.disabled = true;
+                retakeBtn.disabled = true;  // retake only after a capture
                 downloadBtn.disabled = true;
+
                 mirror = (facing === 'user');
                 applyPreviewTransforms();
                 msg.textContent = 'Camera ready — align and Capture.';
+
             } catch (e) {
                 console.error('openCamera failed:', e);
                 if (!window.isSecureContext) { msg.textContent = 'Camera requires HTTPS. Open this page over https://'; return; }
@@ -481,10 +561,13 @@
                     msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
                     return;
                 }
-                if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) { msg.textContent = 'No camera device found.'; return; }
+                if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
+                    msg.textContent = 'No camera device found.'; return;
+                }
                 msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
             }
         }
+
         openBtn.onclick = openCamera;
         flipBtn.onclick = async () => { facing = (facing === 'environment') ? 'user' : 'environment'; await openCamera(); };
         hatsBtn.onclick = () => { hatCount = (hatCount + 1) % 5; hatsBtn.textContent = `Hats: ${hatCount}`; };
@@ -495,17 +578,33 @@
         function fitFontSize(text, basePx, maxWidth, fontStack) {
             let size = Math.max(10, basePx);
             ctx.font = `${size}px ${fontStack}`;
-            while (ctx.measureText(text).width > maxWidth && size > 10) { size -= 1; ctx.font = `${size}px ${fontStack}`; }
+            while (ctx.measureText(text).width > maxWidth && size > 10) {
+                size -= 1;
+                ctx.font = `${size}px ${fontStack}`;
+            }
             return size;
         }
         function wrapTwoLines(text, maxWidth) {
-            const words = text.split(/\s+/); let line1 = ''; let i = 0;
-            for (; i < words.length; i++) { const test = line1 ? (line1 + ' ' + words[i]) : words[i]; if (ctx.measureText(test).width <= maxWidth) line1 = test; else break; }
-            const line2 = words.slice(i).join(' '); return [line1, line2];
+            const words = text.split(/\s+/);
+            let line1 = '';
+            let i = 0;
+            for (; i < words.length; i++) {
+                const test = line1 ? (line1 + ' ' + words[i]) : words[i];
+                if (ctx.measureText(test).width <= maxWidth) line1 = test; else break;
+            }
+            const line2 = words.slice(i).join(' ');
+            return [line1, line2];
         }
+
         function drawRoundedRectPath(ctx, x, y, w, h, r) {
-            const rr = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + rr, y);
-            ctx.arcTo(x + w, y, x + w, y + h, rr); ctx.arcTo(x + w, y + h, x, y + h, rr); ctx.arcTo(x, y + h, x, y, rr); ctx.arcTo(x, y, x + w, y, rr); ctx.closePath();
+            const rr = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + rr, y);
+            ctx.arcTo(x + w, y, x + w, y + h, rr);
+            ctx.arcTo(x + w, y + h, x, y + h, rr);
+            ctx.arcTo(x, y + h, x, y, rr);
+            ctx.arcTo(x, y, x + w, y, rr);
+            ctx.closePath();
         }
         function drawHat(ctx, cx, cy, size, rotRad = 0) {
             const brimW = size * 1.1, brimH = size * 0.22, crownW = size * 0.62, crownH = size * 0.38, bandH = crownH * 0.22;
@@ -537,7 +636,10 @@
             }
             return arr;
         }
-        function drawHatsOverlay(w, h, count) { if (!count) return; for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r); }
+        function drawHatsOverlay(w, h, count) {
+            if (!count) return;
+            for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
+        }
         function drawFrame(w, h, name) {
             const isPortrait = (w / h) < 0.9;
             if (!isPortrait) {
@@ -558,21 +660,39 @@
                 ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
                 return;
             }
-            const sideM = Math.floor(w * 0.04), innerW = w - sideM * 2;
+
+            const sideM = Math.floor(w * 0.04);
+            const innerW = w - sideM * 2;
+
             const topH = Math.floor(h * 0.10);
             const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
-            const title = '👑 QCPD — The Sapphire Heist', titleFontStack = `"Segoe UI", system-ui, Arial`;
-            const titleBase = Math.floor(h * 0.045); const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
-            ctx.font = `${titleSize}px ${titleFontStack}`; ctx.fillStyle = '#cfe6f7'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+
+            const title = '👑 QCPD — The Sapphire Heist';
+            const titleFontStack = `"Segoe UI", system-ui, Arial`;
+            const titleBase = Math.floor(h * 0.045);
+            const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+            ctx.font = `${titleSize}px ${titleFontStack}`;
+            ctx.fillStyle = '#cfe6f7';
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'left';
             ctx.fillText(title, sideM, Math.floor(topH * 0.58));
-            const botH = Math.floor(h * 0.16), botY = h - botH;
-            ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, botY, w, botH);
-            const baseCaption = `🦄 Detective ${name} • Case Solved!`, extra = `The Evidence will be sent to Archives`;
-            const capFontStack = `"Segoe UI", system-ui, Arial`; let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
-            ctx.font = `${capSize}px ${capFontStack}`; let line1 = baseCaption, line2 = extra;
+
+            const botH = Math.floor(h * 0.16);
+            const botY = h - botH;
+            ctx.fillStyle = 'rgba(16,37,54,0.92)';
+            ctx.fillRect(0, botY, w, botH);
+
+            const baseCaption = `🦄 Detective ${name} • Case Solved!`;
+            const extra = `The Evidence will be sent to Archives`;
+            const capFontStack = `"Segoe UI", system-ui, Arial`;
+            let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
+            ctx.font = `${capSize}px ${capFontStack}`;
+            let line1 = baseCaption, line2 = extra;
+
             if (ctx.measureText(baseCaption).width > innerW) {
-                const [l1, l2first] = wrapTwoLines(baseCaption, innerW); line1 = l1;
+                const [l1, l2first] = wrapTwoLines(baseCaption, innerW);
+                line1 = l1;
                 if (l2first) {
                     const join = l2first + ' — ' + extra;
                     if (ctx.measureText(join).width <= innerW) line2 = join;
@@ -588,17 +708,28 @@
             } else {
                 if (ctx.measureText(extra).width > innerW) {
                     const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
-                    if (newSize < capSize) { capSize = newSize; ctx.font = `${capSize}px ${capFontStack}`; }
+                    if (newSize < capSize) {
+                        capSize = newSize;
+                        ctx.font = `${capSize}px ${capFontStack}`;
+                    }
                 }
             }
-            ctx.fillStyle = '#29d49a'; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-            const lineGap = Math.max(4, Math.floor(capSize * 0.28)); const firstY = Math.floor(botY + botH * 0.45);
-            ctx.fillText(line1, sideM, firstY); if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+
+            ctx.fillStyle = '#29d49a';
+            ctx.textBaseline = 'alphabetic';
+            ctx.textAlign = 'left';
+            const lineGap = Math.max(4, Math.floor(capSize * 0.28));
+            const firstY = Math.floor(botY + botH * 0.45);
+            ctx.fillText(line1, sideM, firstY);
+            if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+
             ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
             ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
         }
+
         function drawVideoToCanvas() {
-            const vw = vid.videoWidth, vh = vid.videoHeight; if (!vw || !vh) return false;
+            const vw = vid.videoWidth, vh = vid.videoHeight;
+            if (!vw || !vh) return false;
             can.width = vw; can.height = vh; ctx.save();
             if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
             ctx.drawImage(vid, 0, 0, vw, vh); ctx.restore();
@@ -621,23 +752,53 @@
             msg.textContent = 'Review the shot. You can retake or download.';
 
             const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.70);
+
+            // Show feedback block AFTER capture (new)
+            feedbackBlock.style.display = 'flex';
+
             sendPhotoLog({
                 type: 'photo_capture',
                 name: (agent.value || '').trim(),
-                feedback: (feedback?.value || '').trim(),
+                feedback: (feedbackArea?.value || '').trim(),
                 thumbB64: thumbB64 || null
             });
         };
+
         retakeBtn.onclick = async () => {
+            feedbackBlock.style.display = 'none';       // hide feedback on retake
             can.style.display = 'none'; vid.style.display = 'block';
             downloadBtn.disabled = true; retakeBtn.disabled = true;
             capBtn.disabled = false; flipBtn.disabled = false; hatsBtn.disabled = false;
             await openCamera();
         };
+
         downloadBtn.onclick = () => {
             const dataUrl = can.toDataURL('image/jpeg', 0.92);
             if (!dataUrl) { msg.textContent = 'No image to download yet.'; return; }
             const a = document.createElement('a'); a.href = dataUrl; a.download = `qcpd_${Date.now()}.jpg`; a.click();
+        };
+
+        // Live updates from feedback textarea and explicit "Submit Feedback"
+        let fbTimer = null;
+        function scheduleFeedbackUpdate() {
+            clearTimeout(fbTimer);
+            fbTimer = setTimeout(() => {
+                sendPhotoLog({
+                    type: 'photo_update',
+                    name: (agent.value || '').trim(),
+                    feedback: (feedbackArea?.value || '').trim()
+                });
+            }, 500);
+        }
+        feedbackArea?.addEventListener('input', scheduleFeedbackUpdate);
+
+        document.getElementById('feedback-submit').onclick = () => {
+            sendPhotoLog({
+                type: 'photo_update',
+                name: (agent.value || '').trim(),
+                feedback: (feedbackArea?.value || '').trim()
+            });
+            alert('Feedback submitted — thank you!');
         };
     </script>
 </body>

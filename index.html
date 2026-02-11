@@ -949,7 +949,7 @@
         $('#river-msg').innerHTML = `
           <ul class="success-points">
             <li>✅ Amazing find, Detective! You found the final 3-digit code.</li>
-            <li>This means that the following evidence shall reveal three locations, where hopefully we will be ablve to use the found codes.</li>
+            <li>This means that the following evidence shall reveal three locations, where hopefully we will be able to use all the codes we have found.</li>
             <li>Next Evidence: Safe Sweep</li>
           </ul>`;
         $('#river-msg').className = 'hint success';
@@ -1146,7 +1146,7 @@
           status.innerHTML = `
             <ul class="success-points">
               <li>✅ Well placed! The placement of jewels has disabled the malware.</li>
-              <li>Revealed Location 2: A place of enlightenment with a green arm-chair</li>
+              <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
               <li>Next Evidence: Locate the Jewel</li>
             </ul>`;
           openGate('locate'); toast('That was amazing!');
@@ -1190,7 +1190,7 @@
             status.innerHTML = `
               <ul class="success-points">
                 <li>✅ That is some great skill you have detective! Merging to the correct jewel has now deleted the malware.</li>
-                <li>Revealed Location 3: Writing desk of closed chair far end of the kitchen</li>
+                <li>Revealed Location 3: A small table with a view, by the chair of whispers, at the far end of the kitchen</li>
                 <li>Findings have been recorded below.</li>
               </ul>`; gates.findings = true; saveGates(gates); applyGates();
 
@@ -1221,8 +1221,8 @@
       const rows = [
         ['River Code', '243', !!g.river],
         ['Safe Sweep', 'Cabinet opposite the royal meeting room', !!g.mines],
-        ['Diffuser', 'A place of enlightenment with a green arm-chair', !!g.diffuser],
-        ['Jewel Location', 'Writing desk of closed chair far end of the kitchen', !!g.locate],
+        ['Diffuser', 'A place of enlightenment next to the emerald velvet', !!g.diffuser],
+        ['Jewel Location', 'A small table with a view, by the chair of whispers, at the far end of the kitchen', !!g.locate],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
 <ul>${rows.map(([label, value, ok]) => `<li>${ok ? '✅' : '⬜'} <span class="label">${label}</span><span class="value">${escapeHtml(value)}</span></li>`).join('')}</ul>

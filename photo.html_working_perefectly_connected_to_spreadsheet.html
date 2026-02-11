@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>QCPD Photo Booth — The Sapphire Heist</title>
+    <style>
+        :root {
+            --edge: #243546;
+            --bg: #0b1218;
+            --panel: #0d1a24;
+            --ink: #cfe6f7;
+            --ok: #29d49a;
+            --accent: #2ea8ff;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: system-ui, Segoe UI, Roboto, Arial
+        }
+
+        .wrap {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center
+        }
+
+        h2 {
+            margin: 8px 0 4px
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        input,
+        button {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--edge);
+            background: #102536;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        video,
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 660px;
+            max-height: 70vh;
+            object-fit: contain;
+            border: 1px solid var(--edge);
+            border-radius: 16px;
+            background: var(--panel);
+            transform-origin: center center;
+        }
+
+        .hint {
+            opacity: .9;
+            font-size: .95rem
+        }
+
+        .notice {
+            width: 100%;
+            max-width: 760px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #8a4;
+            background: #0d1a24;
+            color: #cfe6f7;
+        }
+
+        .warn {
+            border-color: #a44;
+            background: #2a1111;
+            color: #ffdede;
+        }
+
+        .notice small {
+            opacity: .95;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal {
+            background: #0d1a24;
+            border: 1px solid var(--edge);
+            color: var(--ink);
+            border-radius: 12px;
+            max-width: 760px;
+            width: calc(100% - 24px);
+            padding: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
+        }
+
+        .modal h3 {
+            margin-top: 0;
+        }
+
+        .modal .close {
+            float: right;
+            background: #173247;
+            border: 1px solid #27475f;
+        }
+
+        .modal ol {
+            padding-left: 20px;
+        }
+
+        .modal a {
+            color: #8bd1ff;
+        }
+
+        .photo-container {
+            position: relative;
+            width: 100%;
+            max-width: 660px;
+        }
+
+        #capture,
+        #retake {
+            font-size: 1.4rem;
+            padding: 18px 26px;
+            min-width: 160px;
+            font-weight: 600;
+            border-radius: 14px;
+            border: 2px solid #2ea8ff;
+            background: linear-gradient(180deg, #10324a, #0f2a3f);
+        }
+
+        #download {
+            font-size: 1rem;
+            padding: 10px 16px;
+            min-width: 130px;
+            border-radius: 12px;
+            border: 1px solid var(--edge);
+            background: #14334a;
+        }
+
+        #capture:disabled,
+        #retake:disabled,
+        #download:disabled {
+            opacity: .45;
+            filter: grayscale(10%);
+        }
+
+        #capture,
+        #retake,
+        #download {
+            position: absolute;
+            z-index: 20;
+        }
+
+        @media (orientation:portrait) {
+            #capture {
+                left: 14px;
+                bottom: 18px;
+                transform: none;
+            }
+
+            #retake {
+                right: 14px;
+                bottom: 18px;
+                transform: none;
+            }
+
+            #download {
+                position: static;
+                display: block;
+                margin: 10px auto 0;
+                transform: none;
+            }
+        }
+
+        @media (orientation:landscape) {
+            #retake {
+                left: 50%;
+                top: 14px;
+                transform: translateX(-50%);
+            }
+
+            #capture {
+                left: 50%;
+                bottom: 14px;
+                transform: translateX(-50%);
+            }
+
+            #download {
+                right: 14px;
+                bottom: 14px;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h2>QCPD Photo Booth — The Sapphire Heist</h2>
+
+        <div id="env-notice"></div>
+
+        <!-- Top controls row -->
+        <div class="row">
+            <input id="agent" placeholder="Detective name (caption)">
+            <input id="feedback" placeholder="Feedback (optional)">
+            <button id="open">Open Camera</button>
+            <button id="flip" disabled>Flip to Front</button>
+            <button id="hats" disabled>Hats: 0</button>
+            <button id="help">How to enable camera</button>
+        </div>
+
+        <!-- Anchored area -->
+        <div class="photo-container">
+            <video id="vid" playsinline></video>
+            <canvas id="can" style="display:none"></canvas>
+            <button id="retake" disabled>Retake</button>
+            <button id="capture" disabled>Capture</button>
+            <button id="download" disabled>Download Photo</button>
+        </div>
+
+        <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
+        <p id="msg2" class="hint">Downloading the photo will be private to your device. Kindly share this with Emma C.,
+            to keep track of the participation. Thank you, hope you had fun! 😊 🦄</p>
+    </div>
+
+    <!-- Help modal -->
+    <div id="help-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal">
+            <button class="close" id="help-close">Close</button>
+            <h3>Enable camera permission</h3>
+            <div id="help-body"></div>
+        </div>
+    </div>
+
+    <script>
+        /* =======================
+         * 1) Shared Web App URL (same as the game)
+         * ======================= */
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
+
+        /* =======================
+         * 2) Helpers: QR params, thumbnail, fire-and-forget log
+         * ======================= */
+        function getParams() {
+            const p = new URLSearchParams(location.search);
+            return {
+                name: (p.get('name') || '').trim(),
+                team: (p.get('team') || '').trim(),
+                event: (p.get('event') || '').trim(),
+                auto: p.get('auto') === '1'
+            };
+        }
+        const qp = getParams();
+
+        async function dataURLToThumbBase64(dataURL, targetW = 220, quality = 0.7) {
+            return new Promise((resolve) => {
+                if (!dataURL) return resolve(null);
+                const img = new Image();
+                img.onload = () => {
+                    const scale = targetW / img.width;
+                    const w = targetW, h = Math.max(1, Math.round(img.height * scale));
+                    const off = document.createElement('canvas'); off.width = w; off.height = h;
+                    off.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const out = off.toDataURL('image/jpeg', quality);
+                    resolve(out.split(',')[1] || null);
+                };
+                img.onerror = () => resolve(null);
+                img.src = dataURL;
+            });
+        }
+
+        // Per-tab photo session id
+        function getPhotoSid() {
+            const k = 'qcpd.photo.sid';
+            let v = sessionStorage.getItem(k);
+            if (!v) { v = 'p_' + Math.random().toString(36).slice(2); sessionStorage.setItem(k, v); }
+            return v;
+        }
+
+        // Fire-and-forget, no preflight
+        async function sendPhotoLog(payload) {
+            try {
+                payload.session_id = getPhotoSid();
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                });
+                console.log('[PhotoLog] sent:', payload.type);
+            } catch (e) {
+                console.warn('[PhotoLog] send failed', e);
+            }
+        }
+    </script>
+
+    <script>
+        /* =======================
+         * 3) DOM & Prefill
+         * ======================= */
+        const vid = document.getElementById('vid');
+        const can = document.getElementById('can');
+        const ctx = can.getContext('2d');
+        const openBtn = document.getElementById('open');
+        const capBtn = document.getElementById('capture');
+        const retakeBtn = document.getElementById('retake');
+        const flipBtn = document.getElementById('flip');
+        const hatsBtn = document.getElementById('hats');
+        const downloadBtn = document.getElementById('download');
+        const helpBtn = document.getElementById('help');
+        const helpBackdrop = document.getElementById('help-backdrop');
+        const helpClose = document.getElementById('help-close');
+        const helpBody = document.getElementById('help-body');
+        const msg = document.getElementById('msg');
+        const agent = document.getElementById('agent');
+        const feedback = document.getElementById('feedback');
+        const envNotice = document.getElementById('env-notice');
+
+        if (qp.name) { agent.value = qp.name; try { localStorage.setItem('qcpd.name', qp.name); } catch { } }
+        else { try { const s = localStorage.getItem('qcpd.name'); if (s) agent.value = s; } catch { } }
+        agent.addEventListener('change', () => {
+            const v = (agent.value || '').trim();
+            if (v) try { localStorage.setItem('qcpd.name', v); } catch { }
+        });
+
+        // Log ONCE at page load (QR scan/open)
+        window.addEventListener('DOMContentLoaded', () => {
+            sendPhotoLog({
+                type: 'photo_open',
+                name: (agent.value || '').trim(),
+                feedback: (feedback?.value || '').trim()
+            });
+            if (qp.auto) setTimeout(() => openBtn.click(), 350);
+        });
+
+        // Debounced updates while typing
+        let updTimer = null;
+        function scheduleUpdate() {
+            clearTimeout(updTimer);
+            updTimer = setTimeout(() => {
+                sendPhotoLog({
+                    type: 'photo_update',
+                    name: (agent.value || '').trim(),
+                    feedback: (feedback?.value || '').trim()
+                });
+            }, 500);
+        }
+        agent.addEventListener('input', scheduleUpdate);
+        feedback?.addEventListener('input', scheduleUpdate);
+
+        /* =======================
+         * 4) Help + Env
+         * ======================= */
+        function addNotice(html, warn = false) { const d = document.createElement('div'); d.className = 'notice' + (warn ? ' warn' : ''); d.innerHTML = html; envNotice.appendChild(d); }
+        function isInAppBrowser() {
+            const ua = navigator.userAgent || '';
+            return ua.includes('Instagram') || ua.includes('FBAN') || ua.includes('FBAV') ||
+                ua.includes(' Line/') || ua.includes('MicroMessenger') ||
+                ua.includes('Gmail') || ua.includes('Drive');
+        }
+        (function startupChecks() {
+            if (!window.isSecureContext) addNotice('<b>Camera requires HTTPS.</b><br/>Open this page over <code>https://</code>.', true);
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                addNotice('<b>Camera API unavailable in this browser.</b><br/>Open in Safari/Chrome or try updating your browser.', true);
+            }
+            if (isInAppBrowser()) addNotice('<b>Camera may be blocked by this in‑app browser.</b><br/>Use the ••• or share menu to <b>Open in Safari/Chrome</b>.');
+            addNotice('<b>Note:</b> If you previously blocked camera, you must enable it in your browser settings for this site.');
+        })();
+        function platformHelpHtml() {
+            const ua = navigator.userAgent || '';
+            const isIOS = /iPhone|iPad|iPod/i.test(ua), isAndroid = /Android/i.test(ua);
+            const common = '<p><small>If a site’s camera permission is set to <i>Not allowed</i>, the browser won’t ask again until you change it in settings.</small></p>';
+            if (isIOS) return `${common}
+        <h4>iPhone / iPad (Safari)</h4>
+        <ol><li>Open in <b>Safari</b>.</li><li>Tap <b>aA</b> → <b>Website Settings</b> → <b>Camera</b> → <b>Allow</b>.</li><li>Or Settings → Safari → Camera → <b>Allow</b>.</li><li>Reload and tap <b>Open Camera</b>.</li></ol>
+        <h4>iPhone / iPad (Chrome)</h4>
+        <ol><li>Open in <b>Chrome</b>.</li><li>Chrome (⋮) → Settings → Site Settings → Camera → <b>Allow</b>.</li><li>Reload and tap <b>Open Camera</b>.</li></ol>`;
+            if (isAndroid) return `${common}
+        <h4>Android (Chrome)</h4>
+        <ol><li>Open in <b>Chrome</b>.</li><li>Tap the <b>lock</b> icon → <b>Permissions</b> → <b>Camera</b> → <b>Allow</b>.</li><li>Or Chrome (⋮) → Settings → Site settings → Camera → <b>Allowed</b>.</li><li>Reload and tap <b>Open Camera</b>.</li></ol>`;
+            return `${common}
+        <h4>Desktop (Chrome/Edge)</h4>
+        <ol><li>Click the <b>camera</b>/<b>lock</b> icon in the address bar.</li><li>Set <b>Camera</b> to <b>Allow</b> for this site.</li><li>Reload and click <b>Open Camera</b>.</li></ol>
+        <h4>Desktop (Safari)</h4>
+        <ol><li>Safari → <b>Settings for This Website…</b> → <b>Camera</b> → <b>Allow</b>.</li><li>Reload and click <b>Open Camera</b>.</li></ol>`;
+        }
+        function openHelp() { helpBody.innerHTML = platformHelpHtml(); helpBackdrop.style.display = 'flex'; helpBackdrop.setAttribute('aria-hidden', 'false'); }
+        function closeHelp() { helpBackdrop.style.display = 'none'; helpBackdrop.setAttribute('aria-hidden', 'true'); }
+        document.getElementById('help').onclick = openHelp;
+        helpClose.onclick = closeHelp;
+        helpBackdrop.addEventListener('click', e => { if (e.target === helpBackdrop) closeHelp(); });
+
+        /* =======================
+         * 5) Camera logic (+ your overlays)
+         * ======================= */
+        let stream, imageDataURL;
+        let facing = 'environment';
+        let mirror = false;
+        let hatCount = 0;
+
+        function applyPreviewTransforms() {
+            const mirrorScale = mirror ? -1 : 1;
+            vid.style.transform = `scaleX(${mirrorScale})`;
+            can.style.transform = 'none';
+            flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
+            hatsBtn.textContent = `Hats: ${hatCount}`;
+        }
+        async function stopStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+        async function getBestStream(desiredFacing) {
+            try {
+                return await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
+                });
+            } catch (e) { }
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const vids = devices.filter(d => d.kind === 'videoinput');
+            if (!vids.length) throw new Error('No camera device found');
+            const norm = s => (s || '').toLowerCase();
+            let pick;
+            if (desiredFacing === 'environment') pick = vids.find(d => norm(d.label).includes('back')) || vids.slice(-1)[0];
+            else pick = vids.find(d => norm(d.label).includes('front')) || vids[0];
+            return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId } }, audio: false });
+        }
+        async function checkCameraPermissionState() {
+            if (!navigator.permissions || !navigator.permissions.query) return null;
+            try { const st = await navigator.permissions.query({ name: 'camera' }); return st.state; } catch { return null; }
+        }
+        function addNotice(html, warn = false) { const d = document.createElement('div'); d.className = 'notice' + (warn ? ' warn' : ''); d.innerHTML = html; envNotice.appendChild(d); }
+        function showDeniedNoticeInline() {
+            addNotice('<b>Camera permission is blocked for this site.</b><br/>You must allow it in your <b>browser settings</b>, then reload and tap <b>Open Camera</b>.', true);
+        }
+
+        async function openCamera() {
+            try {
+                const state = await checkCameraPermissionState();
+                if (state === 'denied') showDeniedNoticeInline();
+                await stopStream();
+                stream = await getBestStream(facing);
+                vid.srcObject = stream;
+                await vid.play();
+                capBtn.disabled = true;
+                flipBtn.disabled = false;
+                hatsBtn.disabled = false;
+                await new Promise(res => {
+                    if (vid.readyState >= 2) return res();
+                    vid.onloadedmetadata = () => res();
+                    setTimeout(res, 800);
+                });
+                capBtn.disabled = false;
+                retakeBtn.disabled = true;
+                downloadBtn.disabled = true;
+                mirror = (facing === 'user');
+                applyPreviewTransforms();
+                msg.textContent = 'Camera ready — align and Capture.';
+            } catch (e) {
+                console.error('openCamera failed:', e);
+                if (!window.isSecureContext) { msg.textContent = 'Camera requires HTTPS. Open this page over https://'; return; }
+                if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+                    showDeniedNoticeInline();
+                    msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
+                    return;
+                }
+                if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) { msg.textContent = 'No camera device found.'; return; }
+                msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
+            }
+        }
+        openBtn.onclick = openCamera;
+        flipBtn.onclick = async () => { facing = (facing === 'environment') ? 'user' : 'environment'; await openCamera(); };
+        hatsBtn.onclick = () => { hatCount = (hatCount + 1) % 5; hatsBtn.textContent = `Hats: ${hatCount}`; };
+
+        /* =======================
+         * 6) Overlays and capture (unchanged visuals)
+         * ======================= */
+        function fitFontSize(text, basePx, maxWidth, fontStack) {
+            let size = Math.max(10, basePx);
+            ctx.font = `${size}px ${fontStack}`;
+            while (ctx.measureText(text).width > maxWidth && size > 10) { size -= 1; ctx.font = `${size}px ${fontStack}`; }
+            return size;
+        }
+        function wrapTwoLines(text, maxWidth) {
+            const words = text.split(/\s+/); let line1 = ''; let i = 0;
+            for (; i < words.length; i++) { const test = line1 ? (line1 + ' ' + words[i]) : words[i]; if (ctx.measureText(test).width <= maxWidth) line1 = test; else break; }
+            const line2 = words.slice(i).join(' '); return [line1, line2];
+        }
+        function drawRoundedRectPath(ctx, x, y, w, h, r) {
+            const rr = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + rr, y);
+            ctx.arcTo(x + w, y, x + w, y + h, rr); ctx.arcTo(x + w, y + h, x, y + h, rr); ctx.arcTo(x, y + h, x, y, rr); ctx.arcTo(x, y, x + w, y, rr); ctx.closePath();
+        }
+        function drawHat(ctx, cx, cy, size, rotRad = 0) {
+            const brimW = size * 1.1, brimH = size * 0.22, crownW = size * 0.62, crownH = size * 0.38, bandH = crownH * 0.22;
+            ctx.save(); ctx.translate(cx, cy); ctx.rotate(rotRad);
+            ctx.save(); ctx.globalAlpha = 0.25; ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.ellipse(0, brimH * 0.55, brimW * 0.55, brimH * 0.35, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            ctx.fillStyle = '#2b2b2f'; ctx.strokeStyle = '#1e1e22'; ctx.lineWidth = Math.max(2, size * 0.02);
+            ctx.beginPath(); ctx.ellipse(0, 0, brimW / 2, brimH / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            const cx0 = -crownW / 2, cy0 = -brimH * 0.75 - crownH * 0.5;
+            drawRoundedRectPath(ctx, cx0, cy0, crownW, crownH, size * 0.06); ctx.fillStyle = '#35353b'; ctx.fill(); ctx.strokeStyle = '#222228'; ctx.stroke();
+            ctx.fillStyle = '#c9853a'; ctx.fillRect(cx0, cy0 + crownH * 0.45, crownW, bandH);
+            ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'; drawRoundedRectPath(ctx, cx0 + 3, cy0 + 3, crownW - 6, bandH * 0.6, size * 0.03); ctx.fill();
+            ctx.restore();
+        }
+        function computeHatPlacements(w, h, count) {
+            const s = Math.min(w, h) * 0.22, yTop = h * 0.22, arr = [];
+            if (count <= 0) return arr;
+            if (count === 1) arr.push({ x: w * 0.50, y: yTop, s, r: 0 });
+            else if (count === 2) { arr.push({ x: w * 0.28, y: yTop, s, r: -0.14 }); arr.push({ x: w * 0.72, y: yTop, s, r: 0.14 }); }
+            else if (count === 3) {
+                arr.push({ x: w * 0.22, y: yTop * 1.04, s: s * 0.95, r: -0.16 });
+                arr.push({ x: w * 0.50, y: yTop * 0.95, s, r: 0 });
+                arr.push({ x: w * 0.78, y: yTop * 1.04, s: s * 0.95, r: 0.16 });
+            } else {
+                arr.push({ x: w * 0.20, y: yTop * 1.08, s: s * 0.92, r: -0.18 });
+                arr.push({ x: w * 0.42, y: yTop * 0.98, s: s * 0.95, r: -0.06 });
+                arr.push({ x: w * 0.64, y: yTop * 1.00, s: s * 0.95, r: 0.06 });
+                arr.push({ x: w * 0.82, y: yTop * 1.10, s: s * 0.90, r: 0.18 });
+            }
+            return arr;
+        }
+        function drawHatsOverlay(w, h, count) { if (!count) return; for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r); }
+        function drawFrame(w, h, name) {
+            const isPortrait = (w / h) < 0.9;
+            if (!isPortrait) {
+                const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
+                ctx.fillStyle = '#cfe6f7'; ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
+                ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
+                ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
+                ctx.fillStyle = '#29d49a'; ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
+                ctx.fillText(`🦄 Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+                ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+                ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
+                ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
+                ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
+                ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
+                ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
+                ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
+                ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
+                return;
+            }
+            const sideM = Math.floor(w * 0.04), innerW = w - sideM * 2;
+            const topH = Math.floor(h * 0.10);
+            const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
+            const title = '👑 QCPD — The Sapphire Heist', titleFontStack = `"Segoe UI", system-ui, Arial`;
+            const titleBase = Math.floor(h * 0.045); const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+            ctx.font = `${titleSize}px ${titleFontStack}`; ctx.fillStyle = '#cfe6f7'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+            ctx.fillText(title, sideM, Math.floor(topH * 0.58));
+            const botH = Math.floor(h * 0.16), botY = h - botH;
+            ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, botY, w, botH);
+            const baseCaption = `🦄 Detective ${name} • Case Solved!`, extra = `The Evidence will be sent to Archives`;
+            const capFontStack = `"Segoe UI", system-ui, Arial`; let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
+            ctx.font = `${capSize}px ${capFontStack}`; let line1 = baseCaption, line2 = extra;
+            if (ctx.measureText(baseCaption).width > innerW) {
+                const [l1, l2first] = wrapTwoLines(baseCaption, innerW); line1 = l1;
+                if (l2first) {
+                    const join = l2first + ' — ' + extra;
+                    if (ctx.measureText(join).width <= innerW) line2 = join;
+                    else if (ctx.measureText(l2first).width <= innerW) line2 = l2first;
+                    else line2 = '';
+                } else {
+                    if (ctx.measureText(extra).width > innerW) {
+                        capSize = fitFontSize(extra, capSize, innerW, capFontStack);
+                        ctx.font = `${capSize}px ${capFontStack}`;
+                    }
+                    line2 = extra;
+                }
+            } else {
+                if (ctx.measureText(extra).width > innerW) {
+                    const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
+                    if (newSize < capSize) { capSize = newSize; ctx.font = `${capSize}px ${capFontStack}`; }
+                }
+            }
+            ctx.fillStyle = '#29d49a'; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+            const lineGap = Math.max(4, Math.floor(capSize * 0.28)); const firstY = Math.floor(botY + botH * 0.45);
+            ctx.fillText(line1, sideM, firstY); if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+            ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
+        }
+        function drawVideoToCanvas() {
+            const vw = vid.videoWidth, vh = vid.videoHeight; if (!vw || !vh) return false;
+            can.width = vw; can.height = vh; ctx.save();
+            if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
+            ctx.drawImage(vid, 0, 0, vw, vh); ctx.restore();
+            const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
+            drawFrame(vw, vh, name); drawHatsOverlay(vw, vh, hatCount); return true;
+        }
+
+        /* =======================
+         * 7) Capture / Retake / Download
+         * ======================= */
+        capBtn.onclick = async () => {
+            const ok = drawVideoToCanvas();
+            if (!ok) { msg.textContent = 'Video not ready.'; return; }
+            await stopStream();
+            vid.style.display = 'none'; can.style.display = 'block';
+            downloadBtn.disabled = false; retakeBtn.disabled = false;
+            capBtn.disabled = true; flipBtn.disabled = true; hatsBtn.disabled = true;
+
+            const imageDataURL = can.toDataURL('image/jpeg', 0.92);
+            msg.textContent = 'Review the shot. You can retake or download.';
+
+            const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.70);
+            sendPhotoLog({
+                type: 'photo_capture',
+                name: (agent.value || '').trim(),
+                feedback: (feedback?.value || '').trim(),
+                thumbB64: thumbB64 || null
+            });
+        };
+        retakeBtn.onclick = async () => {
+            can.style.display = 'none'; vid.style.display = 'block';
+            downloadBtn.disabled = true; retakeBtn.disabled = true;
+            capBtn.disabled = false; flipBtn.disabled = false; hatsBtn.disabled = false;
+            await openCamera();
+        };
+        downloadBtn.onclick = () => {
+            const dataUrl = can.toDataURL('image/jpeg', 0.92);
+            if (!dataUrl) { msg.textContent = 'No image to download yet.'; return; }
+            const a = document.createElement('a'); a.href = dataUrl; a.download = `qcpd_${Date.now()}.jpg`; a.click();
+        };
+    </script>
+</body>
+
+</html>

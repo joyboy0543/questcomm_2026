@@ -900,14 +900,14 @@
         sessionStorage.setItem(SS.dept, dept);
         regStatus.textContent = 'Access granted.'; regStatus.className = 'hint success';
         openGate('river'); toast('Evidence: Lindholmen River View Photo and a note relating to it.');
-      });
 
-      // ⬇️ Log START (registration)
-      sendToSheet({
-        name,
-        codename: code,
-        department: dept,
-        completed: false
+        // ⬇️ Log START (registration)
+        sendToSheet({
+          name,
+          codename: code,
+          department: dept,
+          completed: false
+        });
       });
     }
 
@@ -1164,6 +1164,7 @@
                 <li>Revealed Location 3: Writing desk of closed chair far end of the kitchen</li>
                 <li>Findings have been recorded below.</li>
               </ul>`; gates.findings = true; saveGates(gates); applyGates();
+
             // ⬇️ Log END (completed)
             sendToSheet({
               name: sessionStorage.getItem(SS.name) || '',
@@ -1171,6 +1172,7 @@
               department: sessionStorage.getItem(SS.dept) || '',
               completed: true
             });
+
             toast('Target reached!'); showFindings(); return;
           }
         }

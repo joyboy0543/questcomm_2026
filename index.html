@@ -727,6 +727,45 @@
     .success-points li {
       margin: 6px 0;
     }
+
+    /* Prevent page scroll while swiping the 2048 board on touch devices */
+    @media (pointer: coarse) {
+
+      .shift-wrap,
+      #shiftBoard {
+        touch-action: none;
+        /* disables browser's pan/zoom on this area */
+        overscroll-behavior: contain;
+        /* stops viewport scroll chaining */
+      }
+    }
+
+    /* Findings: mobile-friendly stacking */
+    @media (max-width: 560px) {
+      #findings-body ul {
+        margin: 10px 0;
+      }
+
+      #findings-body li {
+        display: block;
+        /* stack per item */
+        padding: 8px 0;
+      }
+
+      #findings-body .label {
+        display: block;
+        /* move label to its own line */
+        width: auto;
+        /* no fixed width on small screens */
+        margin-bottom: 2px;
+      }
+
+      #findings-body .value {
+        display: block;
+        /* value on next line */
+        margin-left: 0;
+      }
+    }
   </style>
 </head>
 
@@ -1145,7 +1184,7 @@
         if (validate()) {
           status.innerHTML = `
             <ul class="success-points">
-              <li>✅ Well placed! The placement of jewels has disabled the malware.</li>
+              <li>✅ Well placed! The correct placement of jewels has disabled the malware.</li>
               <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
               <li>Next Evidence: Locate the Jewel</li>
             </ul>`;
@@ -1173,7 +1212,7 @@
         "assets/jewels/green_emerald.svg",
         "assets/jewels/diamond.svg"
       ];
-      const TIER_NAMES = ["Amethyst", "Ruby", "Hex", "Emerald", "Diamond"];
+      const TIER_NAMES = ["Amethyst", "Ruby", "Hex", "Emerald", "Sapphire"];
       const TARGET_LEVEL = 4; // Diamond
       let grid = [], moved = false;
       function newGrid() { grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null)); spawn(); spawn(); render(); status.textContent = `Slide to merge. Target: ${TIER_NAMES[TARGET_LEVEL]}.`; }
@@ -1209,8 +1248,59 @@
         status.textContent = 'No moves left - let\'s try resetting it.';
       }
       window.addEventListener('keydown', (e) => { if (!$('#sec-locate')?.classList.contains('open')) return; if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault(); if (e.key === 'ArrowLeft') move('left'); else if (e.key === 'ArrowRight') move('right'); else if (e.key === 'ArrowUp') move('up'); else if (e.key === 'ArrowDown') move('down'); });
-      let touchStart = null; boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
-      boardEl.addEventListener('touchend', e => { if (!touchStart) return; const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y); const ax = Math.abs(dx), ay = Math.abs(dy); if (Math.max(ax, ay) < 24) { touchStart = null; return; } if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up'); touchStart = null; }, { passive: true });
+
+      let touchStart = null;
+
+      // Make the listener non-passive so preventDefault() can block page scroll
+      boardEl.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length === 1) {
+          touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        e.preventDefault(); // block page scroll start
+      }, { passive: false });
+
+      boardEl.addEventListener('touchend', (e) => {
+        if (!touchStart) { e.preventDefault(); return; }
+        const dx = (e.changedTouches[0].clientX - touchStart.x);
+        const dy = (e.changedTouches[0].clientY - touchStart.y);
+        const ax = Math.abs(dx), ay = Math.abs(dy);
+
+        if (Math.max(ax, ay) < 24) {
+          touchStart = null;
+          e.preventDefault(); // still block a tap from nudging the page
+          return;
+        }
+
+        if (ax > ay) {
+          move(dx > 0 ? 'right' : 'left');
+        } else {
+          move(dy > 0 ? 'down' : 'up');
+        }
+        touchStart = null;
+        e.preventDefault(); // block the fling
+      }, { passive: false });
+
+      // Optional: while finger is down, keep blocking page pan if they wiggle
+      boardEl.addEventListener('touchmove', (e) => {
+        if (touchStart) e.preventDefault();
+      }, { passive: false });
+
+      // let touchStart = null;
+      // boardEl.addEventListener('touchstart', e => {
+      //   if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      // }, { passive: true });
+
+      // boardEl.addEventListener('touchend', e => {
+      //   if (!touchStart) return;
+      //   const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y);
+      //   const ax = Math.abs(dx), ay = Math.abs(dy);
+      //   if (Math.max(ax, ay) < 24) { touchStart = null; return; }
+      //   if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up');
+      //   touchStart = null;
+      // }, { passive: true });
+
+      // let touchStart = null; boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+      // boardEl.addEventListener('touchend', e => { if (!touchStart) return; const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y); const ax = Math.abs(dx), ay = Math.abs(dy); if (Math.max(ax, ay) < 24) { touchStart = null; return; } if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up'); touchStart = null; }, { passive: true });
       btnNew?.addEventListener('click', newGrid); newGrid();
     }
 
@@ -1248,7 +1338,9 @@
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
 
     // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxnYPfla5F7mnTkxz5m2MGEiexL04-F7ofZuxJhq7-5E5W3TDjqJ9fz0CYkodZOZmbF/exec';
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
+    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
+    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxGojnf4HZch10KAynjK7ucSqJ9tVTvyUJRKIWzWhXFlBEj_MaKM8Xqeb62eADKLbB7/exec';
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
 
     async function sendToSheet(payload) {
       try {

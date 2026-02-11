@@ -1247,12 +1247,11 @@
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
 
-    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwb7ghH7z6-4vpq6UaM_q30u352voNApM6CNiC8yW7UKDvNB7ZES_EYpEBZTSijHaA4/exec';
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwfCjb2geGlESQnMiBTyGJG2KBBTo70U1qMkUEl_vmdhbSepbS2tdLVBoEgVrgtIUmH/exec';
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxnYPfla5F7mnTkxz5m2MGEiexL04-F7ofZuxJhq7-5E5W3TDjqJ9fz0CYkodZOZmbF/exec';
 
     async function sendToSheet(payload) {
       try {
-        // attach UA + deterministic per-tab session id
+        // enrich with UA + per-tab session id
         payload.client_user_agent = navigator.userAgent || '';
         payload.session_id = sessionStorage.getItem('qc26s.sid') || (function () {
           const v = Math.random().toString(36).slice(2);
@@ -1262,10 +1261,13 @@
 
         await fetch(WEBHOOK_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          mode: 'no-cors',                                   // ← avoid preflight / CORS
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ← "simple" header
+          body: JSON.stringify(payload),                     // ← doPost will JSON.parse this
         });
-        console.log('✅ Submitted to Sheets:', payload);
+
+        // In no-cors mode the response is opaque; that's expected.
+        console.log('✅ Submitted to Sheets (fire-and-forget):', payload);
       } catch (err) {
         console.error('❌ Submission error:', err);
       }

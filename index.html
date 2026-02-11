@@ -543,6 +543,7 @@
       display: inline-block
     }
 
+    /* ---------- Findings formatting ---------- */
     #findings-body {
       line-height: 1.6;
       font-size: 1.05rem;
@@ -575,13 +576,136 @@
     #findings-body .value {
       color: #cfe6f7;
     }
+
+    /* ---------- Poem + Success points ---------- */
+    .poem {
+      text-align: center;
+      line-height: 1.8;
+      font-style: italic;
+      margin: 12px 0;
+    }
+
+    .success-points {
+      list-style: disc;
+      list-style-position: inside;
+      text-align: center;
+      padding: 0;
+      margin: 10px 0;
+    }
+
+    .success-points li {
+      margin: 6px 0;
+    }
+
+    /* Add breathing room between instructions and game sections */
+    .card ol.status {
+      margin-bottom: 18px;
+      /* space after instructions */
+    }
+
+    .photo-box,
+    .msw-board,
+    .q-wrap,
+    .shift-wrap {
+      margin-top: 14px;
+      /* optional: space before the game grid */
+    }
+
+    /* ===== Headings: Agency FB + Bold ===== */
+    @supports (font-variation-settings: normal) {
+      /* No-op block; placeholder in case you later switch to a variable font fallback */
+    }
+
+    /* If you have the licensed font file, uncomment this block and put the file in assets/fonts/ */
+    /*
+@font-face {
+  font-family: "Agency FB";
+  src: local("Agency FB"), url("assets/fonts/AgencyFB.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+    /* Title font stack:
+   - Agency FB (preferred)
+   - Teko / Antonio (close open-source substitutes if present)
+   - Impact / Haettenschweiler as last-resort condensed fallbacks
+   - then generic sans-serif
+*/
+    :root {
+      --title-font: "Agency FB", Teko, Antonio, Impact, Haettenschweiler, "Arial Narrow", sans-serif;
+    }
+
+    /* Global heading weight and family */
+    h1,
+    h2 {
+      font-family: var(--title-font);
+      font-weight: 700;
+      /* Bold */
+      letter-spacing: 0.3px;
+      /* Subtle polish for condensed faces */
+      line-height: 1.1;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+
+    /* Make the main title slightly larger than other titles */
+    h1 {
+      font-size: clamp(2.0rem, 4.5vw, 2.4rem);
+      /* larger */
+    }
+
+    h2 {
+      font-size: clamp(1.4rem, 3.2vw, 1.7rem);
+      /* slightly smaller than h1 */
+    }
+
+    /* Optional: tighten the badge alignment inside h2 if present */
+    h2 .qcpd_badge {
+      font-size: 0.85em;
+      margin-left: 8px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    /* ---- Sapphire color for main title ---- */
+    :root {
+      /* Add a sapphire brand color (can reuse anywhere) */
+      --sapphire: #0F52BA;
+      /* classic sapphire blue */
+    }
+
+    /* Apply to main title only */
+    h1 {
+      color: var(--sapphire);
+    }
+
+    /* Optional: subtle glow to help on dark backgrounds */
+    h1 {
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+    }
+
+    h2 {
+      color: color-mix(in srgb, var(--sapphire) 72%, #cfe6f7 28%);
+    }
+
+    /* Fallback if color-mix isn't supported */
+    @supports not (color: color-mix(in srgb, black, white)) {
+      h2 {
+        color: #6C8ED6;
+      }
+
+      /* a lighter sapphire-ish tone */
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <h1>CASE 7: 🔷 The Sapphire Heist 🔷</h1>
-    <p class="hint">Welcome back, Detective! In QCPD database we gather all evidence related to the cases.</p>
+    <h1> 🔷 The Sapphire Heist 🔷</h1>
+    <p class="hint">Welcome back, Detective! In QCPD database we collect and preserve all evidence related to the cases.
+    </p>
 
     <!-- A) Landing -->
     <section class="card" id="sec-landing">
@@ -605,6 +729,7 @@
               <option>Field Operations</option>
               <option>Cyber Division</option>
               <option>Forensics Unit</option>
+              <option>Homicide Unit</option>
               <option>Special Tasks</option>
             </select>
           </div>
@@ -621,13 +746,14 @@
     <!-- B) River -->
     <section class="card gate" id="sec-river">
       <h2>📸 Lindholmen River View Photo </h2>
-      <p> This message was recovered from the burglar's phone. We think it might be connected to a code. Do you see it?
-      <ul>
-        <ul><strong>“The river reflects the view, but not the clue.</strong></ul>
-        <ul><strong>Above the waterline, three numbers hide in tinted hue,</strong></ul>
-        <ul><strong>Compare above with what's below, the key is found in the unmatched glow!”</strong></ul>
-      </ul>
+      <p>The following message and photo were recovered from the burglar's phone. We think it might be connected to a
+        code. Do you see it?
       </p>
+      <div class="poem">
+        <em>“The river reflects the view, but not the clue.”</em><br>
+        <em>“Above the waterline, three numbers hide in tinted hue,”</em><br>
+        <em>“Compare above with what's below; the key is found in the unmatched glow!”</em>
+      </div>
       <div class="photo-box">
         <figure class="zoom-thumb" id="river-thumb" aria-label="Tap to inspect">
           <img src="assets/buildings.jpg" alt="Buildings panorama preview">
@@ -635,10 +761,10 @@
         </figure>
 
         <div class="row" style="width:100%;justify-content:center">
-          <input id="river-answer" placeholder="Enter the answer" style="min-width:260px">
+          <input id="river-answer" placeholder="Enter the code" style="min-width:260px">
           <button id="river-submit" class="primary" type="button">Check</button>
         </div>
-        <span id="river-msg" class="hint"></span>
+        <div id="river-msg" class="hint"></div>
       </div>
     </section>
 
@@ -651,8 +777,8 @@
         <li>Don’t tap on the cells that hide bombs.</li>
         <li>Tapping a safe cell shows how many bombs surround it.</li>
         <li>Clear the field to proceed.</li>
-        <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag, if you suspect a bomb is under
-          the cell.</li>
+        <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag, if you suspect a cell has a
+          bomb.</li>
       </ol>
       <div class="msw-board" id="mswBoard"></div>
       <p class="status" id="mswStatus"></p>
@@ -667,10 +793,10 @@
     <section class="card gate" id="sec-diffuser">
       <h2>💥 Diffuser Protocol</h2>
       <ol class="status" style="text-align:left;max-width:560px;margin:0 auto">
-        <li>Place <b>7 diffusers</b> on the 7×7 board.</li>
-        <li>No two diffusers can share a <b>row</b> or a <b>column</b>.</li>
-        <li>Diffusers <b>cannot touch</b> — not even diagonally.</li>
-        <li>Each <b>colored region</b> must contain <b>exactly one</b> diffuser.</li>
+        <li>Place <b>7 jewels</b> on the 7×7 board.</li>
+        <li>No two jewels can share a <b>row</b> or a <b>column</b>.</li>
+        <li>Jewels <b>cannot touch</b> — not even diagonally.</li>
+        <li>Each <b>colored region</b> must contain <b>exactly one</b> jewels.</li>
       </ol>
       <div class="q-wrap">
         <div id="diff-grid" class="q-grid small"></div>
@@ -694,21 +820,17 @@
       </ol>
 
       <div class="legend" aria-hidden="true">
-        <!-- <span class="badge"><img src="assets/jewels/diamond.svg" alt="">Diamond</span> -->
         <span class="badge"><img src="assets/jewels/amethyst.svg" alt="">Amethyst</span>
-        <!-- <span class="badge"><img src="assets/jewels/emerald.svg" alt="">Emerald</span> -->
         <span class="badge"><img src="assets/jewels/ruby.svg" alt="">Ruby</span>
         <span class="badge"><img src="assets/jewels/hex.svg" alt="">Topaz</span>
         <span class="badge"><img src="assets/jewels/green_emerald.svg" alt="">Emerald</span>
-        <!-- <span class="badge"><img src="assets/jewels/star.svg" alt="">Star</span> -->
         <span class="badge"><img src="assets/jewels/diamond.svg" alt=""><b>Sapphire</b> (target)</span>
-        <!-- <span class="badge"><img src="assets/jewels/amethyst.svg" alt=""><b>Amethyst</b> (target)</span> -->
       </div>
 
       <div class="shift-wrap">
         <div id="shiftBoard" class="shift-board"></div>
         <div class="shift-tools">
-          <button id="shiftNew" type="button">New Game</button>
+          <button id="shiftNew" type="button">Reset</button>
         </div>
         <p id="shiftStatus" class="shift-status"></p>
       </div>
@@ -721,7 +843,7 @@
       <h2>📜 Findings</h2>
       <div id="findings-body" class="hint"></div>
       <div class="footer-actions" style="margin-top:10px">
-        <button id="restart" type="button">Restart (keep this tab)</button>
+        <button id="restart" type="button">Restart</button>
       </div>
     </section>
   </div>
@@ -729,13 +851,8 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // ---------- Session-scoped storage (refresh keeps; closing tab resets) ----------
-    const SS = {
-      name: 'qc26s.name',
-      code: 'qc26s.code',
-      dept: 'qc26s.dept',
-      gates: 'qc26s.gates'
-    };
+    // ---------- Session-scoped storage ----------
+    const SS = { name: 'qc26s.name', code: 'qc26s.code', dept: 'qc26s.dept', gates: 'qc26s.gates' };
     const $ = s => document.querySelector(s);
     function loadGates() { try { return JSON.parse(sessionStorage.getItem(SS.gates) || '{}') } catch { return {} } }
     function saveGates(g) { try { sessionStorage.setItem(SS.gates, JSON.stringify(g)) } catch { } }
@@ -748,15 +865,11 @@
       toggle('#sec-mines', !!gates.mines);
       toggle('#sec-diffuser', !!gates.diffuser);
       toggle('#sec-locate', !!gates.locate);
-      // Findings card behaves like a terminal summary; show only when unlocked
-      const findings = $('#sec-findings');
-      if (findings) findings.style.display = gates.findings ? 'block' : 'none';
+      const findings = $('#sec-findings'); if (findings) findings.style.display = gates.findings ? 'block' : 'none';
     }
-    function openGate(key) {
-      gates[key] = true; saveGates(gates); applyGates();
-    }
+    function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
 
-    // ---------- Prefill from query or prior session ----------
+    // ---------- Prefill ----------
     (function prefill() {
       const p = new URLSearchParams(location.search);
       const name = p.get('name') || sessionStorage.getItem(SS.name) || '';
@@ -767,9 +880,7 @@
       if (dept && $('#dept')) $('#dept').value = dept;
     })();
 
-    // On first load with no gates, show landing; otherwise resume where left
     if (!sessionStorage.getItem(SS.gates)) {
-      // Start fresh (landing only)
       ['river', 'mines', 'diffuser', 'locate', 'findings'].forEach(k => delete gates[k]);
       saveGates(gates);
     }
@@ -784,12 +895,11 @@
         const code = ($('#codename')?.value || '').trim();
         const dept = $('#dept')?.value || '';
         if (!name) { regStatus.textContent = 'Please enter your name.'; regStatus.className = 'hint warn'; return; }
-        // if (!dept) { regStatus.textContent = 'Select a department.'; regStatus.className = 'hint warn'; return; }
         sessionStorage.setItem(SS.name, name);
         sessionStorage.setItem(SS.code, code);
         sessionStorage.setItem(SS.dept, dept);
         regStatus.textContent = 'Access granted.'; regStatus.className = 'hint success';
-        openGate('river'); toast('Evidence unlocked: Lindholmen River View Photo and note relating to it. Proceed below.');
+        openGate('river'); toast('Evidence: Lindholmen River View Photo and a note relating to it.');
       });
     }
 
@@ -799,38 +909,39 @@
       const val = ($('#river-answer')?.value || '').trim().toLowerCase();
       if (!val) { $('#river-msg').textContent = 'Enter the 3-digit code.'; $('#river-msg').className = 'hint warn'; return; }
       if (val === RIVER_ANSWER.toLowerCase()) {
-        $('#river-msg').textContent = '✅ Amazing find, Detective! Let\'s proceed to the next evidence: Safe Sweep. With this, we believe that we have recovered the three 3-digit codes. Based on that, the following evidence should give us to the remaining three locations, where hopefully we will be able to use the codes. Let us solve these to find the locations and unveil the hidden jewels.'; $('#river-msg').className = 'hint success';
+        $('#river-msg').innerHTML = `
+          <ul class="success-points">
+            <li>✅ Amazing find, Detective! You found the final 3-digit code.</li>
+            <li>This means that the following evidence shall reveal three locations, where hopefully we will be ablve to use the found codes.</li>
+            <li>Next Evidence: Safe Sweep</li>
+          </ul>`;
+        $('#river-msg').className = 'hint success';
         openGate('mines'); toast('Correct!');
       } else {
-        $('#river-msg').textContent = 'Not quite. Open the photo and review again.'; $('#river-msg').className = 'hint warn';
+        $('#river-msg').textContent = 'Not quite. Let\'s open the photo and review again.'; $('#river-msg').className = 'hint warn';
       }
     });
 
-    // ---------- Lightbox viewer (option A) ----------
+    // ---------- Lightbox viewer ----------
     (function setupLightbox() {
       const thumb = $('#river-thumb');
       function openLightbox() {
         const backdrop = document.createElement('div'); backdrop.className = 'lb-backdrop';
         const panel = document.createElement('div'); panel.className = 'lb-panel'; backdrop.appendChild(panel);
-
         const header = document.createElement('div'); header.className = 'lb-header';
         const title = document.createElement('div'); title.className = 'lb-title'; title.textContent = 'Photo Forensics — buildings.jpg';
         const close = document.createElement('button'); close.className = 'lb-close'; close.textContent = 'Close';
         header.append(title, close);
-
         const view = document.createElement('div'); view.className = 'lb-view';
         const img = document.createElement('img'); img.className = 'zoom-img'; img.src = 'assets/buildings.jpg'; img.alt = 'Buildings panorama';
         view.appendChild(img);
-
         const tools = document.createElement('div'); tools.className = 'lb-tools';
         const zOut = document.createElement('button'); zOut.textContent = '−';
         const zReset = document.createElement('button'); zReset.textContent = 'Reset';
         const zIn = document.createElement('button'); zIn.textContent = '+';
         tools.append(zOut, zReset, zIn);
-
         panel.append(header, view, tools);
         document.body.appendChild(backdrop);
-
         const Z_MIN = 0.5, Z_MAX = 4, STEP = 0.25;
         let scale = 1, pos = { x: 0, y: 0 }, drag = null, startDist = 0, startScale = 1;
         function apply() { img.style.transform = `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) scale(${scale})`; }
@@ -847,14 +958,11 @@
           pos.x = pos.x + dx * (1 / old - 1 / scale); pos.y = pos.y + dy * (1 / old - 1 / scale); apply();
         }
         if (img.complete) fitToView(); else img.onload = fitToView;
-
         view.addEventListener('wheel', (e) => { e.preventDefault(); setScale(scale + (e.deltaY < 0 ? STEP : -STEP), e.clientX, e.clientY); }, { passive: false });
         view.addEventListener('dblclick', (e) => { e.preventDefault(); const t = scale < 2 ? Math.min(Z_MAX, scale + 1) : 1; setScale(t, e.clientX, e.clientY); if (t === 1) { pos = { x: 0, y: 0 }; apply(); } });
-
         view.addEventListener('pointerdown', (e) => { view.setPointerCapture(e.pointerId); drag = { x: e.clientX - pos.x, y: e.clientY - pos.y }; });
         view.addEventListener('pointermove', (e) => { if (!drag) return; pos.x = e.clientX - drag.x; pos.y = e.clientY - drag.y; apply(); });
         view.addEventListener('pointerup', () => { drag = null; });
-
         const pts = new Map();
         view.addEventListener('pointerdown', e => pts.set(e.pointerId, e));
         view.addEventListener('pointermove', e => {
@@ -867,11 +975,10 @@
           }
         }, { passive: false });
         view.addEventListener('pointerup', e => { pts.delete(e.pointerId); if (pts.size < 2) startDist = 0; });
-
-        zIn.addEventListener('click', () => { const r = view.getBoundingClientRect(); setScale(scale + STEP, r.left + r.width / 2, r.top + r.height / 2); });
-        zOut.addEventListener('click', () => { const r = view.getBoundingClientRect(); setScale(scale - STEP, r.left + r.width / 2, r.top + r.height / 2); });
+        const center = () => { const r = view.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
+        zIn.addEventListener('click', () => { const [cx, cy] = center(); setScale(scale + STEP, cx, cy); });
+        zOut.addEventListener('click', () => { const [cx, cy] = center(); setScale(scale - STEP, cx, cy); });
         zReset.addEventListener('click', fitToView);
-
         function closeModal() { backdrop.remove(); }
         close.addEventListener('click', closeModal);
         backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
@@ -883,19 +990,15 @@
     // ---------- Safe Sweep ----------
     function initSafeSweep() {
       const SIZE = 4, BOMBS = 3;
-      const board = $('#mswBoard'), status = $('#mswStatus'), btnClear = $('#mswClear');
+      const board = $('#mswBoard'), status = $('#mswStatus');
       if (!board) return;
-
       board.addEventListener('contextmenu', e => e.preventDefault());
       const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
       let cells = []; const idx = (r, c) => r * SIZE + c;
-
       function neighbors(cell) { const out = []; for (const [dr, dc] of dirs) { const r = cell.r + dr, c = cell.c + dc; if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]); } return out; }
       function renderCell(cell) { const el = cell.el; el.innerHTML = ''; el.className = 'msw-cell'; if (cell.flag) el.classList.add('flag'); if (cell.revealed) { el.classList.add('revealed'); if (!cell.bomb && cell.count > 0) { const span = document.createElement('span'); span.textContent = cell.count; span.className = 'n' + cell.count; el.appendChild(span); } } }
       function place() {
-        board.innerHTML = ''; cells.length = 0; status.textContent = '';
-        const pool = [...Array(SIZE * SIZE).keys()]; for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
-        const bombs = new Set(pool.slice(0, BOMBS));
+        board.innerHTML = ''; cells.length = 0; status.textContent = ''; const pool = [...Array(SIZE * SIZE).keys()]; for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]] } const bombs = new Set(pool.slice(0, BOMBS));
         for (let r = 0; r < SIZE; r++) { for (let c = 0; c < SIZE; c++) { const el = document.createElement('div'); el.className = 'msw-cell'; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `cell ${r + 1},${c + 1}`); const cell = { r, c, el, bomb: bombs.has(idx(r, c)), revealed: false, flag: false, count: 0 }; cells.push(cell); board.appendChild(el); } }
         for (const cell of cells) cell.count = neighbors(cell).filter(n => n.bomb).length;
         for (const cell of cells) {
@@ -914,15 +1017,16 @@
         for (const c of cells) renderCell(c);
       }
       function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; renderCell(cell); }
-      function reveal(cell) {
-        if (cell.revealed || cell.flag) return; cell.revealed = true;
-        if (cell.bomb) { cell.el.classList.add('boom'); status.textContent = 'Boom! Resetting…'; setTimeout(() => place(), 350); return; }
-        if (cell.count === 0) { for (const n of neighbors(cell)) { if (!n.revealed && !n.flag && !n.bomb) reveal(n); } }
-        renderCell(cell); checkWin();
-      }
+      function reveal(cell) { if (cell.revealed || cell.flag) return; cell.revealed = true; if (cell.bomb) { cell.el.classList.add('boom'); status.textContent = 'Boom! Resetting…'; setTimeout(() => place(), 350); return; } if (cell.count === 0) { for (const n of neighbors(cell)) { if (!n.revealed && !n.flag && !n.bomb) reveal(n); } } renderCell(cell); checkWin(); }
       function checkWin() {
-        const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length;
-        if (rev === safe) { status.innerHTML = ' ✅ Field clear! The malware has been located. The first location revealed is \"A cabinet opposite to a conference room\". Next piece of evidence unlocked: Diffuser Protocol.'; openGate('diffuser'); toast('Wonderful!'); }
+        const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length; if (rev === safe) {
+          status.innerHTML = `
+          <ul class="success-points">
+            <li>✅ Field cleared! The source of the malware on the burglar's phone has been located.</li>
+            <li>Revealed Location 1: Cabinet opposite the royal meeting room.</li>
+            <li>Next Evidence: Diffuser Protocol</li>
+          </ul>`; openGate('diffuser'); toast('Wonderful!');
+        }
       }
       $('#mswClear')?.addEventListener('click', place);
       place();
@@ -953,7 +1057,6 @@
 
       const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
       if (!grid) return;
-
       grid.innerHTML = '';
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
@@ -964,7 +1067,6 @@
           grid.appendChild(el);
         }
       }
-
       function toggleQ(el) { el.dataset.q = (el.dataset.q === '1') ? '0' : '1'; render(el); }
       function render(el) {
         el.innerHTML = '';
@@ -984,17 +1086,14 @@
         for (let i = 0; i < grid.children.length; i++) { const el = grid.children[i]; if (el.dataset.q === '1') { const r = +el.dataset.r, c = +el.dataset.c; placed.push([r, c, el]); } }
         let ok = true;
         if (placed.length !== 7) ok = false;
-
         for (let r = 0; r < SIZE; r++) { const k = placed.filter(p => p[0] === r); if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); } }
         for (let c = 0; c < SIZE; c++) { const k = placed.filter(p => p[1] === c); if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); } }
-
         const seen = new Map();
         for (const [r, c, el] of placed) {
           const reg = REGIONS[r][c];
           if (seen.has(reg)) { ok = false; el.classList.add('attacked'); seen.get(reg).classList.add('attacked'); }
           else seen.set(reg, el);
         }
-
         for (let i = 0; i < placed.length; i++) {
           const [r, c, el] = placed[i];
           for (let j = i + 1; j < placed.length; j++) {
@@ -1007,10 +1106,15 @@
 
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
-          status.innerHTML = '✅ Well placed! The malware has been diabled. The second location revealed is \"A place to enlighten knowledge, the one with a green couch\". Next evidence unlocked: Locate the Jewel. ';
+          status.innerHTML = `
+            <ul class="success-points">
+              <li>✅ Well placed! The placement of jewels has disabled the malware.</li>
+              <li>Revealed Location 2: A place of enlightenment with a green arm-chair</li>
+              <li>Next Evidence: Locate the Jewel</li>
+            </ul>`;
           openGate('locate'); toast('That was amazing!');
         } else {
-          status.textContent = 'Conflicts detected — adjust placements.';
+          status.textContent = 'Conflicts detected - adjust placements.';
         }
       });
       btnClear?.addEventListener('click', () => {
@@ -1027,111 +1131,59 @@
       const SIZE = 4; boardEl.innerHTML = ''; boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
       const ICONS = [
         "assets/jewels/amethyst.svg",
-        // "assets/jewels/emerald.svg",
         "assets/jewels/ruby.svg",
         "assets/jewels/hex.svg",
-        // "assets/jewels/star.svg",
         "assets/jewels/green_emerald.svg",
         "assets/jewels/diamond.svg"
       ];
-      // const TIER_NAMES = ["Amethyst", "Emerald", "Ruby", "Hex", "Star", "Jade", "Diamond"];
       const TIER_NAMES = ["Amethyst", "Ruby", "Hex", "Emerald", "Diamond"];
       const TARGET_LEVEL = 4; // Diamond
       let grid = [], moved = false;
-
       function newGrid() { grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null)); spawn(); spawn(); render(); status.textContent = `Slide to merge. Target: ${TIER_NAMES[TARGET_LEVEL]}.`; }
-      function spawn() {
-        const empty = []; for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] == null) empty.push([r, c]);
-        if (!empty.length) return;
-        const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-        grid[r][c] = Math.random() < 0.9 ? 0 : 1;
-      }
-      function render() {
-        boardEl.innerHTML = '';
-        for (let r = 0; r < SIZE; r++) {
-          for (let c = 0; c < SIZE; c++) {
-            const el = document.createElement('div'); el.className = 'tile ' + (grid[r][c] == null ? '' : ('l' + grid[r][c]));
-            if (grid[r][c] != null) { const img = document.createElement('img'); const idx = Math.min(grid[r][c], ICONS.length - 1); img.src = ICONS[idx]; img.alt = TIER_NAMES[Math.min(idx, TIER_NAMES.length - 1)] || 'jewel'; el.appendChild(img); }
-            boardEl.appendChild(el);
-          }
-        }
-      }
-      function slideLine(line) {
-        const vals = line.filter(v => v != null);
-        for (let i = 0; i < vals.length - 1; i++) { if (vals[i] === vals[i + 1]) { vals[i] += 1; vals.splice(i + 1, 1); moved = true; } }
-        while (vals.length < SIZE) vals.push(null); return vals;
-      }
+      function spawn() { const empty = []; for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] == null) empty.push([r, c]); if (!empty.length) return; const [r, c] = empty[Math.floor(Math.random() * empty.length)]; grid[r][c] = Math.random() < 0.9 ? 0 : 1; }
+      function render() { boardEl.innerHTML = ''; for (let r = 0; r < SIZE; r++) { for (let c = 0; c < SIZE; c++) { const el = document.createElement('div'); el.className = 'tile ' + (grid[r][c] == null ? '' : ('l' + grid[r][c])); if (grid[r][c] != null) { const img = document.createElement('img'); const idx = Math.min(grid[r][c], ICONS.length - 1); img.src = ICONS[idx]; img.alt = TIER_NAMES[Math.min(idx, TIER_NAMES.length - 1)] || 'jewel'; el.appendChild(img); } boardEl.appendChild(el); } } }
+      function slideLine(line) { const vals = line.filter(v => v != null); for (let i = 0; i < vals.length - 1; i++) { if (vals[i] === vals[i + 1]) { vals[i] += 1; vals.splice(i + 1, 1); moved = true; } } while (vals.length < SIZE) vals.push(null); return vals; }
       function rotateCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[c][n - 1 - r] = g[r][c]; return o; }
       function rotateCCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[n - 1 - c][r] = g[r][c]; return o; }
       function flipH(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[r][n - 1 - c] = g[r][c]; return o; }
-
-      function move(dir) {
-        moved = false;
-        let g = grid.map(row => row.slice());
-        if (dir === 'left') { for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); }
-        else if (dir === 'right') { g = flipH(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = flipH(g); }
-        else if (dir === 'up') { g = rotateCCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCW(g); }
-        else if (dir === 'down') { g = rotateCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCCW(g); }
-        if (JSON.stringify(g) !== JSON.stringify(grid)) { grid = g; moved = true; }
-        if (moved) { spawn(); render(); checkWinLose(); }
-      }
-
+      function move(dir) { moved = false; let g = grid.map(row => row.slice()); if (dir === 'left') { for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); } else if (dir === 'right') { g = flipH(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = flipH(g); } else if (dir === 'up') { g = rotateCCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCW(g); } else if (dir === 'down') { g = rotateCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCCW(g); } if (JSON.stringify(g) !== JSON.stringify(grid)) { grid = g; moved = true; } if (moved) { spawn(); render(); checkWinLose(); } }
       function checkWinLose() {
         for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
           if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
-            status.innerHTML = '✅ That is some great skill you have detective! The malware has been erased. The third location revealed is \"A place with a great view, all year round. The closed chair on the far end of the kitchen\". Head to these locations to find out what they hide, hopefully an answer to use at the final location that was found in the evidence note. The findings are also collected below for reference.';
-            gates.findings = true; saveGates(gates); applyGates();
-            toast('Target reached!'); showFindings(); return;
+            status.innerHTML = `
+              <ul class="success-points">
+                <li>✅ That is some great skill you have detective! Merging to the correct jewel has now deleted the malware.</li>
+                <li>Revealed Location 3: Writing desk of closed chair far end of the kitchen</li>
+                <li>Findings have been recorded below.</li>
+              </ul>`; gates.findings = true; saveGates(gates); applyGates(); toast('Target reached!'); showFindings(); return;
           }
         }
-        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
-          if (grid[r][c] == null) return;
-          if (r + 1 < SIZE && grid[r][c] === grid[r + 1][c]) return;
-          if (c + 1 < SIZE && grid[r][c] === grid[r][c + 1]) return;
-        }
-        status.textContent = 'No moves left — try a new game.';
+        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) { if (grid[r][c] == null) return; if (r + 1 < SIZE && grid[r][c] === grid[r + 1][c]) return; if (c + 1 < SIZE && grid[r][c] === grid[r][c + 1]) return; }
+        status.textContent = 'No moves left - let\'s try resetting it.';
       }
-
-      window.addEventListener('keydown', (e) => {
-        if (!$('#sec-locate')?.classList.contains('open')) return;
-        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
-        if (e.key === 'ArrowLeft') move('left');
-        else if (e.key === 'ArrowRight') move('right');
-        else if (e.key === 'ArrowUp') move('up');
-        else if (e.key === 'ArrowDown') move('down');
-      });
-      let touchStart = null;
-      boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
-      boardEl.addEventListener('touchend', e => {
-        if (!touchStart) return;
-        const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y);
-        const ax = Math.abs(dx), ay = Math.abs(dy);
-        if (Math.max(ax, ay) < 24) { touchStart = null; return; }
-        if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up');
-        touchStart = null;
-      }, { passive: true });
-
-      btnNew?.addEventListener('click', newGrid);
-      newGrid();
+      window.addEventListener('keydown', (e) => { if (!$('#sec-locate')?.classList.contains('open')) return; if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault(); if (e.key === 'ArrowLeft') move('left'); else if (e.key === 'ArrowRight') move('right'); else if (e.key === 'ArrowUp') move('up'); else if (e.key === 'ArrowDown') move('down'); });
+      let touchStart = null; boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+      boardEl.addEventListener('touchend', e => { if (!touchStart) return; const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y); const ax = Math.abs(dx), ay = Math.abs(dy); if (Math.max(ax, ay) < 24) { touchStart = null; return; } if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up'); touchStart = null; }, { passive: true });
+      btnNew?.addEventListener('click', newGrid); newGrid();
     }
 
     // Findings & Restart
     function showFindings() {
       const name = sessionStorage.getItem(SS.name) || '', code = sessionStorage.getItem(SS.code) || '', dept = sessionStorage.getItem(SS.dept) || '';
-      const g = loadGates(); const steps = [
-        ['River View -                3-digit code : 243', !!g.river],
-        ['Safe Sweep -                Location     : Cabinet opposite to a meeting room', !!g.mines],
-        ['Diffuser Protocol -         Location     : Place with books and a green counch', !!g.diffuser],
-        ['Locate the Jewel -          Location     : Closed chair at the far end of the kitchen', !!g.locate],
+      const g = loadGates();
+      const rows = [
+        ['River Code', '243', !!g.river],
+        ['Safe Sweep', 'Cabinet opposite the royal meeting room', !!g.mines],
+        ['Diffuser', 'A place of enlightenment with a green arm-chair', !!g.diffuser],
+        ['Jewel Location', 'Writing desk of closed chair far end of the kitchen', !!g.locate],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
-<ul>${steps.map(([k, v]) => `<li>${v ? '✅' : '⬜'} ${k}</li>`).join('')}</ul>
+<ul>${rows.map(([label, value, ok]) => `<li>${ok ? '✅' : '⬜'} <span class="label">${label}</span><span class="value">${escapeHtml(value)}</span></li>`).join('')}</ul>
 <p class='hint'>All digital evidence has been decoded. Congratulations, Detective! 🎉</p>`;
       const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
     }
-    function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
+    function escapeHtml(s) { return (s || '').replace(/[&<>\"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
     $('#restart')?.addEventListener('click', () => {
-      // Clear ONLY session data (this tab). Hard reset back to Landing.
       sessionStorage.removeItem(SS.gates);
       sessionStorage.removeItem(SS.name);
       sessionStorage.removeItem(SS.code);

@@ -712,10 +712,6 @@
       /* readable line length */
     }
 
-    .success-points li {
-      margin: 6px 0;
-    }
-
     /* Success lists: left-aligned text, centered block, green text */
     .success-points {
       list-style: disc;
@@ -726,6 +722,10 @@
       max-width: 720px;
       color: var(--good);
       /* ← make the text green for every puzzle */
+    }
+
+    .success-points li {
+      margin: 6px 0;
     }
   </style>
 </head>
@@ -1247,7 +1247,8 @@
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
 
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxnYPfla5F7mnTkxz5m2MGEiexL04-F7ofZuxJhq7-5E5W3TDjqJ9fz0CYkodZOZmbF/exec';
+    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxnYPfla5F7mnTkxz5m2MGEiexL04-F7ofZuxJhq7-5E5W3TDjqJ9fz0CYkodZOZmbF/exec';
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
 
     async function sendToSheet(payload) {
       try {

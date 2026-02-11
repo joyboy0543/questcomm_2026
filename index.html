@@ -698,6 +698,23 @@
 
       /* a lighter sapphire-ish tone */
     }
+
+    /* Success lists: left-aligned text, centered block */
+    .success-points {
+      list-style: disc;
+      list-style-position: inside;
+      text-align: left;
+      /* text left */
+      padding: 0;
+      margin: 12px auto;
+      /* center the block */
+      max-width: 720px;
+      /* readable line length */
+    }
+
+    .success-points li {
+      margin: 6px 0;
+    }
   </style>
 </head>
 
@@ -1218,7 +1235,8 @@
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
 
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwb7ghH7z6-4vpq6UaM_q30u352voNApM6CNiC8yW7UKDvNB7ZES_EYpEBZTSijHaA4/exec';
+    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwb7ghH7z6-4vpq6UaM_q30u352voNApM6CNiC8yW7UKDvNB7ZES_EYpEBZTSijHaA4/exec';
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwfCjb2geGlESQnMiBTyGJG2KBBTo70U1qMkUEl_vmdhbSepbS2tdLVBoEgVrgtIUmH/exec';
 
     async function sendToSheet(payload) {
       try {

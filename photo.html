@@ -250,6 +250,15 @@
             font-weight: 600;
             cursor: pointer;
         }
+
+        /* Make the name box bigger and flexible on small screens */
+        #agent {
+            flex: 1 1 380px;
+            /* grows but wraps nicely */
+            min-width: 260px;
+            max-width: 620px;
+            font-size: 1.05rem;
+        }
     </style>
 </head>
 
@@ -262,7 +271,8 @@
         <!-- Top controls row -->
         <div class="row">
             <!-- Name is placeholder only; no 'Detective' prefill -->
-            <input id="agent" placeholder="Detective name (caption)">
+            <!-- <input id="agent" placeholder="Detective name (caption)"> -->
+            <input id="agent" placeholder="Detective name(s), comma-separated" spellcheck="false" />
             <!-- Removed top Feedback input as requested -->
             <button id="open">Open Camera</button>
             <button id="flip" disabled>Flip to Front</button>
@@ -642,17 +652,113 @@
             if (!count) return;
             for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
         }
-        function drawFrame(w, h, name) {
+
+        // Turn "Alice, Bob, Carol" --> { title: "Detectives", names: "Alice, Bob & Carol" }
+        // For single name -> { title: "Detective", names: "Alice" }
+        function formatDetectiveNames(raw) {
+            const parts = (raw || '')
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean);
+
+            if (parts.length <= 1) {
+                return { title: 'Detective', names: parts[0] || 'Detective' };
+            }
+
+            const names =
+                parts.length === 2
+                    ? parts.join(' & ')
+                    : parts.slice(0, -1).join(', ') + ' & ' + parts.slice(-1);
+
+            return { title: 'Detectives', names };
+        }
+
+        /**
+         * Wrap a string into up to `maxLines` lines that each fit `maxWidth`.
+         * Returns { size, lines } where `size` is the final font px used.
+         */
+        function wrapTextToLines(text, maxWidth, basePx, fontStack, maxLines = 2) {
+            let size = Math.max(10, basePx);
+            const words = text.split(/\s+/);
+
+            while (size >= 10) {
+                ctx.font = `${size}px ${fontStack}`;
+                const lines = [];
+                let i = 0;
+
+                while (i < words.length && lines.length < maxLines) {
+                    let line = words[i++];
+                    while (i < words.length && ctx.measureText(line + ' ' + words[i]).width <= maxWidth) {
+                        line += ' ' + words[i++];
+                    }
+                    lines.push(line);
+                }
+
+                // If we consumed all words and all lines fit the width -> good
+                const allFit = (i === words.length) && lines.every(l => ctx.measureText(l).width <= maxWidth);
+                if (allFit) return { size, lines };
+
+                size -= 1; // shrink and retry
+            }
+
+            // Fallback: minimum size
+            ctx.font = `10px ${fontStack}`;
+            return { size: 10, lines: [text] };
+        }
+
+        function drawFrame(w, h, rawName) {
+            const { title: titleWord, names } = formatDetectiveNames(rawName);
+
+            // Common strings
+            const bannerTitle = '👑 QCPD — The Sapphire Heist';
+            const extra = 'The Evidence will be sent to Archives';
+
+            // Fonts
+            const titleFontStack = `"Segoe UI", system-ui, Arial`;
+            const capFontStack = `"Segoe UI", system-ui, Arial`;
+            const emojiFont = `"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+
+            // Build the main caption with all names
+            const captionMain = `🦄 ${titleWord} ${names} • Case Solved!`;
+
             const isPortrait = (w / h) < 0.9;
             if (!isPortrait) {
-                const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-                ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
-                ctx.fillStyle = '#cfe6f7'; ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
-                ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
-                ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
-                ctx.fillStyle = '#29d49a'; ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-                ctx.fillText(`🦄 Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
-                ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+                // ===== LANDSCAPE =====
+                // Top banner
+                const topH = Math.floor(h * 0.13);
+                const grad = ctx.createLinearGradient(0, 0, w, 0);
+                grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
+
+                // Title
+                ctx.fillStyle = '#cfe6f7';
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'left';
+                // Auto-size banner title to fit width minus margins
+                const sideM = Math.floor(w * 0.035);
+                const innerW = w - sideM * 2;
+                const titleBase = Math.floor(h * 0.055);
+                const titleSize = fitFontSize(bannerTitle, titleBase, innerW, titleFontStack);
+                ctx.font = `${titleSize}px ${titleFontStack}`;
+                ctx.fillText(bannerTitle, sideM, Math.floor(h * 0.085));
+
+                // Bottom bar
+                const botH = Math.floor(h * 0.20);
+                const botY = h - botH;
+                ctx.fillStyle = 'rgba(16,37,54,0.92)';
+                ctx.fillRect(0, botY, w, botH);
+
+                // Caption (auto-size to width)
+                ctx.fillStyle = '#29d49a';
+                ctx.textBaseline = 'alphabetic';
+                ctx.textAlign = 'left';
+                const capBase = Math.floor(h * 0.05);
+                const capSize = fitFontSize(captionMain, capBase, innerW, capFontStack);
+                ctx.font = `${capSize}px ${capFontStack}`;
+                ctx.fillText(captionMain, sideM, Math.floor(h * 0.92));
+
+                // Emojis (unchanged)
+                ctx.font = `${Math.floor(h * 0.06)}px ${emojiFont}`;
                 ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
                 ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
                 ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
@@ -663,71 +769,151 @@
                 return;
             }
 
+            // ===== PORTRAIT =====
+
             const sideM = Math.floor(w * 0.04);
             const innerW = w - sideM * 2;
 
+            // Top banner
             const topH = Math.floor(h * 0.10);
             const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
 
-            const title = '👑 QCPD — The Sapphire Heist';
-            const titleFontStack = `"Segoe UI", system-ui, Arial`;
+            // Title (auto-size to width)
             const titleBase = Math.floor(h * 0.045);
-            const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+            const titleSize = fitFontSize(bannerTitle, titleBase, innerW, titleFontStack);
             ctx.font = `${titleSize}px ${titleFontStack}`;
             ctx.fillStyle = '#cfe6f7';
             ctx.textBaseline = 'middle';
             ctx.textAlign = 'left';
-            ctx.fillText(title, sideM, Math.floor(topH * 0.58));
+            ctx.fillText(bannerTitle, sideM, Math.floor(topH * 0.58));
 
+            // Bottom panel
             const botH = Math.floor(h * 0.16);
             const botY = h - botH;
             ctx.fillStyle = 'rgba(16,37,54,0.92)';
             ctx.fillRect(0, botY, w, botH);
 
-            const baseCaption = `🦄 Detective ${name} • Case Solved!`;
-            const extra = `The Evidence will be sent to Archives`;
-            const capFontStack = `"Segoe UI", system-ui, Arial`;
-            let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
-            ctx.font = `${capSize}px ${capFontStack}`;
-            let line1 = baseCaption, line2 = extra;
-
-            if (ctx.measureText(baseCaption).width > innerW) {
-                const [l1, l2first] = wrapTwoLines(baseCaption, innerW);
-                line1 = l1;
-                if (l2first) {
-                    const join = l2first + ' — ' + extra;
-                    if (ctx.measureText(join).width <= innerW) line2 = join;
-                    else if (ctx.measureText(l2first).width <= innerW) line2 = l2first;
-                    else line2 = '';
-                } else {
-                    if (ctx.measureText(extra).width > innerW) {
-                        capSize = fitFontSize(extra, capSize, innerW, capFontStack);
-                        ctx.font = `${capSize}px ${capFontStack}`;
-                    }
-                    line2 = extra;
-                }
-            } else {
-                if (ctx.measureText(extra).width > innerW) {
-                    const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
-                    if (newSize < capSize) {
-                        capSize = newSize;
-                        ctx.font = `${capSize}px ${capFontStack}`;
-                    }
-                }
-            }
+            // Caption lines with wrapping (up to 2 lines)
+            const capBase = Math.floor(h * 0.045);
+            const { size: mainSize, lines: mainLines } =
+                wrapTextToLines(captionMain, innerW, capBase, capFontStack, 2);
 
             ctx.fillStyle = '#29d49a';
             ctx.textBaseline = 'alphabetic';
             ctx.textAlign = 'left';
-            const lineGap = Math.max(4, Math.floor(capSize * 0.28));
-            const firstY = Math.floor(botY + botH * 0.45);
-            ctx.fillText(line1, sideM, firstY);
-            if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+            const lineGap = Math.max(4, Math.floor(mainSize * 0.28));
 
-            ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+            // Compute how many lines fit vertically; try to include 'extra' if there's room
+            const approxLineHeight = mainSize + lineGap;
+            const maxLinesVert = Math.max(1, Math.floor((botH * 0.88) / approxLineHeight));
+            const drawExtra = (mainLines.length < maxLinesVert);
+
+            // Draw main lines
+            let y = Math.floor(botY + botH * 0.45);
+            ctx.font = `${mainSize}px ${capFontStack}`;
+            for (let i = 0; i < mainLines.length; i++) {
+                ctx.fillText(mainLines[i], sideM, y);
+                y += approxLineHeight;
+            }
+
+            // Optionally draw extra line (auto-size to width, not larger than main)
+            if (drawExtra) {
+                const extraSize = Math.min(mainSize, fitFontSize(extra, mainSize, innerW, capFontStack));
+                ctx.font = `${extraSize}px ${capFontStack}`;
+                ctx.fillText(extra, sideM, y);
+            }
+
+            // Emoji divider
+            ctx.font = `${Math.floor(h * 0.055)}px ${emojiFont}`;
             ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
         }
+        // function drawFrame(w, h, name) {
+        //     const isPortrait = (w / h) < 0.9;
+        //     if (!isPortrait) {
+        //         const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+        //         ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
+        //         ctx.fillStyle = '#cfe6f7'; ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
+        //         ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
+        //         ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
+        //         ctx.fillStyle = '#29d49a'; ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
+        //         ctx.fillText(`🦄 Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
+        //         ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+        //         ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
+        //         ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
+        //         ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
+        //         ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
+        //         ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
+        //         ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
+        //         ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
+        //         return;
+        //     }
+
+        //     const sideM = Math.floor(w * 0.04);
+        //     const innerW = w - sideM * 2;
+
+        //     const topH = Math.floor(h * 0.10);
+        //     const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+        //     ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
+
+        //     const title = '👑 QCPD — The Sapphire Heist';
+        //     const titleFontStack = `"Segoe UI", system-ui, Arial`;
+        //     const titleBase = Math.floor(h * 0.045);
+        //     const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
+        //     ctx.font = `${titleSize}px ${titleFontStack}`;
+        //     ctx.fillStyle = '#cfe6f7';
+        //     ctx.textBaseline = 'middle';
+        //     ctx.textAlign = 'left';
+        //     ctx.fillText(title, sideM, Math.floor(topH * 0.58));
+
+        //     const botH = Math.floor(h * 0.16);
+        //     const botY = h - botH;
+        //     ctx.fillStyle = 'rgba(16,37,54,0.92)';
+        //     ctx.fillRect(0, botY, w, botH);
+
+        //     const baseCaption = `🦄 Detective ${name} • Case Solved!`;
+        //     const extra = `The Evidence will be sent to Archives`;
+        //     const capFontStack = `"Segoe UI", system-ui, Arial`;
+        //     let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
+        //     ctx.font = `${capSize}px ${capFontStack}`;
+        //     let line1 = baseCaption, line2 = extra;
+
+        //     if (ctx.measureText(baseCaption).width > innerW) {
+        //         const [l1, l2first] = wrapTwoLines(baseCaption, innerW);
+        //         line1 = l1;
+        //         if (l2first) {
+        //             const join = l2first + ' — ' + extra;
+        //             if (ctx.measureText(join).width <= innerW) line2 = join;
+        //             else if (ctx.measureText(l2first).width <= innerW) line2 = l2first;
+        //             else line2 = '';
+        //         } else {
+        //             if (ctx.measureText(extra).width > innerW) {
+        //                 capSize = fitFontSize(extra, capSize, innerW, capFontStack);
+        //                 ctx.font = `${capSize}px ${capFontStack}`;
+        //             }
+        //             line2 = extra;
+        //         }
+        //     } else {
+        //         if (ctx.measureText(extra).width > innerW) {
+        //             const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
+        //             if (newSize < capSize) {
+        //                 capSize = newSize;
+        //                 ctx.font = `${capSize}px ${capFontStack}`;
+        //             }
+        //         }
+        //     }
+
+        //     ctx.fillStyle = '#29d49a';
+        //     ctx.textBaseline = 'alphabetic';
+        //     ctx.textAlign = 'left';
+        //     const lineGap = Math.max(4, Math.floor(capSize * 0.28));
+        //     const firstY = Math.floor(botY + botH * 0.45);
+        //     ctx.fillText(line1, sideM, firstY);
+        //     if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
+
+        //     ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+        //     ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
+        // }
 
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;

@@ -766,6 +766,31 @@
         margin-left: 0;
       }
     }
+
+    /* --- Diffuser: note marks (cross / flag) --- */
+    .diff-cell.mark-cross::after {
+      content: '✕';
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #111;
+      /* black cross */
+      text-shadow: 0 0 6px rgba(0, 0, 0, .45);
+      pointer-events: none;
+    }
+
+    .diff-cell.mark-flag::before {
+      content: '🚩';
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 18px;
+      line-height: 1;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -881,7 +906,7 @@
 
     <!-- E) Locate the Jewel (2048‑lite) -->
     <section class="card gate" id="sec-locate">
-      <h2>💎 Locate the Jewel</h2>
+      <h2>💎 Combine the Jewels</h2>
       <ol class="status" style="text-align:left;max-width:620px;margin:0 auto">
         <li>Swipe (mobile) or use <b>arrow keys</b> (desktop) to slide jewels.</li>
         <li>When two identical jewels collide, they <b>merge</b> into the <b>next tier</b>.</li>
@@ -1099,7 +1124,7 @@
         const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length; if (rev === safe) {
           status.innerHTML = `
           <ul class="success-points">
-            <li>✅ Field cleared! The source of the malware on the burglar's phone has been located.</li>
+            <li>✅ Field cleared! The next location has been revealed.</li>
             <li>Revealed Location 1: Cabinet opposite the royal meeting room.</li>
             <li>Next Evidence: Diffuser Protocol</li>
           </ul>`; openGate('diffuser'); toast('Wonderful!');
@@ -1201,6 +1226,147 @@
     // }
 
     // ---------- Diffuser (5×5) ----------
+    // function initDiffuser() {
+    //   const SIZE = 5;
+    //   const REGIONS = [
+    //     [0, 0, 1, 1, 1],
+    //     [0, 2, 2, 1, 3],
+    //     [0, 2, 4, 3, 3],
+    //     [0, 2, 4, 4, 3],
+    //     [0, 0, 4, 4, 4]
+    //   ];
+    //   const COLORS = {
+    //     0: "#ef6b6b",
+    //     1: "#4cc9f0",
+    //     2: "#43aa8b",
+    //     3: "#f8961e",
+    //     4: "#9b5de5"
+    //   };
+    //   // Keep the same jewel files you already have.
+    //   // Only indices 0..4 are used by the 5×5 regions.
+    //   const JEWELS = {
+    //     0: "assets/jewels/diamond.svg",
+    //     1: "assets/jewels/ruby.svg",
+    //     2: "assets/jewels/amethyst.svg",
+    //     3: "assets/jewels/emerald.svg",
+    //     4: "assets/jewels/hex.svg"
+    //   };
+
+    //   const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
+    //   if (!grid) return;
+
+    //   // ✅ Override columns inline so we don't need to touch your CSS (.q-grid.small is 7 cols)
+    //   grid.innerHTML = '';
+    //   grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
+
+    //   // Build cells
+    //   for (let r = 0; r < SIZE; r++) {
+    //     for (let c = 0; c < SIZE; c++) {
+    //       const el = document.createElement('div');
+    //       el.className = 'diff-cell';
+    //       el.dataset.q = '0';
+    //       el.dataset.r = String(r);
+    //       el.dataset.c = String(c);
+    //       el.dataset.region = String(REGIONS[r][c]);
+    //       el.style.background = COLORS[REGIONS[r][c]];
+    //       el.addEventListener('click', () => toggleQ(el));
+    //       grid.appendChild(el);
+    //     }
+    //   }
+
+    //   function toggleQ(el) {
+    //     el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
+    //     render(el);
+    //   }
+
+    //   function render(el) {
+    //     el.innerHTML = '';
+    //     if (el.dataset.q === '1') {
+    //       const reg = Number(el.dataset.region);
+    //       const img = document.createElement('img');
+    //       img.className = 'jewel';
+    //       img.alt = 'diffuser jewel';
+    //       img.src = JEWELS[reg] || JEWELS[0];
+    //       img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
+    //       const col = el.style.background || '#ffffff';
+    //       img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
+    //       el.appendChild(img);
+    //     }
+    //   }
+
+    //   function clearMarks() {
+    //     [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked'));
+    //   }
+
+    //   function validate() {
+    //     clearMarks();
+    //     const placed = [];
+    //     for (let i = 0; i < grid.children.length; i++) {
+    //       const el = grid.children[i];
+    //       if (el.dataset.q === '1') {
+    //         placed.push([+el.dataset.r, +el.dataset.c, el]);
+    //       }
+    //     }
+
+    //     let ok = true;
+
+    //     // Must place exactly one per region (5 regions: ids 0..4)
+    //     const REQUIRED = new Set(REGIONS.flat()).size; // 5
+    //     if (placed.length !== REQUIRED) ok = false;
+
+    //     // Rows/Columns uniqueness
+    //     for (let r = 0; r < SIZE; r++) {
+    //       const k = placed.filter(p => p[0] === r);
+    //       if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
+    //     }
+    //     for (let c = 0; c < SIZE; c++) {
+    //       const k = placed.filter(p => p[1] === c);
+    //       if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
+    //     }
+
+    //     // Region uniqueness (one per region id)
+    //     const seen = new Map();
+    //     for (const [r, c, el] of placed) {
+    //       const reg = REGIONS[r][c];
+    //       if (seen.has(reg)) { ok = false; el.classList.add('attacked'); seen.get(reg).classList.add('attacked'); }
+    //       else seen.set(reg, el);
+    //     }
+
+    //     // No touching (including diagonals)
+    //     for (let i = 0; i < placed.length; i++) {
+    //       const [r, c, el] = placed[i];
+    //       for (let j = i + 1; j < placed.length; j++) {
+    //         const [rr, cc, el2] = placed[j];
+    //         if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) {
+    //           ok = false; el.classList.add('attacked'); el2.classList.add('attacked');
+    //         }
+    //       }
+    //     }
+
+    //     return ok;
+    //   }
+
+    //   btnCheck?.addEventListener('click', () => {
+    //     if (validate()) {
+    //       status.innerHTML = `
+    //       <ul class="success-points">
+    //         <li>✅ Well placed! The correct placement of jewels has revealed a location.</li>
+    //         <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
+    //         <li>Next Evidence: Combine the Jewels</li>
+    //       </ul>`;
+    //       openGate('locate'); toast('That was amazing!');
+    //     } else {
+    //       status.textContent = 'Conflicts detected - adjust placements.';
+    //     }
+    //   });
+
+    //   btnClear?.addEventListener('click', () => {
+    //     for (const el of grid.children) { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); }
+    //     status.textContent = '';
+    //   });
+    // }
+
+    // ---------- Diffuser (5×5) with cross/flag marks ----------
     function initDiffuser() {
       const SIZE = 5;
       const REGIONS = [
@@ -1217,8 +1383,6 @@
         3: "#f8961e",
         4: "#9b5de5"
       };
-      // Keep the same jewel files you already have.
-      // Only indices 0..4 are used by the 5×5 regions.
       const JEWELS = {
         0: "assets/jewels/diamond.svg",
         1: "assets/jewels/ruby.svg",
@@ -1230,7 +1394,7 @@
       const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
       if (!grid) return;
 
-      // ✅ Override columns inline so we don't need to touch your CSS (.q-grid.small is 7 cols)
+      // Ensure 5 columns regardless of CSS.
       grid.innerHTML = '';
       grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
 
@@ -1239,24 +1403,73 @@
         for (let c = 0; c < SIZE; c++) {
           const el = document.createElement('div');
           el.className = 'diff-cell';
-          el.dataset.q = '0';
+          el.dataset.q = '0';          // 0 = no jewel, 1 = jewel present
           el.dataset.r = String(r);
           el.dataset.c = String(c);
           el.dataset.region = String(REGIONS[r][c]);
+          el.dataset.mark = '';        // '' | 'cross' | 'flag'
           el.style.background = COLORS[REGIONS[r][c]];
-          el.addEventListener('click', () => toggleQ(el));
+          // Left click / tap → toggle jewel
+          el.addEventListener('click', () => toggleJewel(el));
+          // Right-click → cycle mark
+          el.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            cycleMark(el);
+          });
+
+          // Long-press handling for mobile: long press = cycle mark, tap = toggle jewel
+          let holdTimer = null, consumed = false, sx = 0, sy = 0;
+          const HOLD_MS = 450, LEEWAY = 8;
+
+          el.addEventListener('touchstart', (e) => {
+            if (!e.touches || e.touches.length !== 1) return;
+            const t = e.touches[0]; sx = t.clientX; sy = t.clientY;
+            consumed = false;
+            clearTimeout(holdTimer);
+            holdTimer = setTimeout(() => {
+              cycleMark(el);
+              consumed = true;         // consume this gesture
+              holdTimer = null;
+            }, HOLD_MS);
+          }, { passive: true });
+
+          el.addEventListener('touchmove', (e) => {
+            if (!holdTimer || !e.touches || e.touches.length !== 1) return;
+            const t = e.touches[0];
+            if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) {
+              clearTimeout(holdTimer);
+              holdTimer = null;
+            }
+          }, { passive: true });
+
+          const endTouch = () => {
+            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+            // If long-press consumed the gesture, do not treat as tap.
+            if (!consumed) toggleJewel(el);
+          };
+          el.addEventListener('touchend', endTouch, { passive: true });
+          el.addEventListener('touchcancel', () => {
+            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+          }, { passive: true });
+
           grid.appendChild(el);
         }
       }
 
-      function toggleQ(el) {
-        el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
-        render(el);
-      }
-
       function render(el) {
+        // Preserve mark classes across renders
+        const mark = el.dataset.mark || '';
+        el.classList.remove('mark-cross', 'mark-flag');
+        if (mark === 'cross') el.classList.add('mark-cross');
+        else if (mark === 'flag') el.classList.add('mark-flag');
+
         el.innerHTML = '';
         if (el.dataset.q === '1') {
+          // When placing a jewel, auto-clear mark to reduce clutter
+          if (el.dataset.mark) {
+            el.dataset.mark = '';
+            el.classList.remove('mark-cross', 'mark-flag');
+          }
           const reg = Number(el.dataset.region);
           const img = document.createElement('img');
           img.className = 'jewel';
@@ -1269,27 +1482,38 @@
         }
       }
 
+      function toggleJewel(el) {
+        el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
+        render(el);
+      }
+
+      // Cycle mark order: none → cross → flag → none
+      function cycleMark(el) {
+        const cur = el.dataset.mark || '';
+        const next = cur === '' ? 'cross' : (cur === 'cross' ? 'flag' : '');
+        el.dataset.mark = next;
+        render(el);
+      }
+
       function clearMarks() {
         [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked'));
       }
 
+      // Same validation as before (marks are ignored)
       function validate() {
         clearMarks();
         const placed = [];
         for (let i = 0; i < grid.children.length; i++) {
           const el = grid.children[i];
-          if (el.dataset.q === '1') {
-            placed.push([+el.dataset.r, +el.dataset.c, el]);
-          }
+          if (el.dataset.q === '1') placed.push([+el.dataset.r, +el.dataset.c, el]);
         }
 
         let ok = true;
+        const REQUIRED = new Set(REGIONS.flat()).size; // 5 regions
 
-        // Must place exactly one per region (5 regions: ids 0..4)
-        const REQUIRED = new Set(REGIONS.flat()).size; // 5
         if (placed.length !== REQUIRED) ok = false;
 
-        // Rows/Columns uniqueness
+        // Uniqueness in rows/cols
         for (let r = 0; r < SIZE; r++) {
           const k = placed.filter(p => p[0] === r);
           if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
@@ -1299,7 +1523,7 @@
           if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
         }
 
-        // Region uniqueness (one per region id)
+        // Region uniqueness (exactly one per region id)
         const seen = new Map();
         for (const [r, c, el] of placed) {
           const reg = REGIONS[r][c];
@@ -1307,17 +1531,14 @@
           else seen.set(reg, el);
         }
 
-        // No touching (including diagonals)
+        // No touching (includes diagonals)
         for (let i = 0; i < placed.length; i++) {
           const [r, c, el] = placed[i];
           for (let j = i + 1; j < placed.length; j++) {
             const [rr, cc, el2] = placed[j];
-            if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) {
-              ok = false; el.classList.add('attacked'); el2.classList.add('attacked');
-            }
+            if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) { ok = false; el.classList.add('attacked'); el2.classList.add('attacked'); }
           }
         }
-
         return ok;
       }
 
@@ -1336,7 +1557,12 @@
       });
 
       btnClear?.addEventListener('click', () => {
-        for (const el of grid.children) { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); }
+        for (const el of grid.children) {
+          el.dataset.q = '0';
+          el.dataset.mark = '';
+          el.classList.remove('attacked', 'mark-cross', 'mark-flag');
+          el.innerHTML = '';
+        }
         status.textContent = '';
       });
     }
@@ -1370,7 +1596,7 @@
           if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
             status.innerHTML = `
               <ul class="success-points">
-                <li>✅ That is some great skill you have detective(s)! Merging to the correct jewel has now deleted the malware.</li>
+                <li>✅ That is some great skill you have detective(s)! Combining to the correct jewel has revealed the next location.</li>
                 <li>Revealed Location 3: A small table with a view, by the chair of whispers, at the far end of the kitchen</li>
                 <li>Findings have been recorded below.</li>
               </ul>`; gates.findings = true; saveGates(gates); applyGates();
@@ -1454,7 +1680,7 @@
         ['River Code', '243', !!g.river],
         ['Safe Sweep', 'Cabinet opposite the royal meeting room', !!g.mines],
         ['Diffuser', 'A place of enlightenment next to the emerald velvet', !!g.diffuser],
-        ['Jewel Location', 'A small table with a view, by the chair of whispers, at the far end of the kitchen', !!g.locate],
+        ['Combine the Jewels', 'A small table with a view, by the chair of whispers, at the far end of the kitchen', !!g.locate],
         ['💡New piece of evidence! Just minutes ago, we concluded another interrogation, which provided information pointing to an important location. The burglars have repeatedly mentioned “the world map.” If there is a world map on the Qualcomm premises, that is where you should head next!'],
       ];
       const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>

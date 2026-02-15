@@ -13,7 +13,7 @@
             --ink: #cfe6f7;
             --ok: #29d49a;
             --accent: #2ea8ff;
-            --btn-glow: 0 0 12px rgba(46, 168, 255, 0.55);
+            --btn-glow: 0 0 12px rgba(46, 168, 255, .55);
         }
 
         body {
@@ -54,29 +54,60 @@
             cursor: pointer;
         }
 
-        /* Video / Canvas */
-        video,
-        canvas {
-            display: block;
+        /* ========= CAMERA STAGE (prevents overlap before stream) ========= */
+        #stage {
+            position: relative;
             width: 100%;
-            height: auto;
             max-width: 660px;
-            max-height: 70vh;
-            object-fit: contain;
+            margin: 10px auto 0;
             border: 1px solid var(--edge);
             border-radius: 16px;
-            background: var(--panel);
-            transform-origin: center center;
+            background: #0b1621;
+            /* Reserve vertical space even before the video is ready */
+            aspect-ratio: 4 / 3;
+            /* change to 16 / 9 if you prefer */
+            overflow: hidden;
         }
 
-        /* ===== Bigger, higher-contrast buttons (only Capture/Retake) ===== */
+        #stage video,
+        #stage canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            /* keep full frame visible */
+            background: var(--panel);
+            transform-origin: center center;
+            border-radius: 16px;
+            /* match container */
+        }
+
+        /* ========= CONTROLS (below the stage) ========= */
+        .controls {
+            width: 100%;
+            max-width: 660px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== Bigger, higher-contrast buttons (Capture/Retake) ===== */
         #capture,
         #retake {
             font-size: 1.55rem;
-            padding: 22px 32px;
-            min-width: 190px;
+            padding: 18px 28px;
+            min-width: 180px;
             font-weight: 700;
-            border-radius: 18px;
+            border-radius: 14px;
             border: 3px solid var(--accent);
             background: linear-gradient(180deg, #114162, #0d2c42);
             box-shadow: var(--btn-glow);
@@ -85,7 +116,7 @@
         #download {
             font-size: 1rem;
             padding: 10px 16px;
-            min-width: 130px;
+            min-width: 150px;
             border-radius: 12px;
             border: 1px solid var(--edge);
             background: #14334a;
@@ -96,54 +127,6 @@
         #download:disabled {
             opacity: .45;
             filter: grayscale(10%);
-        }
-
-        #capture,
-        #retake,
-        #download {
-            position: absolute;
-            z-index: 20;
-        }
-
-        @media (orientation:portrait) {
-            #capture {
-                left: 14px;
-                bottom: 18px;
-                transform: none;
-            }
-
-            #retake {
-                right: 14px;
-                bottom: 18px;
-                transform: none;
-            }
-
-            #download {
-                position: static;
-                display: block;
-                margin: 10px auto 0;
-                transform: none;
-            }
-        }
-
-        @media (orientation:landscape) {
-            #retake {
-                left: 50%;
-                top: 20px;
-                transform: translateX(-50%);
-            }
-
-            #capture {
-                left: 50%;
-                bottom: 20px;
-                transform: translateX(-50%);
-            }
-
-            #download {
-                right: 14px;
-                bottom: 14px;
-                transform: none;
-            }
         }
 
         /* Notices / modal (unchanged) */
@@ -169,13 +152,13 @@
         }
 
         .notice small {
-            opacity: 0.95;
+            opacity: .95
         }
 
         .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, .5);
             display: none;
             align-items: center;
             justify-content: center;
@@ -190,11 +173,11 @@
             max-width: 760px;
             width: calc(100% - 24px);
             padding: 16px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
         }
 
         .modal h3 {
-            margin-top: 0;
+            margin-top: 0
         }
 
         .modal .close {
@@ -204,17 +187,11 @@
         }
 
         .modal ol {
-            padding-left: 20px;
+            padding-left: 20px
         }
 
         .modal a {
-            color: #8bd1ff;
-        }
-
-        .photo-container {
-            position: relative;
-            width: 100%;
-            max-width: 660px;
+            color: #8bd1ff
         }
 
         /* ===== Feedback block shown AFTER capture ===== */
@@ -222,7 +199,6 @@
             width: 100%;
             max-width: 660px;
             display: none;
-            /* hidden until captured */
             flex-direction: column;
             gap: 10px;
             margin-top: 16px;
@@ -251,10 +227,9 @@
             cursor: pointer;
         }
 
-        /* Make the name box bigger and flexible on small screens */
+        /* Name box responsive */
         #agent {
             flex: 1 1 380px;
-            /* grows but wraps nicely */
             min-width: 260px;
             max-width: 620px;
             font-size: 1.05rem;
@@ -270,23 +245,34 @@
 
         <!-- Top controls row -->
         <div class="row">
-            <!-- Name is placeholder only; no 'Detective' prefill -->
-            <!-- <input id="agent" placeholder="Detective name (caption)"> -->
             <input id="agent" placeholder="Detective name(s), comma-separated" spellcheck="false" />
-            <!-- Removed top Feedback input as requested -->
             <button id="open">Open Camera</button>
             <button id="flip" disabled>Flip to Front</button>
             <button id="hats" disabled>Hats: 0</button>
             <button id="help">How to enable camera</button>
         </div>
 
-        <!-- Anchored area -->
-        <div class="photo-container">
+        <!-- Camera Stage (reserves height; no overlayed buttons by default) -->
+        <div id="stage">
             <video id="vid" playsinline></video>
-            <canvas id="can" style="display:none"></canvas>
-            <button id="retake" disabled>Retake</button>
-            <button id="capture" disabled>Capture</button>
-            <button id="download" disabled>Download Photo</button>
+            <canvas id="can" class="hidden"></canvas>
+
+            <!-- If you prefer on-video buttons, you can unhide this overlay and bind its buttons to the same handlers -->
+            <!--
+      <div id="overlay" class="">
+        <div class="stack">
+          <button id="capture_overlay" class="primary">Capture</button>
+          <button id="retake_overlay">Retake</button>
+        </div>
+      </div>
+      -->
+        </div>
+
+        <!-- Capture controls (below the video) -->
+        <div class="controls">
+            <button id="capture" class="hidden">Capture</button>
+            <button id="retake" class="hidden">Retake</button>
+            <button id="download" class="hidden">Download Photo</button>
         </div>
 
         <!-- Feedback block appears AFTER capture -->
@@ -361,16 +347,8 @@
         async function sendPhotoLog(payload) {
             try {
                 payload.session_id = getPhotoSid();
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload),
-                });
-                // console.log('[PhotoLog] sent:', payload.type);
-            } catch (_) {
-                // console.warn('[PhotoLog] send failed', e);
-            }
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+            } catch (_) { }
         }
     </script>
 
@@ -381,53 +359,47 @@
         const vid = document.getElementById('vid');
         const can = document.getElementById('can');
         const ctx = can.getContext('2d');
+
         const openBtn = document.getElementById('open');
         const capBtn = document.getElementById('capture');
         const retakeBtn = document.getElementById('retake');
         const flipBtn = document.getElementById('flip');
         const hatsBtn = document.getElementById('hats');
         const downloadBtn = document.getElementById('download');
+
         const helpBtn = document.getElementById('help');
         const helpBackdrop = document.getElementById('help-backdrop');
         const helpClose = document.getElementById('help-close');
         const helpBody = document.getElementById('help-body');
+
         const msg = document.getElementById('msg');
-        const agent = document.getElementById('agent');        // name input
+        const agent = document.getElementById('agent');
         const envNotice = document.getElementById('env-notice');
 
-        // NEW feedback refs (shown after capture)
+        // Feedback controls (after capture)
         const feedbackBlock = document.getElementById('feedback-block');
         const feedbackArea = document.getElementById('feedback-area');
         const feedbackSubmit = document.getElementById('feedback-submit');
 
-        // Prefill name if provided via QR (still keep local cache)
+        // Prefill name
         if (qp.name) { agent.value = qp.name; try { localStorage.setItem('qcpd.name', qp.name); } catch { } }
         else { try { const s = localStorage.getItem('qcpd.name'); if (s) agent.value = s; } catch { } }
         agent.addEventListener('change', () => {
-            const v = (agent.value || '').trim();
-            if (v) try { localStorage.setItem('qcpd.name', v); } catch { }
+            const v = (agent.value || '').trim(); if (v) try { localStorage.setItem('qcpd.name', v); } catch { }
         });
 
-        // Log ONCE at page load (QR scan/open) — feedback initially blank
+        // Log open
         window.addEventListener('DOMContentLoaded', () => {
-            sendPhotoLog({
-                type: 'photo_open',
-                name: (agent.value || '').trim(),
-                feedback: ''
-            });
+            sendPhotoLog({ type: 'photo_open', name: (agent.value || '').trim(), feedback: '' });
             if (qp.auto) setTimeout(() => openBtn.click(), 350);
         });
 
-        // Debounced updates while typing name (pre-capture OK)
+        // Debounced updates for name
         let updTimer = null;
         function scheduleUpdate() {
             clearTimeout(updTimer);
             updTimer = setTimeout(() => {
-                sendPhotoLog({
-                    type: 'photo_update',
-                    name: (agent.value || '').trim(),
-                    feedback: feedbackArea ? feedbackArea.value.trim() : ''
-                });
+                sendPhotoLog({ type: 'photo_update', name: (agent.value || '').trim(), feedback: feedbackArea ? feedbackArea.value.trim() : '' });
             }, 500);
         }
         agent.addEventListener('input', scheduleUpdate);
@@ -435,7 +407,9 @@
         /* =======================
          * 4) Help + Env
          * ======================= */
-        function addNotice(html, warn = false) { const d = document.createElement('div'); d.className = 'notice' + (warn ? ' warn' : ''); d.innerHTML = html; envNotice.appendChild(d); }
+        function addNotice(html, warn = false) {
+            const d = document.createElement('div'); d.className = 'notice' + (warn ? ' warn' : ''); d.innerHTML = html; envNotice.appendChild(d);
+        }
         function isInAppBrowser() {
             const ua = navigator.userAgent || '';
             return ua.includes('Instagram') || ua.includes('FBAN') || ua.includes('FBAV') ||
@@ -477,38 +451,30 @@
         helpBackdrop.addEventListener('click', e => { if (e.target === helpBackdrop) closeHelp(); });
 
         /* =======================
-         * 5) Camera logic (+ your overlays)
+         * 5) Camera logic
          * ======================= */
-        let stream, imageDataURL;
-        let facing = 'environment';
-        let mirror = false;
-        let hatCount = 0;
+        let stream, facing = 'environment', mirror = false, hatCount = 0;
 
         function applyPreviewTransforms() {
             const mirrorScale = mirror ? -1 : 1;
             vid.style.transform = `scaleX(${mirrorScale})`; // mirror only preview for front cam
-            can.style.transform = 'none';                    // never mirror canvas (keeps text normal)
-            flipBtn.textContent = facing === 'environment' ? 'Flip to Front' : 'Flip to Back';
+            can.style.transform = 'none';                   // keep canvas non-mirrored
+            flipBtn.textContent = (facing === 'environment') ? 'Flip to Front' : 'Flip to Back';
             hatsBtn.textContent = `Hats: ${hatCount}`;
         }
 
-        async function stopStream() {
-            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-        }
+        async function stopStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
 
         async function getBestStream(desiredFacing) {
             try {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } },
-                    audio: false
+                    video: { facingMode: desiredFacing, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
                 });
-            } catch (e) { /* fallback */ }
-
+            } catch (e) {/* fallback below */ }
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videos = devices.filter(d => d.kind === 'videoinput');
             if (!videos.length) throw new Error('No camera device found');
-            const norm = s => (s || '').toLowerCase();
-            let pick;
+            const norm = s => (s || '').toLowerCase(); let pick;
             if (desiredFacing === 'environment') {
                 pick = videos.find(d => norm(d.label).includes('back')) || videos.slice(-1)[0];
             } else {
@@ -519,22 +485,30 @@
 
         async function checkCameraPermissionState() {
             if (!navigator.permissions || !navigator.permissions.query) return null;
-            try { const status = await navigator.permissions.query({ name: 'camera' }); return status.state; } catch { return null; }
+            try { const st = await navigator.permissions.query({ name: 'camera' }); return st.state; } catch { return null; }
         }
 
-        function addNotice(html, warn = false) {
-            const div = document.createElement('div');
-            div.className = 'notice' + (warn ? ' warn' : '');
-            div.innerHTML = html;
-            envNotice.appendChild(div);
+        function addNoticeInline(html, warn = false) {
+            const div = document.createElement('div'); div.className = 'notice' + (warn ? ' warn' : ''); div.innerHTML = html; envNotice.appendChild(div);
         }
-
         function showDeniedNoticeInline() {
-            addNotice(
-                `<b>Camera permission is blocked for this site.</b><br/>
-         You must allow it in your <b>browser settings</b>, then reload and tap <b>Open Camera</b>.`,
-                true
-            );
+            addNoticeInline(`<b>Camera permission is blocked for this site.</b><br/>You must allow it in your <b>browser settings</b>, then reload and tap <b>Open Camera</b>.`, true);
+        }
+
+        // UI helpers (visibility)
+        function show(el, on = true) { if (!el) return; el.classList.toggle('hidden', !on); }
+        function idleUI() {
+            show(capBtn, false); show(retakeBtn, false); show(downloadBtn, false);
+            can.classList.add('hidden'); vid.classList.remove('hidden');
+            // buttons enable/disable not needed when hidden; keep enabled for quick UX
+        }
+        function liveUI() {
+            show(capBtn, true); show(retakeBtn, false); show(downloadBtn, false);
+            can.classList.add('hidden'); vid.classList.remove('hidden');
+        }
+        function capturedUI() {
+            show(capBtn, false); show(retakeBtn, true); show(downloadBtn, true);
+            can.classList.remove('hidden'); vid.classList.add('hidden');
         }
 
         async function openCamera() {
@@ -546,37 +520,23 @@
                 stream = await getBestStream(facing);
                 vid.srcObject = stream;
 
-                await vid.play();
-                capBtn.disabled = true;
-                flipBtn.disabled = false;
-                hatsBtn.disabled = false;
+                await vid.play().catch(() => { });
+                flipBtn.disabled = false; hatsBtn.disabled = false;
 
+                // Ensure dimensions ready so canvas sizing works
                 await new Promise(res => {
                     if (vid.readyState >= 2) return res();
                     vid.onloadedmetadata = () => res();
                     setTimeout(res, 800);
                 });
 
-                capBtn.disabled = false;
-                retakeBtn.disabled = true;  // retake only after a capture
-                downloadBtn.disabled = true;
-
                 mirror = (facing === 'user');
                 applyPreviewTransforms();
+                liveUI();
+                feedbackBlock.style.display = 'none';
                 msg.textContent = 'Camera ready — align and Capture.';
-
             } catch (_) {
-                // console.error('openCamera failed:', e);
-                // if (!window.isSecureContext) { msg.textContent = 'Camera requires HTTPS. Open this page over https://'; return; }
-                // if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
-                //     showDeniedNoticeInline();
-                //     msg.innerHTML = 'Camera permission denied. Open <b>How to enable camera</b> for steps.';
-                //     return;
-                // }
-                // if (e.name === 'NotFoundError' || /No camera device/.test(e.message || '')) {
-                //     msg.textContent = 'No camera device found.'; return;
-                // }
-                // msg.textContent = 'Camera unavailable here. Try opening in Safari/Chrome.';
+                idleUI();
             }
         }
 
@@ -585,21 +545,18 @@
         hatsBtn.onclick = () => { hatCount = (hatCount + 1) % 5; hatsBtn.textContent = `Hats: ${hatCount}`; };
 
         /* =======================
-         * 6) Overlays and capture (unchanged visuals)
+         * 6) Overlays and caption drawing
          * ======================= */
         function fitFontSize(text, basePx, maxWidth, fontStack) {
             let size = Math.max(10, basePx);
             ctx.font = `${size}px ${fontStack}`;
             while (ctx.measureText(text).width > maxWidth && size > 10) {
-                size -= 1;
-                ctx.font = `${size}px ${fontStack}`;
+                size -= 1; ctx.font = `${size}px ${fontStack}`;
             }
             return size;
         }
         function wrapTwoLines(text, maxWidth) {
-            const words = text.split(/\s+/);
-            let line1 = '';
-            let i = 0;
+            const words = text.split(/\s+/); let line1 = ''; let i = 0;
             for (; i < words.length; i++) {
                 const test = line1 ? (line1 + ' ' + words[i]) : words[i];
                 if (ctx.measureText(test).width <= maxWidth) line1 = test; else break;
@@ -607,7 +564,6 @@
             const line2 = words.slice(i).join(' ');
             return [line1, line2];
         }
-
         function drawRoundedRectPath(ctx, x, y, w, h, r) {
             const rr = Math.min(r, w / 2, h / 2);
             ctx.beginPath();
@@ -615,7 +571,7 @@
             ctx.arcTo(x + w, y, x + w, y + h, rr);
             ctx.arcTo(x + w, y + h, x, y + h, rr);
             ctx.arcTo(x, y + h, x, y, rr);
-            ctx.arcTo(x, y, x + w, y, rr);
+            ctx.arcTo(x, y, x + rr, y, rr);
             ctx.closePath();
         }
         function drawHat(ctx, cx, cy, size, rotRad = 0) {
@@ -649,43 +605,21 @@
             return arr;
         }
         function drawHatsOverlay(w, h, count) {
-            if (!count) return;
-            for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
+            if (!count) return; for (const p of computeHatPlacements(w, h, count)) drawHat(ctx, p.x, p.y, p.s, p.r);
         }
 
-        // Turn "Alice, Bob, Carol" --> { title: "Detectives", names: "Alice, Bob & Carol" }
-        // For single name -> { title: "Detective", names: "Alice" }
         function formatDetectiveNames(raw) {
-            const parts = (raw || '')
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean);
-
-            if (parts.length <= 1) {
-                return { title: 'Detective', names: parts[0] || 'Detective' };
-            }
-
-            const names =
-                parts.length === 2
-                    ? parts.join(' & ')
-                    : parts.slice(0, -1).join(', ') + ' & ' + parts.slice(-1);
-
+            const parts = (raw || '').split(',').map(s => s.trim()).filter(Boolean);
+            if (parts.length <= 1) return { title: 'Detective', names: parts[0] || 'Detective' };
+            const names = (parts.length === 2) ? parts.join(' &amp; ') : parts.slice(0, -1).join(', ') + ' &amp; ' + parts.slice(-1);
             return { title: 'Detectives', names };
         }
-
-        /**
-         * Wrap a string into up to `maxLines` lines that each fit `maxWidth`.
-         * Returns { size, lines } where `size` is the final font px used.
-         */
         function wrapTextToLines(text, maxWidth, basePx, fontStack, maxLines = 2) {
             let size = Math.max(10, basePx);
             const words = text.split(/\s+/);
-
             while (size >= 10) {
                 ctx.font = `${size}px ${fontStack}`;
-                const lines = [];
-                let i = 0;
-
+                const lines = []; let i = 0;
                 while (i < words.length && lines.length < maxLines) {
                     let line = words[i++];
                     while (i < words.length && ctx.measureText(line + ' ' + words[i]).width <= maxWidth) {
@@ -693,71 +627,42 @@
                     }
                     lines.push(line);
                 }
-
-                // If we consumed all words and all lines fit the width -> good
                 const allFit = (i === words.length) && lines.every(l => ctx.measureText(l).width <= maxWidth);
                 if (allFit) return { size, lines };
-
-                size -= 1; // shrink and retry
+                size -= 1;
             }
-
-            // Fallback: minimum size
-            ctx.font = `10px ${fontStack}`;
-            return { size: 10, lines: [text] };
+            ctx.font = `10px ${fontStack}`; return { size: 10, lines: [text] };
         }
 
         function drawFrame(w, h, rawName) {
             const { title: titleWord, names } = formatDetectiveNames(rawName);
-
-            // Common strings
             const bannerTitle = '👑 QCPD — The Sapphire Heist';
             const extra = 'The Evidence will be sent to Archives';
-
-            // Fonts
             const titleFontStack = `"Segoe UI", system-ui, Arial`;
             const capFontStack = `"Segoe UI", system-ui, Arial`;
             const emojiFont = `"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-
-            // Build the main caption with all names
             const captionMain = `🦄 ${titleWord} ${names} • Case Solved!`;
-
             const isPortrait = (w / h) < 0.9;
+
             if (!isPortrait) {
-                // ===== LANDSCAPE =====
-                // Top banner
                 const topH = Math.floor(h * 0.13);
-                const grad = ctx.createLinearGradient(0, 0, w, 0);
-                grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
+                const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
 
-                // Title
-                ctx.fillStyle = '#cfe6f7';
-                ctx.textBaseline = 'middle';
-                ctx.textAlign = 'left';
-                // Auto-size banner title to fit width minus margins
-                const sideM = Math.floor(w * 0.035);
-                const innerW = w - sideM * 2;
-                const titleBase = Math.floor(h * 0.055);
+                ctx.fillStyle = '#cfe6f7'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+                const sideM = Math.floor(w * 0.035), innerW = w - sideM * 2, titleBase = Math.floor(h * 0.055);
                 const titleSize = fitFontSize(bannerTitle, titleBase, innerW, titleFontStack);
                 ctx.font = `${titleSize}px ${titleFontStack}`;
                 ctx.fillText(bannerTitle, sideM, Math.floor(h * 0.085));
 
-                // Bottom bar
-                const botH = Math.floor(h * 0.20);
-                const botY = h - botH;
-                ctx.fillStyle = 'rgba(16,37,54,0.92)';
-                ctx.fillRect(0, botY, w, botH);
+                const botH = Math.floor(h * 0.20), botY = h - botH;
+                ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, botY, w, botH);
 
-                // Caption (auto-size to width)
-                ctx.fillStyle = '#29d49a';
-                ctx.textBaseline = 'alphabetic';
-                ctx.textAlign = 'left';
-                const capBase = Math.floor(h * 0.05);
-                const capSize = fitFontSize(captionMain, capBase, innerW, capFontStack);
+                ctx.fillStyle = '#29d49a'; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+                const capBase = Math.floor(h * 0.05); const capSize = fitFontSize(captionMain, capBase, innerW, capFontStack);
                 ctx.font = `${capSize}px ${capFontStack}`;
                 ctx.fillText(captionMain, sideM, Math.floor(h * 0.92));
 
-                // Emojis (unchanged)
                 ctx.font = `${Math.floor(h * 0.06)}px ${emojiFont}`;
                 ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
                 ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
@@ -769,151 +674,42 @@
                 return;
             }
 
-            // ===== PORTRAIT =====
-
-            const sideM = Math.floor(w * 0.04);
-            const innerW = w - sideM * 2;
-
-            // Top banner
+            // Portrait
+            const sideM = Math.floor(w * 0.04), innerW = w - sideM * 2;
             const topH = Math.floor(h * 0.10);
             const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
 
-            // Title (auto-size to width)
             const titleBase = Math.floor(h * 0.045);
             const titleSize = fitFontSize(bannerTitle, titleBase, innerW, titleFontStack);
             ctx.font = `${titleSize}px ${titleFontStack}`;
-            ctx.fillStyle = '#cfe6f7';
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'left';
+            ctx.fillStyle = '#cfe6f7'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
             ctx.fillText(bannerTitle, sideM, Math.floor(topH * 0.58));
 
-            // Bottom panel
-            const botH = Math.floor(h * 0.16);
-            const botY = h - botH;
-            ctx.fillStyle = 'rgba(16,37,54,0.92)';
-            ctx.fillRect(0, botY, w, botH);
+            const botH = Math.floor(h * 0.16), botY = h - botH;
+            ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, botY, w, botH);
 
-            // Caption lines with wrapping (up to 2 lines)
             const capBase = Math.floor(h * 0.045);
-            const { size: mainSize, lines: mainLines } =
-                wrapTextToLines(captionMain, innerW, capBase, capFontStack, 2);
-
-            ctx.fillStyle = '#29d49a';
-            ctx.textBaseline = 'alphabetic';
-            ctx.textAlign = 'left';
+            const { size: mainSize, lines: mainLines } = wrapTextToLines(captionMain, innerW, capBase, capFontStack, 2);
+            ctx.fillStyle = '#29d49a'; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
             const lineGap = Math.max(4, Math.floor(mainSize * 0.28));
-
-            // Compute how many lines fit vertically; try to include 'extra' if there's room
             const approxLineHeight = mainSize + lineGap;
             const maxLinesVert = Math.max(1, Math.floor((botH * 0.88) / approxLineHeight));
             const drawExtra = (mainLines.length < maxLinesVert);
 
-            // Draw main lines
             let y = Math.floor(botY + botH * 0.45);
             ctx.font = `${mainSize}px ${capFontStack}`;
-            for (let i = 0; i < mainLines.length; i++) {
-                ctx.fillText(mainLines[i], sideM, y);
-                y += approxLineHeight;
-            }
+            for (const ln of mainLines) { ctx.fillText(ln, sideM, y); y += approxLineHeight; }
 
-            // Optionally draw extra line (auto-size to width, not larger than main)
             if (drawExtra) {
                 const extraSize = Math.min(mainSize, fitFontSize(extra, mainSize, innerW, capFontStack));
                 ctx.font = `${extraSize}px ${capFontStack}`;
                 ctx.fillText(extra, sideM, y);
             }
 
-            // Emoji divider
             ctx.font = `${Math.floor(h * 0.055)}px ${emojiFont}`;
             ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
         }
-        // function drawFrame(w, h, name) {
-        //     const isPortrait = (w / h) < 0.9;
-        //     if (!isPortrait) {
-        //         const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-        //         ctx.fillStyle = grad; ctx.fillRect(0, 0, w, Math.floor(h * 0.13));
-        //         ctx.fillStyle = '#cfe6f7'; ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI", system-ui, Arial`;
-        //         ctx.fillText('👑 QCPD — The Sapphire Heist', Math.floor(w * 0.035), Math.floor(h * 0.085));
-        //         ctx.fillStyle = 'rgba(16,37,54,0.92)'; ctx.fillRect(0, Math.floor(h * 0.80), w, Math.floor(h * 0.20));
-        //         ctx.fillStyle = '#29d49a'; ctx.font = `${Math.floor(h * 0.05)}px "Segoe UI", system-ui, Arial`;
-        //         ctx.fillText(`🦄 Detective ${name} • Case Solved! The Evidence will be sent to Archives`, Math.floor(w * 0.035), Math.floor(h * 0.92));
-        //         ctx.font = `${Math.floor(h * 0.06)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-        //         ctx.fillText('🔷', Math.floor(w * 0.70), Math.floor(h * 0.10));
-        //         ctx.fillText('💍', Math.floor(w * 0.75), Math.floor(h * 0.10));
-        //         ctx.fillText('📿', Math.floor(w * 0.80), Math.floor(h * 0.10));
-        //         ctx.fillText('♦️', Math.floor(w * 0.85), Math.floor(h * 0.10));
-        //         ctx.fillText('✨', Math.floor(w * 0.02), Math.floor(h * 0.87));
-        //         ctx.fillText('🚔', Math.floor(w * 0.06), Math.floor(h * 0.87));
-        //         ctx.fillText('✨', Math.floor(w * 0.10), Math.floor(h * 0.87));
-        //         return;
-        //     }
-
-        //     const sideM = Math.floor(w * 0.04);
-        //     const innerW = w - sideM * 2;
-
-        //     const topH = Math.floor(h * 0.10);
-        //     const grad = ctx.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#0e2130'); grad.addColorStop(1, '#10324a');
-        //     ctx.fillStyle = grad; ctx.fillRect(0, 0, w, topH);
-
-        //     const title = '👑 QCPD — The Sapphire Heist';
-        //     const titleFontStack = `"Segoe UI", system-ui, Arial`;
-        //     const titleBase = Math.floor(h * 0.045);
-        //     const titleSize = fitFontSize(title, titleBase, innerW, titleFontStack);
-        //     ctx.font = `${titleSize}px ${titleFontStack}`;
-        //     ctx.fillStyle = '#cfe6f7';
-        //     ctx.textBaseline = 'middle';
-        //     ctx.textAlign = 'left';
-        //     ctx.fillText(title, sideM, Math.floor(topH * 0.58));
-
-        //     const botH = Math.floor(h * 0.16);
-        //     const botY = h - botH;
-        //     ctx.fillStyle = 'rgba(16,37,54,0.92)';
-        //     ctx.fillRect(0, botY, w, botH);
-
-        //     const baseCaption = `🦄 Detective ${name} • Case Solved!`;
-        //     const extra = `The Evidence will be sent to Archives`;
-        //     const capFontStack = `"Segoe UI", system-ui, Arial`;
-        //     let capSize = fitFontSize(baseCaption, Math.floor(h * 0.045), innerW, capFontStack);
-        //     ctx.font = `${capSize}px ${capFontStack}`;
-        //     let line1 = baseCaption, line2 = extra;
-
-        //     if (ctx.measureText(baseCaption).width > innerW) {
-        //         const [l1, l2first] = wrapTwoLines(baseCaption, innerW);
-        //         line1 = l1;
-        //         if (l2first) {
-        //             const join = l2first + ' — ' + extra;
-        //             if (ctx.measureText(join).width <= innerW) line2 = join;
-        //             else if (ctx.measureText(l2first).width <= innerW) line2 = l2first;
-        //             else line2 = '';
-        //         } else {
-        //             if (ctx.measureText(extra).width > innerW) {
-        //                 capSize = fitFontSize(extra, capSize, innerW, capFontStack);
-        //                 ctx.font = `${capSize}px ${capFontStack}`;
-        //             }
-        //             line2 = extra;
-        //         }
-        //     } else {
-        //         if (ctx.measureText(extra).width > innerW) {
-        //             const newSize = fitFontSize(extra, capSize, innerW, capFontStack);
-        //             if (newSize < capSize) {
-        //                 capSize = newSize;
-        //                 ctx.font = `${capSize}px ${capFontStack}`;
-        //             }
-        //         }
-        //     }
-
-        //     ctx.fillStyle = '#29d49a';
-        //     ctx.textBaseline = 'alphabetic';
-        //     ctx.textAlign = 'left';
-        //     const lineGap = Math.max(4, Math.floor(capSize * 0.28));
-        //     const firstY = Math.floor(botY + botH * 0.45);
-        //     ctx.fillText(line1, sideM, firstY);
-        //     if (line2) ctx.fillText(line2, sideM, firstY + capSize + lineGap);
-
-        //     ctx.font = `${Math.floor(h * 0.055)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-        //     ctx.fillText('✨🔷💍🔷✨', Math.floor(sideM), Math.floor(botY - h * 0.02));
-        // }
 
         function drawVideoToCanvas() {
             const vw = vid.videoWidth, vh = vid.videoHeight;
@@ -922,26 +718,31 @@
             if (mirror) { ctx.translate(vw, 0); ctx.scale(-1, 1); }
             ctx.drawImage(vid, 0, 0, vw, vh); ctx.restore();
             const name = (agent.value || '').trim() || localStorage.getItem('qcpd.name') || 'Detective';
-            drawFrame(vw, vh, name); drawHatsOverlay(vw, vh, hatCount); return true;
+            drawFrame(vw, vh, name);
+            drawHatsOverlay(vw, vh, hatCount);
+            return true;
         }
 
         /* =======================
          * 7) Capture / Retake / Download
          * ======================= */
+        function setButtonsLive() { liveUI(); }
+        function setButtonsCaptured() { capturedUI(); }
+        function setButtonsIdle() { idleUI(); }
+
         capBtn.onclick = async () => {
             const ok = drawVideoToCanvas();
             if (!ok) { msg.textContent = 'Video not ready.'; return; }
             await stopStream();
-            vid.style.display = 'none'; can.style.display = 'block';
-            downloadBtn.disabled = false; retakeBtn.disabled = false;
-            capBtn.disabled = true; flipBtn.disabled = true; hatsBtn.disabled = true;
-
-            const imageDataURL = can.toDataURL('image/jpeg', 0.92);
+            setButtonsCaptured();
+            downloadBtn.disabled = false;
             msg.textContent = 'Review the shot. You can retake or download.';
 
+            const imageDataURL = can.toDataURL('image/jpeg', 0.92);
             const thumbB64 = await dataURLToThumbBase64(imageDataURL, 220, 0.70);
-            const fullB64 = (imageDataURL.split(',')[1] || null);  // ← NEW
-            // Show feedback block AFTER capture (new)
+            const fullB64 = (imageDataURL.split(',')[1] || null);
+
+            // Show feedback block AFTER capture
             feedbackBlock.style.display = 'flex';
 
             sendPhotoLog({
@@ -954,10 +755,9 @@
         };
 
         retakeBtn.onclick = async () => {
-            feedbackBlock.style.display = 'none';       // hide feedback on retake
-            can.style.display = 'none'; vid.style.display = 'block';
-            downloadBtn.disabled = true; retakeBtn.disabled = true;
-            capBtn.disabled = false; flipBtn.disabled = false; hatsBtn.disabled = false;
+            feedbackBlock.style.display = 'none';
+            setButtonsLive();
+            downloadBtn.disabled = true;
             await openCamera();
         };
 
@@ -967,28 +767,23 @@
             const a = document.createElement('a'); a.href = dataUrl; a.download = `qcpd_${Date.now()}.jpg`; a.click();
         };
 
-        // Live updates from feedback textarea and explicit "Submit Feedback"
+        // Live updates from feedback + explicit submit
         let fbTimer = null;
         function scheduleFeedbackUpdate() {
             clearTimeout(fbTimer);
             fbTimer = setTimeout(() => {
-                sendPhotoLog({
-                    type: 'photo_update',
-                    name: (agent.value || '').trim(),
-                    feedback: (feedbackArea?.value || '').trim()
-                });
+                sendPhotoLog({ type: 'photo_update', name: (agent.value || '').trim(), feedback: (feedbackArea?.value || '').trim() });
             }, 500);
         }
         feedbackArea?.addEventListener('input', scheduleFeedbackUpdate);
 
         document.getElementById('feedback-submit').onclick = () => {
-            sendPhotoLog({
-                type: 'photo_update',
-                name: (agent.value || '').trim(),
-                feedback: (feedbackArea?.value || '').trim()
-            });
+            sendPhotoLog({ type: 'photo_update', name: (agent.value || '').trim(), feedback: (feedbackArea?.value || '').trim() });
             alert('Feedback submitted — thank you!');
         };
+
+        // Start in idle UI (nothing shown until stream is live)
+        setButtonsIdle();
     </script>
 </body>
 

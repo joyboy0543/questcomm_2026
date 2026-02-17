@@ -91,7 +91,8 @@
     select {
       padding: 10px 12px;
       border-radius: 10px;
-      border: 1px solid (var(--edge));
+      border: 1px solid var(--edge);
+      /* <- fixed */
       background: #102536;
       color: #fff;
     }
@@ -516,8 +517,7 @@
     <section class="card gate" id="sec-river">
       <h2>📸 Lindholmen River View Photo </h2>
       <p>The following message and photo were recovered from the burglar's phone. We think it might be connected to a
-        code. Do you see it?
-      </p>
+        code. Do you see it?</p>
       <div class="poem">
         <em>“The river reflects the view, but not the clue.”</em><br>
         <em>“Above the waterline, three numbers hide in tinted hue,”</em><br>
@@ -857,27 +857,51 @@
 
     // ---------- Findings (separate points + two verifications) ----------
     function showFindings() {
+      const body = document.getElementById('findings-body');
+      if (!body) return;
+
+      // ✅ Guard: render only once (prevents re-render loop while typing)
+      if (body.dataset.inited === '1') return;
+      body.dataset.inited = '1';
+
       const name = sessionStorage.getItem(SS.name) || '',
         code = sessionStorage.getItem(SS.code) || '',
         dept = sessionStorage.getItem(SS.dept) || '';
 
-      const fb = document.getElementById('findings-body');
-      if (!fb) return;
-
-      const html = `
+      body.innerHTML = `
         <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
         <ul>
           <li>
             <div class="code-line">
               <span class="code-label">Enter 3 digit code found from the wrinkled note to confirm:</span>
-              <input id="codeNote" class="code-input" inputmode="numeric" maxlength="3" placeholder="___" />
+              <input
+                id="codeNote"
+                class="code-input"
+                type="tel"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="one-time-code"
+                maxlength="3"
+                placeholder="___"
+                aria-label="Wrinkled note 3-digit code"
+              />
               <span id="noteMsg" class="code-note">Enter to verify.</span>
             </div>
           </li>
           <li>
             <div class="code-line">
               <span class="code-label">Enter 3 digit code decoded from Padlock Lock Potion to confirm:</span>
-              <input id="codePotion" class="code-input" inputmode="numeric" maxlength="3" placeholder="___" />
+              <input
+                id="codePotion"
+                class="code-input"
+                type="tel"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="one-time-code"
+                maxlength="3"
+                placeholder="___"
+                aria-label="Padlock Lock Potion 3-digit code"
+              />
               <span id="potionMsg" class="code-note">Enter to verify.</span>
             </div>
           </li>
@@ -893,7 +917,6 @@
         </ul>
         <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>
       `;
-      fb.innerHTML = html;
 
       const IN1 = $('#codeNote');
       const IN2 = $('#codePotion');
@@ -903,14 +926,13 @@
 
       const OK1 = '287';
       const OK2 = '928';
-
       let okA = false, okB = false;
 
       function tryUnlock() {
         if (okA && okB) {
           unlockNote.style.display = 'block';
           if (!gates.diffuser) openGate('diffuser');
-          // Optional scroll into view
+          // Smoothly nudge focus to Diffuser
           setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
         } else {
           unlockNote.style.display = 'none';
@@ -919,6 +941,7 @@
 
       function bind(inp, msgEl, correct, okSetter, okText, badText) {
         const onInput = () => {
+          // Keep only digits; cap length to 3
           let v = (inp.value || '').replace(/\D+/g, '').slice(0, 3);
           if (inp.value !== v) inp.value = v;
 
@@ -930,7 +953,6 @@
             tryUnlock();
             return;
           }
-
           if (v === correct) {
             inp.classList.add('ok'); inp.classList.remove('bad');
             msgEl.textContent = okText;
@@ -974,15 +996,30 @@
       location.reload();
     });
 
-    // Initialize sections when they first open
+    // Initialize sections when they first open (lazy-init, no re-render loop)
     const initObs = new MutationObserver(() => {
-      if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) initDiffuser();
-      if (gates.findings) showFindings();
+      // Init Diffuser once when opened
+      if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) {
+        initDiffuser();
+      }
+
+      // Init Findings ONCE: only when visible and not yet initialized
+      const secFind = document.getElementById('sec-findings');
+      const fb = document.getElementById('findings-body');
+      if (secFind && fb && secFind.style.display !== 'none' && fb.dataset.inited !== '1') {
+        showFindings();
+      }
     });
-    initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+
+    initObs.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    });
 
     // Webhook (unchanged)
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
+    const WEBHOOK_URL =
+      'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
     async function sendToSheet(payload) {
       try {
         payload.client_user_agent = navigator.userAgent || '';

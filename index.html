@@ -299,93 +299,7 @@
       cursor: pointer
     }
 
-    /* ---------- Safe Sweep (Minesweeper 4x4, 3 bombs) ---------- */
-    .jlatin-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center
-    }
-
-    .jlatin-title {
-      margin: 6px 0 0
-    }
-
-    .status {
-      opacity: .95
-    }
-
-    .msw-board {
-      display: grid;
-      gap: 8px;
-      justify-content: center;
-      margin: 8px 0 4px;
-      grid-template-columns: repeat(4, 56px)
-    }
-
-    .msw-cell {
-      width: 56px;
-      height: 56px;
-      border-radius: 10px;
-      border: 1px solid var(--edge);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      cursor: pointer;
-      background: #14334a;
-      transition: transform .05s ease, background .2s ease, box-shadow .2s ease;
-      user-select: none
-    }
-
-    .msw-cell:hover {
-      box-shadow: 0 0 0 2px #1e4e6b inset
-    }
-
-    .msw-cell.revealed {
-      background: #1f4e6e
-    }
-
-    .msw-cell.flag {
-      background: #2b3b2f
-    }
-
-    .msw-cell.boom {
-      background: #5a1d1d !important
-    }
-
-    .msw-cell .n1 {
-      color: #9be7ff
-    }
-
-    .msw-cell .n2 {
-      color: #8df2c8
-    }
-
-    .msw-cell .n3 {
-      color: #ffd580
-    }
-
-    .msw-cell .n4 {
-      color: #ff9dbb
-    }
-
-    .msw-cell .n5 {
-      color: #d0b3ff
-    }
-
-    .msw-cell .n6 {
-      color: #ffe07e
-    }
-
-    .jlatin-tools {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center
-    }
-
-    /* ---------- Diffuser Protocol (7x7 regions + jewels) ---------- */
+    /* ---------- Diffuser Protocol (5×5) ---------- */
     .q-wrap {
       display: flex;
       flex-direction: column;
@@ -439,110 +353,6 @@
       min-height: 1.2rem
     }
 
-    /* ---------- Locate the Jewel (2048‑lite) ---------- */
-    .shift-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px
-    }
-
-    .shift-board {
-      display: grid;
-      gap: 10px;
-      justify-content: center;
-      background: #0e2130;
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid var(--edge);
-      grid-template-columns: repeat(4, 84px)
-    }
-
-    .tile {
-      width: 84px;
-      height: 84px;
-      border-radius: 12px;
-      background: #132c3f;
-      border: 1px solid #1b3a4f;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden
-    }
-
-    .tile img {
-      width: 62%;
-      height: 62%;
-      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35))
-    }
-
-    .tile.l0 {
-      background: #163b56
-    }
-
-    .tile.l1 {
-      background: #204562
-    }
-
-    .tile.l2 {
-      background: #2a5070
-    }
-
-    .tile.l3 {
-      background: #345b7d
-    }
-
-    .tile.l4 {
-      background: #3d688f
-    }
-
-    .tile.l5 {
-      background: #46739c
-    }
-
-    .tile.l6 {
-      background: #5080ad
-    }
-
-    .shift-tools {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center
-    }
-
-    .shift-status {
-      min-height: 1.2rem
-    }
-
-    .legend {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      margin: 6px 0 2px
-    }
-
-    .legend .badge {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #123047;
-      border: 1px solid #1d4764;
-      color: #cfe6f7;
-      font-size: .85rem
-    }
-
-    .legend .badge img {
-      width: 18px;
-      height: 18px;
-      display: inline-block
-    }
-
     /* ---------- Findings formatting ---------- */
     #findings-body {
       line-height: 1.6;
@@ -566,262 +376,20 @@
       border-bottom: none;
     }
 
-    #findings-body .label {
-      display: inline-block;
-      width: 260px;
+    /* Inputs & messages */
+    #findings-body .code-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #findings-body .code-label {
+      min-width: 280px;
       color: #8bd1ff;
       font-weight: 600;
     }
 
-    #findings-body .value {
-      color: #cfe6f7;
-    }
-
-    /* ---------- Poem + Success points ---------- */
-    .poem {
-      text-align: center;
-      line-height: 1.8;
-      font-style: italic;
-      margin: 12px 0;
-    }
-
-    .success-points {
-      list-style: disc;
-      list-style-position: inside;
-      text-align: center;
-      padding: 0;
-      margin: 10px 0;
-    }
-
-    .success-points li {
-      margin: 6px 0;
-    }
-
-    /* Add breathing room between instructions and game sections */
-    .card ol.status {
-      margin-bottom: 18px;
-      /* space after instructions */
-    }
-
-    .photo-box,
-    .msw-board,
-    .q-wrap,
-    .shift-wrap {
-      margin-top: 14px;
-      /* optional: space before the game grid */
-    }
-
-    /* ===== Headings: Agency FB + Bold ===== */
-    @supports (font-variation-settings: normal) {
-      /* No-op block; placeholder in case you later switch to a variable font fallback */
-    }
-
-    /* If you have the licensed font file, uncomment this block and put the file in assets/fonts/ */
-    /*
-@font-face {
-  font-family: "Agency FB";
-  src: local("Agency FB"), url("assets/fonts/AgencyFB.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-*/
-
-    /* Title font stack:
-   - Agency FB (preferred)
-   - Teko / Antonio (close open-source substitutes if present)
-   - Impact / Haettenschweiler as last-resort condensed fallbacks
-   - then generic sans-serif
-*/
-    :root {
-      --title-font: "Agency FB", Teko, Antonio, Impact, Haettenschweiler, "Arial Narrow", sans-serif;
-    }
-
-    /* Global heading weight and family */
-    h1,
-    h2 {
-      font-family: var(--title-font);
-      font-weight: 700;
-      /* Bold */
-      letter-spacing: 0.3px;
-      /* Subtle polish for condensed faces */
-      line-height: 1.1;
-      margin-top: 6px;
-      margin-bottom: 10px;
-    }
-
-    /* Make the main title slightly larger than other titles */
-    h1 {
-      font-size: clamp(2.0rem, 4.5vw, 2.4rem);
-      /* larger */
-    }
-
-    h2 {
-      font-size: clamp(1.4rem, 3.2vw, 1.7rem);
-      /* slightly smaller than h1 */
-    }
-
-    /* Optional: tighten the badge alignment inside h2 if present */
-    h2 .qcpd_badge {
-      font-size: 0.85em;
-      margin-left: 8px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-    }
-
-    /* ---- Sapphire color for main title ---- */
-    :root {
-      /* Add a sapphire brand color (can reuse anywhere) */
-      --sapphire: #0F52BA;
-      /* classic sapphire blue */
-    }
-
-    /* Apply to main title only */
-    h1 {
-      color: var(--sapphire);
-    }
-
-    /* Optional: subtle glow to help on dark backgrounds */
-    h1 {
-      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
-    }
-
-    h2 {
-      color: color-mix(in srgb, var(--sapphire) 72%, #cfe6f7 28%);
-    }
-
-    /* Fallback if color-mix isn't supported */
-    @supports not (color: color-mix(in srgb, black, white)) {
-      h2 {
-        color: #6C8ED6;
-      }
-
-      /* a lighter sapphire-ish tone */
-    }
-
-    /* Success lists: left-aligned text, centered block */
-    .success-points {
-      list-style: disc;
-      list-style-position: inside;
-      text-align: left;
-      /* text left */
-      padding: 0;
-      margin: 12px auto;
-      /* center the block */
-      max-width: 720px;
-      /* readable line length */
-    }
-
-    /* Success lists: left-aligned text, centered block, green text */
-    .success-points {
-      list-style: disc;
-      list-style-position: inside;
-      text-align: left;
-      padding: 0;
-      margin: 12px auto;
-      max-width: 720px;
-      color: var(--good);
-      /* ← make the text green for every puzzle */
-    }
-
-    .success-points li {
-      margin: 6px 0;
-    }
-
-    /* Prevent page scroll while swiping the 2048 board on touch devices */
-    @media (pointer: coarse) {
-
-      .shift-wrap,
-      #shiftBoard {
-        touch-action: none;
-        /* disables browser's pan/zoom on this area */
-        overscroll-behavior: contain;
-        /* stops viewport scroll chaining */
-      }
-    }
-
-    /* Findings: mobile-friendly stacking */
-    @media (max-width: 560px) {
-      #findings-body ul {
-        margin: 10px 0;
-      }
-
-      #findings-body li {
-        display: block;
-        /* stack per item */
-        padding: 8px 0;
-      }
-
-      #findings-body .label {
-        display: block;
-        /* move label to its own line */
-        width: auto;
-        /* no fixed width on small screens */
-        margin-bottom: 2px;
-      }
-
-      #findings-body .value {
-        display: block;
-        /* value on next line */
-        margin-left: 0;
-      }
-    }
-
-    /* --- Diffuser: note marks (cross / flag) --- */
-    .diff-cell.mark-cross::after {
-      content: '✕';
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      font-size: 28px;
-      font-weight: 800;
-      color: #111;
-      /* black cross */
-      text-shadow: 0 0 6px rgba(0, 0, 0, .45);
-      pointer-events: none;
-    }
-
-    .diff-cell.mark-flag::before {
-      content: '🚩';
-      position: absolute;
-      top: 4px;
-      right: 6px;
-      font-size: 18px;
-      line-height: 1;
-      pointer-events: none;
-    }
-
-    /* Findings: alignment helpers for tick + label + value */
-    #findings-body li {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    #findings-body .tick {
-      width: 18px;
-      flex: 0 0 18px;
-      line-height: 1.2;
-      margin-top: 2px;
-    }
-
-    #findings-body .label {
-      flex: 0 0 260px;
-    }
-
-    #findings-body .value {
-      flex: 1 1 auto;
-    }
-
-    /* Inputs already styled earlier; these just ensure they align nicely */
-    #findings-body .code-row .value {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Findings: code verification inputs */
     #findings-body .code-input {
       width: 120px;
       text-align: center;
@@ -840,7 +408,6 @@
     }
 
     #findings-body .code-note {
-      margin-left: 12px;
       color: #9ec4df;
     }
 
@@ -849,17 +416,73 @@
       font-weight: 600;
     }
 
-    /* Make special 'fullrow' items span label + value */
-    #findings-body li.fullrow .label {
-      display: none;
-      /* hide the label column */
+    /* Reveal location styling (Agency FB bold + italic) */
+    :root {
+      --title-font: "Agency FB", Teko, Antonio, Impact, Haettenschweiler, "Arial Narrow", sans-serif;
     }
 
-    #findings-body li.fullrow .value {
-      flex: 1 1 auto;
-      /* let it take the full remaining width */
-      white-space: normal;
-      /* allow natural wrapping for long text */
+    .reveal-location {
+      font-family: var(--title-font);
+      font-weight: 700;
+      font-style: italic;
+      color: color-mix(in srgb, #8bd1ff 35%, #ffffff 65%);
+      display: inline-block;
+    }
+
+    /* Headings */
+    :root {
+      --sapphire: #0F52BA;
+    }
+
+    h1,
+    h2 {
+      font-family: var(--title-font);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.1;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(2.0rem, 4.5vw, 2.4rem);
+      color: var(--sapphire);
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+    }
+
+    h2 {
+      font-size: clamp(1.4rem, 3.2vw, 1.7rem);
+      color: color-mix(in srgb, var(--sapphire) 72%, #cfe6f7 28%);
+    }
+
+    @supports not (color: color-mix(in srgb, black, white)) {
+      h2 {
+        color: #6C8ED6;
+      }
+    }
+
+    /* Small celebratory helper */
+    .celebrate {
+      display: inline-block;
+      margin-left: 6px;
+    }
+
+    /* Findings: mobile-friendly stacking */
+    @media (max-width: 560px) {
+      #findings-body li {
+        display: block;
+        padding: 8px 0;
+      }
+
+      #findings-body .code-line {
+        align-items: flex-start;
+      }
+
+      #findings-body .code-label {
+        min-width: 0;
+        width: 100%;
+        margin-bottom: 4px;
+      }
     }
   </style>
 </head>
@@ -934,25 +557,6 @@
 
     <div class="hr"></div>
 
-    <!-- C) Safe Sweep -->
-    <section class="card gate" id="sec-mines">
-      <h2>🧨 Safe Sweep</h2>
-      <ol class="status" style="text-align:left;max-width:520px;margin:0 auto">
-        <li>Don’t tap on the cells that hide bombs.</li>
-        <li>Tapping a safe cell shows how many bombs surround it.</li>
-        <li>Clear the field to proceed.</li>
-        <li><b>Tip:</b> Right‑click (desktop) or long‑press (mobile) to place a 🚩 flag, if you suspect a cell has a
-          bomb.</li>
-      </ol>
-      <div class="msw-board" id="mswBoard"></div>
-      <p class="status" id="mswStatus"></p>
-      <div class="jlatin-tools">
-        <button id="mswClear" type="button">Clear</button>
-      </div>
-    </section>
-
-    <div class="hr"></div>
-
     <!-- D) Diffuser Protocol -->
     <section class="card gate" id="sec-diffuser">
       <h2>💥 Diffuser Protocol</h2>
@@ -969,34 +573,6 @@
           <button id="qClear" type="button">Clear</button>
         </div>
         <p id="qStatus" class="q-status"></p>
-      </div>
-    </section>
-
-    <div class="hr"></div>
-
-    <!-- E) Locate the Jewel (2048‑lite) -->
-    <section class="card gate" id="sec-locate">
-      <h2>💎 Combine the Jewels</h2>
-      <ol class="status" style="text-align:left;max-width:620px;margin:0 auto">
-        <li>Swipe (mobile) or use <b>arrow keys</b> (desktop) to slide jewels.</li>
-        <li>When two identical jewels collide, they <b>merge</b> into the <b>next tier</b>.</li>
-        <li><b>Goal:</b> Reach the target tier <b>Sapphire</b> to proceed.</li>
-      </ol>
-
-      <div class="legend" aria-hidden="true">
-        <span class="badge"><img src="assets/jewels/amethyst.svg" alt="">Amethyst</span>
-        <span class="badge"><img src="assets/jewels/ruby.svg" alt="">Ruby</span>
-        <span class="badge"><img src="assets/jewels/hex.svg" alt="">Topaz</span>
-        <span class="badge"><img src="assets/jewels/green_emerald.svg" alt="">Emerald</span>
-        <span class="badge"><img src="assets/jewels/diamond.svg" alt=""><b>Sapphire</b> (target)</span>
-      </div>
-
-      <div class="shift-wrap">
-        <div id="shiftBoard" class="shift-board"></div>
-        <div class="shift-tools">
-          <button id="shiftNew" type="button">Reset</button>
-        </div>
-        <p id="shiftStatus" class="shift-status"></p>
       </div>
     </section>
 
@@ -1022,13 +598,12 @@
     function saveGates(g) { try { sessionStorage.setItem(SS.gates, JSON.stringify(g)) } catch { } }
     function toast(msg) { const t = $('#toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
-    const gates = loadGates();  // gate keys: river, mines, diffuser, locate, findings
+    // gate keys now: river, diffuser, findings
+    const gates = loadGates();
     function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
     function applyGates() {
       toggle('#sec-river', !!gates.river);
-      toggle('#sec-mines', !!gates.mines);
       toggle('#sec-diffuser', !!gates.diffuser);
-      toggle('#sec-locate', !!gates.locate);
       const findings = $('#sec-findings'); if (findings) findings.style.display = gates.findings ? 'block' : 'none';
     }
     function openGate(key) { gates[key] = true; saveGates(gates); applyGates(); }
@@ -1045,7 +620,7 @@
     })();
 
     if (!sessionStorage.getItem(SS.gates)) {
-      ['river', 'mines', 'diffuser', 'locate', 'findings'].forEach(k => delete gates[k]);
+      ['river', 'diffuser', 'findings'].forEach(k => delete gates[k]);
       saveGates(gates);
     }
     applyGates();
@@ -1063,7 +638,7 @@
         sessionStorage.setItem(SS.code, code);
         sessionStorage.setItem(SS.dept, dept);
         regStatus.textContent = 'Access granted.'; regStatus.className = 'hint success';
-        openGate('river'); toast('Evidence: Lindholmen River View Photo and a note relating to it.');
+        openGate('river'); toast('Evidence: Lindholmen River View Photo and a note relating to it. ✨');
 
         // ⬇️ Log START (registration)
         sendToSheet({
@@ -1084,11 +659,12 @@
         $('#river-msg').innerHTML = `
           <ul class="success-points">
             <li>✅ Amazing find, Detective(s)! You found the final 3-digit code.</li>
-            <li>This means that the following evidence shall reveal three locations, where hopefully we will be able to use all the codes we have found.</li>
-            <li>Next Evidence: Safe Sweep</li>
+            <li>This means that the following evidence shall reveal key confirmations to proceed.</li>
+            <li>Next: Findings <span class="celebrate">🎉</span></li>
           </ul>`;
         $('#river-msg').className = 'hint success';
-        openGate('mines'); toast('Correct!');
+        openGate('findings'); toast('Correct! Proceed to Findings.');
+        showFindings(); // render immediately
       } else {
         $('#river-msg').textContent = 'Not quite. Let\'s open the photo and review again.'; $('#river-msg').className = 'hint warn';
       }
@@ -1159,485 +735,7 @@
       thumb?.addEventListener('click', openLightbox);
     })();
 
-    // ---------- Safe Sweep ----------
-    function initSafeSweep() {
-      const SIZE = 4, BOMBS = 3;
-      const board = $('#mswBoard'), status = $('#mswStatus');
-      if (!board) return;
-      board.addEventListener('contextmenu', e => e.preventDefault());
-      const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
-      let cells = []; const idx = (r, c) => r * SIZE + c;
-      function neighbors(cell) { const out = []; for (const [dr, dc] of dirs) { const r = cell.r + dr, c = cell.c + dc; if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) out.push(cells[idx(r, c)]); } return out; }
-      function renderCell(cell) { const el = cell.el; el.innerHTML = ''; el.className = 'msw-cell'; if (cell.flag) el.classList.add('flag'); if (cell.revealed) { el.classList.add('revealed'); if (!cell.bomb && cell.count > 0) { const span = document.createElement('span'); span.textContent = cell.count; span.className = 'n' + cell.count; el.appendChild(span); } } }
-      function place() {
-        board.innerHTML = ''; cells.length = 0; status.textContent = ''; const pool = [...Array(SIZE * SIZE).keys()]; for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]] } const bombs = new Set(pool.slice(0, BOMBS));
-        for (let r = 0; r < SIZE; r++) { for (let c = 0; c < SIZE; c++) { const el = document.createElement('div'); el.className = 'msw-cell'; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `cell ${r + 1},${c + 1}`); const cell = { r, c, el, bomb: bombs.has(idx(r, c)), revealed: false, flag: false, count: 0 }; cells.push(cell); board.appendChild(el); } }
-        for (const cell of cells) cell.count = neighbors(cell).filter(n => n.bomb).length;
-        for (const cell of cells) {
-          cell.el.addEventListener('click', () => { if (!cell.flag) reveal(cell); });
-          cell.el.addEventListener('mousedown', (e) => { if (e.button === 2) { e.preventDefault(); toggleFlag(cell); } });
-          cell.el.addEventListener('dblclick', () => { if (!cell.revealed) toggleFlag(cell); });
-          let tId = null, sx = 0, sy = 0; const HOLD_MS = 420, LEEWAY = 8;
-          const onStart = e => { if (cell.revealed) return; if (!e.touches || e.touches.length !== 1) return; const t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tId); tId = setTimeout(() => { toggleFlag(cell); tId = null; }, HOLD_MS); };
-          const onMove = e => { if (!tId || !e.touches || e.touches.length !== 1) return; const t = e.touches[0]; if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) { clearTimeout(tId); tId = null; } };
-          const onEnd = () => { if (tId) { clearTimeout(tId); tId = null; } };
-          cell.el.addEventListener('touchstart', onStart, { passive: true });
-          cell.el.addEventListener('touchmove', onMove, { passive: true });
-          cell.el.addEventListener('touchend', onEnd, { passive: true });
-          cell.el.addEventListener('touchcancel', onEnd, { passive: true });
-        }
-        for (const c of cells) renderCell(c);
-      }
-      function toggleFlag(cell) { if (cell.revealed) return; cell.flag = !cell.flag; renderCell(cell); }
-      function reveal(cell) { if (cell.revealed || cell.flag) return; cell.revealed = true; if (cell.bomb) { cell.el.classList.add('boom'); status.textContent = 'Boom! Resetting…'; setTimeout(() => place(), 350); return; } if (cell.count === 0) { for (const n of neighbors(cell)) { if (!n.revealed && !n.flag && !n.bomb) reveal(n); } } renderCell(cell); checkWin(); }
-      function checkWin() {
-        const safe = cells.filter(c => !c.bomb).length, rev = cells.filter(c => c.revealed && !c.bomb).length; if (rev === safe) {
-          status.innerHTML = `
-          <ul class="success-points">
-            <li>✅ Field cleared! The next location has been revealed.</li>
-            <li>Revealed Location 1: Cabinet opposite the royal meeting room.</li>
-            <li>Next Evidence: Diffuser Protocol</li>
-          </ul>`; openGate('diffuser'); toast('Wonderful!');
-        }
-      }
-      $('#mswClear')?.addEventListener('click', place);
-      place();
-    }
-
-    // ---------- Diffuser ----------
-    // function initDiffuser() {
-    //   const SIZE = 7;
-    //   const REGIONS = [
-    //     [0, 0, 0, 1, 1, 1, 2],
-    //     [0, 3, 3, 1, 4, 1, 2],
-    //     [0, 3, 4, 4, 4, 1, 2],
-    //     [5, 3, 4, 6, 4, 1, 2],
-    //     [5, 3, 6, 6, 4, 2, 2],
-    //     [5, 5, 6, 6, 6, 2, 2],
-    //     [5, 5, 5, 6, 6, 6, 2]
-    //   ];
-    //   const COLORS = { 0: "#ef6b6b", 1: "#4cc9f0", 2: "#43aa8b", 3: "#f8961e", 4: "#9b5de5", 5: "#ffd166", 6: "#2dd4bf" };
-    //   const JEWELS = {
-    //     0: "assets/jewels/diamond.svg",
-    //     1: "assets/jewels/ruby.svg",
-    //     2: "assets/jewels/amethyst.svg",
-    //     3: "assets/jewels/emerald.svg",
-    //     4: "assets/jewels/hex.svg",
-    //     5: "assets/jewels/star.svg",
-    //     6: "assets/jewels/green_emerald.svg"
-    //   };
-
-    //   const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
-    //   if (!grid) return;
-    //   grid.innerHTML = '';
-    //   for (let r = 0; r < SIZE; r++) {
-    //     for (let c = 0; c < SIZE; c++) {
-    //       const el = document.createElement('div');
-    //       el.className = 'diff-cell'; el.dataset.q = '0'; el.dataset.r = String(r); el.dataset.c = String(c); el.dataset.region = String(REGIONS[r][c]);
-    //       el.style.background = COLORS[REGIONS[r][c]];
-    //       el.addEventListener('click', () => toggleQ(el));
-    //       grid.appendChild(el);
-    //     }
-    //   }
-    //   function toggleQ(el) { el.dataset.q = (el.dataset.q === '1') ? '0' : '1'; render(el); }
-    //   function render(el) {
-    //     el.innerHTML = '';
-    //     if (el.dataset.q === '1') {
-    //       const reg = Number(el.dataset.region);
-    //       const img = document.createElement('img'); img.className = 'jewel'; img.alt = 'diffuser jewel'; img.src = JEWELS[reg];
-    //       img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
-    //       const col = el.style.background || '#ffffff';
-    //       img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
-    //       el.appendChild(img);
-    //     }
-    //   }
-    //   function clearMarks() { [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked')); }
-    //   function validate() {
-    //     clearMarks();
-    //     const placed = [];
-    //     for (let i = 0; i < grid.children.length; i++) { const el = grid.children[i]; if (el.dataset.q === '1') { const r = +el.dataset.r, c = +el.dataset.c; placed.push([r, c, el]); } }
-    //     let ok = true;
-    //     if (placed.length !== 7) ok = false;
-    //     for (let r = 0; r < SIZE; r++) { const k = placed.filter(p => p[0] === r); if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); } }
-    //     for (let c = 0; c < SIZE; c++) { const k = placed.filter(p => p[1] === c); if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); } }
-    //     const seen = new Map();
-    //     for (const [r, c, el] of placed) {
-    //       const reg = REGIONS[r][c];
-    //       if (seen.has(reg)) { ok = false; el.classList.add('attacked'); seen.get(reg).classList.add('attacked'); }
-    //       else seen.set(reg, el);
-    //     }
-    //     for (let i = 0; i < placed.length; i++) {
-    //       const [r, c, el] = placed[i];
-    //       for (let j = i + 1; j < placed.length; j++) {
-    //         const [rr, cc, el2] = placed[j];
-    //         if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) { ok = false; el.classList.add('attacked'); el2.classList.add('attacked'); }
-    //       }
-    //     }
-    //     return ok;
-    //   }
-
-    //   btnCheck?.addEventListener('click', () => {
-    //     if (validate()) {
-    //       status.innerHTML = `
-    //         <ul class="success-points">
-    //           <li>✅ Well placed! The correct placement of jewels has disabled the malware.</li>
-    //           <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
-    //           <li>Next Evidence: Locate the Jewel</li>
-    //         </ul>`;
-    //       openGate('locate'); toast('That was amazing!');
-    //     } else {
-    //       status.textContent = 'Conflicts detected - adjust placements.';
-    //     }
-    //   });
-    //   btnClear?.addEventListener('click', () => {
-    //     for (const el of grid.children) { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); }
-    //     status.textContent = '';
-    //   });
-    // }
-
-    // ---------- Diffuser (5×5) ----------
-    // function initDiffuser() {
-    //   const SIZE = 5;
-    //   const REGIONS = [
-    //     [0, 0, 1, 1, 1],
-    //     [0, 2, 2, 1, 3],
-    //     [0, 2, 4, 3, 3],
-    //     [0, 2, 4, 4, 3],
-    //     [0, 0, 4, 4, 4]
-    //   ];
-    //   const COLORS = {
-    //     0: "#ef6b6b",
-    //     1: "#4cc9f0",
-    //     2: "#43aa8b",
-    //     3: "#f8961e",
-    //     4: "#9b5de5"
-    //   };
-    //   // Keep the same jewel files you already have.
-    //   // Only indices 0..4 are used by the 5×5 regions.
-    //   const JEWELS = {
-    //     0: "assets/jewels/diamond.svg",
-    //     1: "assets/jewels/ruby.svg",
-    //     2: "assets/jewels/amethyst.svg",
-    //     3: "assets/jewels/emerald.svg",
-    //     4: "assets/jewels/hex.svg"
-    //   };
-
-    //   const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
-    //   if (!grid) return;
-
-    //   // ✅ Override columns inline so we don't need to touch your CSS (.q-grid.small is 7 cols)
-    //   grid.innerHTML = '';
-    //   grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
-
-    //   // Build cells
-    //   for (let r = 0; r < SIZE; r++) {
-    //     for (let c = 0; c < SIZE; c++) {
-    //       const el = document.createElement('div');
-    //       el.className = 'diff-cell';
-    //       el.dataset.q = '0';
-    //       el.dataset.r = String(r);
-    //       el.dataset.c = String(c);
-    //       el.dataset.region = String(REGIONS[r][c]);
-    //       el.style.background = COLORS[REGIONS[r][c]];
-    //       el.addEventListener('click', () => toggleQ(el));
-    //       grid.appendChild(el);
-    //     }
-    //   }
-
-    //   function toggleQ(el) {
-    //     el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
-    //     render(el);
-    //   }
-
-    //   function render(el) {
-    //     el.innerHTML = '';
-    //     if (el.dataset.q === '1') {
-    //       const reg = Number(el.dataset.region);
-    //       const img = document.createElement('img');
-    //       img.className = 'jewel';
-    //       img.alt = 'diffuser jewel';
-    //       img.src = JEWELS[reg] || JEWELS[0];
-    //       img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
-    //       const col = el.style.background || '#ffffff';
-    //       img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
-    //       el.appendChild(img);
-    //     }
-    //   }
-
-    //   function clearMarks() {
-    //     [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked'));
-    //   }
-
-    //   function validate() {
-    //     clearMarks();
-    //     const placed = [];
-    //     for (let i = 0; i < grid.children.length; i++) {
-    //       const el = grid.children[i];
-    //       if (el.dataset.q === '1') {
-    //         placed.push([+el.dataset.r, +el.dataset.c, el]);
-    //       }
-    //     }
-
-    //     let ok = true;
-
-    //     // Must place exactly one per region (5 regions: ids 0..4)
-    //     const REQUIRED = new Set(REGIONS.flat()).size; // 5
-    //     if (placed.length !== REQUIRED) ok = false;
-
-    //     // Rows/Columns uniqueness
-    //     for (let r = 0; r < SIZE; r++) {
-    //       const k = placed.filter(p => p[0] === r);
-    //       if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
-    //     }
-    //     for (let c = 0; c < SIZE; c++) {
-    //       const k = placed.filter(p => p[1] === c);
-    //       if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
-    //     }
-
-    //     // Region uniqueness (one per region id)
-    //     const seen = new Map();
-    //     for (const [r, c, el] of placed) {
-    //       const reg = REGIONS[r][c];
-    //       if (seen.has(reg)) { ok = false; el.classList.add('attacked'); seen.get(reg).classList.add('attacked'); }
-    //       else seen.set(reg, el);
-    //     }
-
-    //     // No touching (including diagonals)
-    //     for (let i = 0; i < placed.length; i++) {
-    //       const [r, c, el] = placed[i];
-    //       for (let j = i + 1; j < placed.length; j++) {
-    //         const [rr, cc, el2] = placed[j];
-    //         if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) {
-    //           ok = false; el.classList.add('attacked'); el2.classList.add('attacked');
-    //         }
-    //       }
-    //     }
-
-    //     return ok;
-    //   }
-
-    //   btnCheck?.addEventListener('click', () => {
-    //     if (validate()) {
-    //       status.innerHTML = `
-    //       <ul class="success-points">
-    //         <li>✅ Well placed! The correct placement of jewels has revealed a location.</li>
-    //         <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
-    //         <li>Next Evidence: Combine the Jewels</li>
-    //       </ul>`;
-    //       openGate('locate'); toast('That was amazing!');
-    //     } else {
-    //       status.textContent = 'Conflicts detected - adjust placements.';
-    //     }
-    //   });
-
-    //   btnClear?.addEventListener('click', () => {
-    //     for (const el of grid.children) { el.dataset.q = '0'; el.innerHTML = ''; el.classList.remove('attacked'); }
-    //     status.textContent = '';
-    //   });
-    // }
-
-    // ---------- Diffuser (5×5) with cross/flag marks ----------
-    // function initDiffuser() {
-    //   const SIZE = 5;
-    //   const REGIONS = [
-    //     [0, 0, 1, 1, 1],
-    //     [0, 2, 2, 1, 3],
-    //     [0, 2, 4, 3, 3],
-    //     [0, 2, 4, 4, 3],
-    //     [0, 0, 4, 4, 4]
-    //   ];
-    //   const COLORS = {
-    //     0: "#ef6b6b",
-    //     1: "#4cc9f0",
-    //     2: "#43aa8b",
-    //     3: "#f8961e",
-    //     4: "#9b5de5"
-    //   };
-    //   const JEWELS = {
-    //     0: "assets/jewels/diamond.svg",
-    //     1: "assets/jewels/ruby.svg",
-    //     2: "assets/jewels/amethyst.svg",
-    //     3: "assets/jewels/emerald.svg",
-    //     4: "assets/jewels/hex.svg"
-    //   };
-
-    //   const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
-    //   if (!grid) return;
-
-    //   // Ensure 5 columns regardless of CSS.
-    //   grid.innerHTML = '';
-    //   grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
-
-    //   // Build cells
-    //   for (let r = 0; r < SIZE; r++) {
-    //     for (let c = 0; c < SIZE; c++) {
-    //       const el = document.createElement('div');
-    //       el.className = 'diff-cell';
-    //       el.dataset.q = '0';          // 0 = no jewel, 1 = jewel present
-    //       el.dataset.r = String(r);
-    //       el.dataset.c = String(c);
-    //       el.dataset.region = String(REGIONS[r][c]);
-    //       el.dataset.mark = '';        // '' | 'cross' | 'flag'
-    //       el.style.background = COLORS[REGIONS[r][c]];
-    //       // Left click / tap → toggle jewel
-    //       el.addEventListener('click', () => toggleJewel(el));
-    //       // Right-click → cycle mark
-    //       el.addEventListener('contextmenu', (e) => {
-    //         e.preventDefault();
-    //         cycleMark(el);
-    //       });
-
-    //       // Long-press handling for mobile: long press = cycle mark, tap = toggle jewel
-    //       let holdTimer = null, consumed = false, sx = 0, sy = 0;
-    //       const HOLD_MS = 450, LEEWAY = 8;
-
-    //       el.addEventListener('touchstart', (e) => {
-    //         if (!e.touches || e.touches.length !== 1) return;
-    //         const t = e.touches[0]; sx = t.clientX; sy = t.clientY;
-    //         consumed = false;
-    //         clearTimeout(holdTimer);
-    //         holdTimer = setTimeout(() => {
-    //           cycleMark(el);
-    //           consumed = true;         // consume this gesture
-    //           holdTimer = null;
-    //         }, HOLD_MS);
-    //       }, { passive: true });
-
-    //       el.addEventListener('touchmove', (e) => {
-    //         if (!holdTimer || !e.touches || e.touches.length !== 1) return;
-    //         const t = e.touches[0];
-    //         if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) {
-    //           clearTimeout(holdTimer);
-    //           holdTimer = null;
-    //         }
-    //       }, { passive: true });
-
-    //       const endTouch = () => {
-    //         if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-    //         // If long-press consumed the gesture, do not treat as tap.
-    //         if (!consumed) toggleJewel(el);
-    //       };
-    //       el.addEventListener('touchend', endTouch, { passive: true });
-    //       el.addEventListener('touchcancel', () => {
-    //         if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-    //       }, { passive: true });
-
-    //       grid.appendChild(el);
-    //     }
-    //   }
-
-    //   function render(el) {
-    //     // Preserve mark classes across renders
-    //     const mark = el.dataset.mark || '';
-    //     el.classList.remove('mark-cross', 'mark-flag');
-    //     if (mark === 'cross') el.classList.add('mark-cross');
-    //     else if (mark === 'flag') el.classList.add('mark-flag');
-
-    //     el.innerHTML = '';
-    //     if (el.dataset.q === '1') {
-    //       // When placing a jewel, auto-clear mark to reduce clutter
-    //       if (el.dataset.mark) {
-    //         el.dataset.mark = '';
-    //         el.classList.remove('mark-cross', 'mark-flag');
-    //       }
-    //       const reg = Number(el.dataset.region);
-    //       const img = document.createElement('img');
-    //       img.className = 'jewel';
-    //       img.alt = 'diffuser jewel';
-    //       img.src = JEWELS[reg] || JEWELS[0];
-    //       img.onerror = () => { img.replaceWith(document.createTextNode('💎')); };
-    //       const col = el.style.background || '#ffffff';
-    //       img.style.filter = `drop-shadow(0 0 6px ${col}80)`;
-    //       el.appendChild(img);
-    //     }
-    //   }
-
-    //   function toggleJewel(el) {
-    //     el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
-    //     render(el);
-    //   }
-
-    //   // Cycle mark order: none → cross → flag → none
-    //   function cycleMark(el) {
-    //     const cur = el.dataset.mark || '';
-    //     const next = cur === '' ? 'cross' : (cur === 'cross' ? 'flag' : '');
-    //     el.dataset.mark = next;
-    //     render(el);
-    //   }
-
-    //   function clearMarks() {
-    //     [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked'));
-    //   }
-
-    //   // Same validation as before (marks are ignored)
-    //   function validate() {
-    //     clearMarks();
-    //     const placed = [];
-    //     for (let i = 0; i < grid.children.length; i++) {
-    //       const el = grid.children[i];
-    //       if (el.dataset.q === '1') placed.push([+el.dataset.r, +el.dataset.c, el]);
-    //     }
-
-    //     let ok = true;
-    //     const REQUIRED = new Set(REGIONS.flat()).size; // 5 regions
-
-    //     if (placed.length !== REQUIRED) ok = false;
-
-    //     // Uniqueness in rows/cols
-    //     for (let r = 0; r < SIZE; r++) {
-    //       const k = placed.filter(p => p[0] === r);
-    //       if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
-    //     }
-    //     for (let c = 0; c < SIZE; c++) {
-    //       const k = placed.filter(p => p[1] === c);
-    //       if (k.length > 1) { ok = false; k.forEach(p => p[2].classList.add('attacked')); }
-    //     }
-
-    //     // Region uniqueness (exactly one per region id)
-    //     const seen = new Map();
-    //     for (const [r, c, el] of placed) {
-    //       const reg = REGIONS[r][c];
-    //       if (seen.has(reg)) { ok = false; el.classList.add('attacked'); seen.get(reg).classList.add('attacked'); }
-    //       else seen.set(reg, el);
-    //     }
-
-    //     // No touching (includes diagonals)
-    //     for (let i = 0; i < placed.length; i++) {
-    //       const [r, c, el] = placed[i];
-    //       for (let j = i + 1; j < placed.length; j++) {
-    //         const [rr, cc, el2] = placed[j];
-    //         if (Math.abs(r - rr) <= 1 && Math.abs(c - cc) <= 1) { ok = false; el.classList.add('attacked'); el2.classList.add('attacked'); }
-    //       }
-    //     }
-    //     return ok;
-    //   }
-
-    //   btnCheck?.addEventListener('click', () => {
-    //     if (validate()) {
-    //       status.innerHTML = `
-    //       <ul class="success-points">
-    //         <li>✅ Well placed! The correct placement of jewels has disabled the malware.</li>
-    //         <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
-    //         <li>Next Evidence: Combine the Jewels</li>
-    //       </ul>`;
-    //       openGate('locate'); toast('That was amazing!');
-    //     } else {
-    //       status.textContent = 'Conflicts detected - adjust placements.';
-    //     }
-    //   });
-
-    //   btnClear?.addEventListener('click', () => {
-    //     for (const el of grid.children) {
-    //       el.dataset.q = '0';
-    //       el.dataset.mark = '';
-    //       el.classList.remove('attacked', 'mark-cross', 'mark-flag');
-    //       el.innerHTML = '';
-    //     }
-    //     status.textContent = '';
-    //   });
-    // }
-
-    // ---------- Diffuser (5×5) — cross only, mobile tap fix ----------
+    // ---------- Diffuser (5×5) — cross-only, mobile tap fix ----------
     function initDiffuser() {
       const SIZE = 5;
       const REGIONS = [
@@ -1668,7 +766,7 @@
         for (let c = 0; c < SIZE; c++) {
           const el = document.createElement('div');
           el.className = 'diff-cell';
-          el.dataset.q = '0';                 // 0 = empty, 1 = jewel
+          el.dataset.q = '0';
           el.dataset.r = String(r);
           el.dataset.c = String(c);
           el.dataset.region = String(REGIONS[r][c]);
@@ -1702,7 +800,7 @@
             clearTimeout(holdTimer);
             holdTimer = setTimeout(() => {
               toggleCross(el);
-              consumed = true;         // handled by long-press
+              consumed = true;
               holdTimer = null;
             }, HOLD_MS);
           }, { passive: true });
@@ -1716,14 +814,12 @@
             }
           }, { passive: true });
 
-          // IMPORTANT: touchend is non-passive and preventDefault() to block synthetic click
+          // touchend: block synthetic click
           el.addEventListener('touchend', (e) => {
             if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
             if (!consumed) {
-              // short tap -> toggle jewel
               toggleJewel(el);
             }
-            // Guard: suppress the next click dispatched by the browser
             el._suppressClick = true;
             setTimeout(() => { el._suppressClick = false; }, 300);
             e.preventDefault();
@@ -1738,15 +834,12 @@
       }
 
       function render(el) {
-        // apply/remove cross class
         const mark = el.dataset.mark || '';
         el.classList.remove('mark-cross');
         if (mark === 'cross') el.classList.add('mark-cross');
 
-        // redraw jewel
         el.innerHTML = '';
         if (el.dataset.q === '1') {
-          // auto-clear cross when placing a jewel
           if (el.dataset.mark) {
             el.dataset.mark = '';
             el.classList.remove('mark-cross');
@@ -1768,7 +861,6 @@
         render(el);
       }
 
-      // Cross only (no flag)
       function toggleCross(el) {
         el.dataset.mark = (el.dataset.mark === 'cross') ? '' : 'cross';
         render(el);
@@ -1778,7 +870,6 @@
         [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked'));
       }
 
-      // Same validation as before (marks ignored)
       function validate() {
         clearMarks();
         const placed = [];
@@ -1816,15 +907,29 @@
         return ok;
       }
 
+      const finishReveal = () => {
+        const msg = `
+          <ul class="success-points">
+            <li>✅ Yay, detective! The location revealed is <span class="celebrate">🎉</span></li>
+          </ul>
+          <p class="reveal-location"><b><i>A table with an enclosed view, by the chair of whispers, at the far end of the kitchen.</i></b> <span class="celebrate">🥳✨</span></p>
+        `;
+        status.innerHTML = msg;
+
+        // Log END (completed)
+        sendToSheet({
+          name: sessionStorage.getItem(SS.name) || '',
+          codename: sessionStorage.getItem(SS.code) || '',
+          department: sessionStorage.getItem(SS.dept) || '',
+          completed: true
+        });
+
+        toast('Case note unlocked! 🎊');
+      };
+
       btnCheck?.addEventListener('click', () => {
         if (validate()) {
-          status.innerHTML = `
-        <ul class="success-points">
-          <li>✅ Well placed! The correct placement of jewels has revealed the next location.</li>
-          <li>Revealed Location 2: A place of enlightenment next to the emerald velvet</li>
-          <li>Next Evidence: Combine the Jewels</li>
-        </ul>`;
-          openGate('locate'); toast('That was amazing!');
+          finishReveal();
         } else {
           status.textContent = 'Conflicts detected - adjust placements.';
         }
@@ -1841,293 +946,118 @@
       });
     }
 
-    // ---------- Locate the Jewel ----------
-    function initLocate() {
-      const boardEl = $('#shiftBoard'), status = $('#shiftStatus'), btnNew = $('#shiftNew');
-      if (!boardEl) return;
-
-      const SIZE = 4; boardEl.innerHTML = ''; boardEl.style.gridTemplateColumns = `repeat(${SIZE},84px)`;
-      const ICONS = [
-        "assets/jewels/amethyst.svg",
-        "assets/jewels/ruby.svg",
-        "assets/jewels/hex.svg",
-        "assets/jewels/green_emerald.svg",
-        "assets/jewels/diamond.svg"
-      ];
-      const TIER_NAMES = ["Amethyst", "Ruby", "Hex", "Emerald", "Sapphire"];
-      const TARGET_LEVEL = 4; // Diamond
-      let grid = [], moved = false;
-      function newGrid() { grid = [...Array(SIZE)].map(() => Array(SIZE).fill(null)); spawn(); spawn(); render(); status.textContent = `Slide to merge. Target: ${TIER_NAMES[TARGET_LEVEL]}.`; }
-      function spawn() { const empty = []; for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] == null) empty.push([r, c]); if (!empty.length) return; const [r, c] = empty[Math.floor(Math.random() * empty.length)]; grid[r][c] = Math.random() < 0.9 ? 0 : 1; }
-      function render() { boardEl.innerHTML = ''; for (let r = 0; r < SIZE; r++) { for (let c = 0; c < SIZE; c++) { const el = document.createElement('div'); el.className = 'tile ' + (grid[r][c] == null ? '' : ('l' + grid[r][c])); if (grid[r][c] != null) { const img = document.createElement('img'); const idx = Math.min(grid[r][c], ICONS.length - 1); img.src = ICONS[idx]; img.alt = TIER_NAMES[Math.min(idx, TIER_NAMES.length - 1)] || 'jewel'; el.appendChild(img); } boardEl.appendChild(el); } } }
-      function slideLine(line) { const vals = line.filter(v => v != null); for (let i = 0; i < vals.length - 1; i++) { if (vals[i] === vals[i + 1]) { vals[i] += 1; vals.splice(i + 1, 1); moved = true; } } while (vals.length < SIZE) vals.push(null); return vals; }
-      function rotateCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[c][n - 1 - r] = g[r][c]; return o; }
-      function rotateCCW(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[n - 1 - c][r] = g[r][c]; return o; }
-      function flipH(g) { const n = g.length; const o = [...Array(n)].map(() => Array(n).fill(null)); for (let r = 0; r < n; r++)for (let c = 0; c < n; c++)o[r][n - 1 - c] = g[r][c]; return o; }
-      function move(dir) { moved = false; let g = grid.map(row => row.slice()); if (dir === 'left') { for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); } else if (dir === 'right') { g = flipH(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = flipH(g); } else if (dir === 'up') { g = rotateCCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCW(g); } else if (dir === 'down') { g = rotateCW(g); for (let r = 0; r < SIZE; r++) g[r] = slideLine(g[r]); g = rotateCCW(g); } if (JSON.stringify(g) !== JSON.stringify(grid)) { grid = g; moved = true; } if (moved) { spawn(); render(); checkWinLose(); } }
-      function checkWinLose() {
-        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
-          if (grid[r][c] != null && grid[r][c] >= TARGET_LEVEL) {
-            status.innerHTML = `
-              <ul class="success-points">
-                <li>✅ That is some great skill you have detective(s)! Combining to the correct jewel has revealed the next location.</li>
-                <li>Revealed Location 3: A small table with a view, by the chair of whispers, at the far end of the kitchen</li>
-                <li>Findings have been recorded below.</li>
-              </ul>`; gates.findings = true; saveGates(gates); applyGates();
-
-            // ⬇️ Log END (completed)
-            sendToSheet({
-              name: sessionStorage.getItem(SS.name) || '',
-              codename: sessionStorage.getItem(SS.code) || '',
-              department: sessionStorage.getItem(SS.dept) || '',
-              completed: true
-            });
-
-            toast('Target reached!'); showFindings(); return;
-          }
-        }
-        for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) { if (grid[r][c] == null) return; if (r + 1 < SIZE && grid[r][c] === grid[r + 1][c]) return; if (c + 1 < SIZE && grid[r][c] === grid[r][c + 1]) return; }
-        status.textContent = 'No moves left - let\'s try resetting it.';
-      }
-      window.addEventListener('keydown', (e) => { if (!$('#sec-locate')?.classList.contains('open')) return; if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault(); if (e.key === 'ArrowLeft') move('left'); else if (e.key === 'ArrowRight') move('right'); else if (e.key === 'ArrowUp') move('up'); else if (e.key === 'ArrowDown') move('down'); });
-
-      let touchStart = null;
-
-      // Make the listener non-passive so preventDefault() can block page scroll
-      boardEl.addEventListener('touchstart', (e) => {
-        if (e.touches && e.touches.length === 1) {
-          touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        }
-        e.preventDefault(); // block page scroll start
-      }, { passive: false });
-
-      boardEl.addEventListener('touchend', (e) => {
-        if (!touchStart) { e.preventDefault(); return; }
-        const dx = (e.changedTouches[0].clientX - touchStart.x);
-        const dy = (e.changedTouches[0].clientY - touchStart.y);
-        const ax = Math.abs(dx), ay = Math.abs(dy);
-
-        if (Math.max(ax, ay) < 24) {
-          touchStart = null;
-          e.preventDefault(); // still block a tap from nudging the page
-          return;
-        }
-
-        if (ax > ay) {
-          move(dx > 0 ? 'right' : 'left');
-        } else {
-          move(dy > 0 ? 'down' : 'up');
-        }
-        touchStart = null;
-        e.preventDefault(); // block the fling
-      }, { passive: false });
-
-      // Optional: while finger is down, keep blocking page pan if they wiggle
-      boardEl.addEventListener('touchmove', (e) => {
-        if (touchStart) e.preventDefault();
-      }, { passive: false });
-
-      // let touchStart = null;
-      // boardEl.addEventListener('touchstart', e => {
-      //   if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      // }, { passive: true });
-
-      // boardEl.addEventListener('touchend', e => {
-      //   if (!touchStart) return;
-      //   const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y);
-      //   const ax = Math.abs(dx), ay = Math.abs(dy);
-      //   if (Math.max(ax, ay) < 24) { touchStart = null; return; }
-      //   if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up');
-      //   touchStart = null;
-      // }, { passive: true });
-
-      // let touchStart = null; boardEl.addEventListener('touchstart', e => { if (e.touches && e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
-      // boardEl.addEventListener('touchend', e => { if (!touchStart) return; const dx = (e.changedTouches[0].clientX - touchStart.x), dy = (e.changedTouches[0].clientY - touchStart.y); const ax = Math.abs(dx), ay = Math.abs(dy); if (Math.max(ax, ay) < 24) { touchStart = null; return; } if (ax > ay) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up'); touchStart = null; }, { passive: true });
-      btnNew?.addEventListener('click', newGrid); newGrid();
-    }
-
-    // Findings & Restart
-    // function showFindings() {
-    //   const name = sessionStorage.getItem(SS.name) || '', code = sessionStorage.getItem(SS.code) || '', dept = sessionStorage.getItem(SS.dept) || '';
-    //   const g = loadGates();
-    //   const rows = [
-    //     ['River Code', '243', !!g.river],
-    //     ['Safe Sweep', 'Cabinet opposite the royal meeting room', !!g.mines],
-    //     ['Diffuser', 'A place of enlightenment next to the emerald velvet', !!g.diffuser],
-    //     ['Combine the Jewels', 'A small table with a view, by the chair of whispers, at the far end of the kitchen', !!g.locate],
-    //     ['💡New piece of evidence! Just minutes ago, we concluded another interrogation, which provided information pointing to an important location. The burglars have repeatedly mentioned “the world map.” If there is a world map on the Qualcomm premises, that is where you should head next!'],
-    //   ];
-    //   const html = `<p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
-    // <ul>${rows.map(([label, value, ok]) => `<li>${ok ? '✅' : '⬜'} <span class="label">${label}</span><span class="value">${escapeHtml(value)}</span></li>`).join('')}</ul>
-    // <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>`;
-    //   const fb = $('#findings-body'); if (fb) fb.innerHTML = html;
-    // }
-
+    // ---------- Findings (new: separate points + two verifications) ----------
     function showFindings() {
       const name = sessionStorage.getItem(SS.name) || '',
         code = sessionStorage.getItem(SS.code) || '',
         dept = sessionStorage.getItem(SS.dept) || '';
-      const g = loadGates();
-
-      const rows = [
-        ['River Code', '243', !!g.river],
-        ['Safe Sweep', 'Cabinet opposite the royal meeting room', !!g.mines],
-        ['Diffuser', 'A place of enlightenment next to the emerald velvet', !!g.diffuser],
-        ['Combine the Jewels', 'A small table with a view, by the chair of whispers, at the far end of the kitchen', !!g.locate],
-        // NOTE row: single-element entry => full-width value
-        ['💡New piece of evidence! Just minutes ago, we concluded another interrogation, which provided information pointing to an important location. The burglars have repeatedly mentioned “the world map.” If there is a world map on the Qualcomm premises, that is where you should head next!'],
-      ];
-
-      // Build HTML with explicit tick/label/value columns (and 'fullrow' for the note)
-      const htmlRows = rows.map(([label, value, ok]) => {
-        // If 'value' is undefined, render as a full-width row (tick + value, no label)
-        if (value === undefined) {
-          return `
-          <li class="fullrow">
-            <span class="tick">${ok ? '✅' : '⬜'}</span>
-            <span class="label"></span>
-            <span class="value">${escapeHtml(label)}</span>
-          </li>`;
-        }
-        return `
-        <li>
-          <span class="tick">${ok ? '✅' : '⬜'}</span>
-          <span class="label">${label}</span>
-          <span class="value">${escapeHtml(value)}</span>
-        </li>`;
-      }).join('');
-
-      const html = `
-      <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
-      <ul>${htmlRows}</ul>
-      <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>`;
 
       const fb = document.getElementById('findings-body');
-      if (fb) fb.innerHTML = html;
+      if (!fb) return;
+
+      const html = `
+        <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
+        <ul>
+          <li>
+            <div class="code-line">
+              <span class="code-label">Enter 3 digit code found from the wrinkled note to confirm:</span>
+              <input id="codeNote" class="code-input" inputmode="numeric" maxlength="3" placeholder="___" />
+              <span id="noteMsg" class="code-note">Enter to verify.</span>
+            </div>
+          </li>
+          <li>
+            <div class="code-line">
+              <span class="code-label">Enter 3 digit code decoded from Padlock Lock Potion to confirm:</span>
+              <input id="codePotion" class="code-input" inputmode="numeric" maxlength="3" placeholder="___" />
+              <span id="potionMsg" class="code-note">Enter to verify.</span>
+            </div>
+          </li>
+          <li>
+            <div class="code-line">
+              <span class="code-label">River Code</span>
+              <span class="code-note"><b>243</b> <span class="celebrate">💧</span></span>
+            </div>
+          </li>
+          <li id="unlockNote" style="display:none;">
+            <span class="code-note">We have a hunch that solving the following clue would lead us to a location, let's try it out and see where it leads us. <span class="celebrate">🗺️✨</span></span>
+          </li>
+        </ul>
+        <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>
+      `;
+      fb.innerHTML = html;
+
+      const IN1 = $('#codeNote');
+      const IN2 = $('#codePotion');
+      const MSG1 = $('#noteMsg');
+      const MSG2 = $('#potionMsg');
+      const unlockNote = $('#unlockNote');
+
+      const OK1 = '287';
+      const OK2 = '928';
+
+      let okA = false, okB = false;
+
+      function tryUnlock() {
+        if (okA && okB) {
+          if (!gates.diffuser) {
+            unlockNote.style.display = 'block';
+            openGate('diffuser');
+            toast('Diffuser Protocol unlocked! 🔓');
+            // scroll into view (optional)
+            setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+          } else {
+            unlockNote.style.display = 'block';
+          }
+        } else {
+          unlockNote.style.display = 'none';
+        }
+      }
+
+      function bind(inp, msgEl, correct, okSetter, okText, badText) {
+        const onInput = () => {
+          let v = (inp.value || '').replace(/\D+/g, '').slice(0, 3);
+          if (inp.value !== v) inp.value = v;
+
+          if (v.length < 3) {
+            inp.classList.remove('ok', 'bad');
+            msgEl.textContent = 'Enter to verify.';
+            msgEl.className = 'code-note';
+            okSetter(false);
+            tryUnlock();
+            return;
+          }
+
+          if (v === correct) {
+            inp.classList.add('ok'); inp.classList.remove('bad');
+            msgEl.textContent = okText;
+            msgEl.className = 'code-note ok';
+            okSetter(true);
+          } else {
+            inp.classList.add('bad'); inp.classList.remove('ok');
+            msgEl.textContent = badText || 'Enter to verify.';
+            msgEl.className = 'code-note';
+            okSetter(false);
+          }
+          tryUnlock();
+        };
+        inp.addEventListener('input', onInput, { passive: true });
+      }
+
+      bind(IN1, MSG1, OK1,
+        (v) => { okA = v; },
+        "Yes, that looks quite right, Detective",
+        "Doesn't seem to look right, let's look from a larger perspective"
+      );
+
+      bind(IN2, MSG2, OK2,
+        (v) => { okB = v; },
+        "Bingo, detective! This sounds right, recalling what the burglar's were talking about a potion.",
+        "Enter to verify."
+      );
     }
 
-    // Findings & Restart — with Row 1 / Row 2 numeric verification and ticks
-    // function showFindings() {
-    //   const name = sessionStorage.getItem(SS.name) || '',
-    //     code = sessionStorage.getItem(SS.code) || '',
-    //     dept = sessionStorage.getItem(SS.dept) || '';
-    //   const g = loadGates();
+    function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
 
-    //   // --- Two fillable rows at the very top ---
-    //   const codeRows = `
-    //   <li class="code-row">
-    //     <span id="codeRow1_tick" class="tick">⬜</span>
-    //     <span class="label">Row 1</span>
-    //     <span class="value">
-    //       <input id="codeRow1" class="code-input" inputmode="numeric" maxlength="3" placeholder="___" />
-    //       <span id="codeRow1_note" class="code-note">Enter the previously decoded 3-digit code to verify.</span>
-    //     </span>
-    //   </li>
-    //   <li class="code-row">
-    //     <span id="codeRow2_tick" class="tick">⬜</span>
-    //     <span class="label">Row 2</span>
-    //     <span class="value">
-    //       <input id="codeRow2" class="code-input" inputmode="numeric" maxlength="3" placeholder="___" />
-    //       <span id="codeRow2_note" class="code-note">Enter the previously decoded 3-digit code to verify.</span>
-    //     </span>
-    //   </li>`;
-
-    //   // Existing rows (unchanged copy, but now each gets a tick span)
-    //   const rows = [
-    //     ['River Code', '243', !!g.river],
-    //     ['Safe Sweep', 'Cabinet opposite the royal meeting room', !!g.mines],
-    //     ['Diffuser', 'A place of enlightenment next to the emerald velvet', !!g.diffuser],
-    //     ['Combine the Jewels', 'A small table with a view, by the chair of whispers, at the far end of the kitchen', !!g.locate],
-    //     ['💡New piece of evidence! Just minutes ago, we concluded another interrogation, which provided information pointing to an important location. The burglars have repeatedly mentioned “the world map.” If there is a world map on the Qualcomm premises, that is where you should head next!'],
-    //   ];
-
-    //   // Render the rest with a tick column for alignment consistency
-    //   const rest = rows.map(([label, value, ok], i) => {
-    //     // Single-line note (no label/value) — render as full-width but keep tick column for alignment
-    //     if (value === undefined) {
-    //       return `
-    //       <li>
-    //         <span class="tick">${ok ? '✅' : '⬜'}</span>
-    //         <span class="label"></span>
-    //         <span class="value">${escapeHtml(label)}</span>
-    //       </li>`;
-    //     }
-    //     return `
-    //     <li>
-    //       <span class="tick">${ok ? '✅' : '⬜'}</span>
-    //       <span class="label">${label}</span>
-    //       <span class="value">${escapeHtml(value)}</span>
-    //     </li>`;
-    //   }).join('');
-
-    //   const html = `
-    //   <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
-    //   <ul>${codeRows}${rest}</ul>
-    //   <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>`;
-
-    //   const fb = $('#findings-body');
-    //   if (fb) fb.innerHTML = html;
-
-    //   // --- Input binding + validation ---
-
-    //   const INSTR = 'Enter the previously decoded 3-digit code to verify.';
-
-    //   function bindCode({ id, tickId, answer, successText }) {
-    //     const inp = document.getElementById(id);
-    //     const note = document.getElementById(id + '_note');
-    //     const tick = document.getElementById(tickId);
-    //     if (!inp || !note || !tick) return;
-
-    //     const onInput = () => {
-    //       // numerics only, max 3
-    //       let v = (inp.value || '').replace(/\D+/g, '').slice(0, 3);
-    //       if (inp.value !== v) inp.value = v;
-
-    //       if (v.length < 3) {
-    //         inp.classList.remove('ok', 'bad');
-    //         note.textContent = INSTR;
-    //         note.className = 'code-note';
-    //         tick.textContent = '⬜';
-    //         return;
-    //       }
-
-    //       if (v === String(answer)) {
-    //         // correct
-    //         inp.classList.add('ok');
-    //         inp.classList.remove('bad');
-    //         note.textContent = successText;
-    //         note.className = 'code-note ok';
-    //         tick.textContent = '✅';
-    //       } else {
-    //         // incorrect
-    //         inp.classList.add('bad');
-    //         inp.classList.remove('ok');
-    //         note.textContent = INSTR;   // keep instruction (i.e., "nothing happens" beyond red)
-    //         note.className = 'code-note';
-    //         tick.textContent = '⬜';
-    //       }
-    //     };
-
-    //     inp.addEventListener('input', onInput, { passive: true });
-    //     onInput(); // initialize state
-    //   }
-
-    //   bindCode({
-    //     id: 'codeRow1',
-    //     tickId: 'codeRow1_tick',
-    //     answer: 287,
-    //     successText: 'This looks correct, it was written on the hands of one of the burglars'
-    //   });
-
-    //   bindCode({
-    //     id: 'codeRow2',
-    //     tickId: 'codeRow2_tick',
-    //     answer: 928,
-    //     successText: "Yes! this was on one of the potions in the burglar's bag"
-    //   });
-    // }
-
-    function escapeHtml(s) { return (s || '').replace(/[&<>\"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
     $('#restart')?.addEventListener('click', () => {
       sessionStorage.removeItem(SS.gates);
       sessionStorage.removeItem(SS.name);
@@ -2138,21 +1068,16 @@
 
     // Initialize sections when they first open
     const initObs = new MutationObserver(() => {
-      if ($('#sec-mines')?.classList.contains('open') && !$('#mswBoard')?.hasChildNodes()) initSafeSweep();
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) initDiffuser();
-      if ($('#sec-locate')?.classList.contains('open') && !$('#shiftBoard')?.hasChildNodes()) initLocate();
       if (gates.findings) showFindings();
     });
     initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
 
-    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxnYPfla5F7mnTkxz5m2MGEiexL04-F7ofZuxJhq7-5E5W3TDjqJ9fz0CYkodZOZmbF/exec';
-    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx9oeZsEogP6I9a_zXjqz-ZpTxI0xHfptxI4WGdx0Qg-1lbJcdcWVkKDVerh-N-LrcE/exec';
-    // const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxGojnf4HZch10KAynjK7ucSqJ9tVTvyUJRKIWzWhXFlBEj_MaKM8Xqeb62eADKLbB7/exec';
+    // Webhook (unchanged)
     const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
 
     async function sendToSheet(payload) {
       try {
-        // enrich with UA + per-tab session id
         payload.client_user_agent = navigator.userAgent || '';
         payload.session_id = sessionStorage.getItem('qc26s.sid') || (function () {
           const v = Math.random().toString(36).slice(2);
@@ -2162,12 +1087,11 @@
 
         await fetch(WEBHOOK_URL, {
           method: 'POST',
-          mode: 'no-cors',                                   // ← avoid preflight / CORS
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ← "simple" header
-          body: JSON.stringify(payload),                     // ← doPost will JSON.parse this
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
         });
 
-        // In no-cors mode the response is opaque; that's expected.
         console.log('✅ Submitted to Sheets (fire-and-forget):', payload);
       } catch (err) {
         console.error('❌ Submission error:', err);

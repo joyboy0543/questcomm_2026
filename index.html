@@ -15,6 +15,8 @@
       --accent: #2ea8ff;
       --bad: #ff7a7a;
       --good: #48e1a8;
+      --sapphire: #0F52BA;
+      --title-font: "Agency FB", Teko, Antonio, Impact, Haettenschweiler, "Arial Narrow", sans-serif;
     }
 
     * {
@@ -25,7 +27,7 @@
       margin: 0;
       background: var(--bg);
       color: var(--ink);
-      font-family: system-ui, Segoe UI, Roboto, Arial
+      font-family: system-ui, Segoe UI, Roboto, Arial;
     }
 
     .wrap {
@@ -34,33 +36,54 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 16px
+      gap: 16px;
     }
 
     h1,
     h2 {
-      margin: 8px 0
+      font-family: var(--title-font);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.1;
+      margin: 6px 0 10px;
+    }
+
+    h1 {
+      font-size: clamp(2.0rem, 4.5vw, 2.4rem);
+      color: var(--sapphire);
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+    }
+
+    h2 {
+      font-size: clamp(1.4rem, 3.2vw, 1.7rem);
+      color: color-mix(in srgb, var(--sapphire) 72%, #cfe6f7 28%);
+    }
+
+    @supports not (color: color-mix(in srgb, black, white)) {
+      h2 {
+        color: #6C8ED6;
+      }
     }
 
     .card {
       border: 1px solid var(--edge);
       border-radius: 14px;
       background: var(--panel);
-      padding: 16px
+      padding: 16px;
     }
 
     .row {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      align-items: center
+      align-items: center;
     }
 
     label {
       display: block;
       font-size: .95rem;
       opacity: .95;
-      margin: 8px 0 4px
+      margin: 8px 0 4px;
     }
 
     input,
@@ -68,98 +91,72 @@
     select {
       padding: 10px 12px;
       border-radius: 10px;
-      border: 1px solid var(--edge);
+      border: 1px solid (var(--edge));
       background: #102536;
-      color: #fff
+      color: #fff;
     }
 
     input::placeholder {
-      color: #9ec4df
+      color: #9ec4df;
     }
 
     select {
-      min-width: 220px
+      min-width: 220px;
     }
 
     button.primary {
       border: 2px solid var(--accent);
       background: linear-gradient(180deg, #10324a, #0f2a3f);
-      font-weight: 700
+      font-weight: 700;
     }
 
     button[disabled] {
       opacity: .5;
-      filter: grayscale(10%)
+      filter: grayscale(10%);
     }
 
     .hint {
-      opacity: .9
+      opacity: .9;
     }
 
     .success {
-      color: var(--good)
+      color: var(--good);
     }
 
     .warn {
-      color: #ffb3b3
+      color: #ffb3b3;
     }
 
     .hr {
       height: 1px;
       background: linear-gradient(90deg, transparent, #27475f, transparent);
-      margin: 2px 0
+      margin: 2px 0;
     }
 
     .gate {
-      display: none
+      display: none;
     }
 
     .gate.open {
-      display: block
+      display: block;
     }
 
     .section-actions {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap
+      flex-wrap: wrap;
     }
 
     .footer-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      justify-content: flex-end
+      justify-content: flex-end;
     }
 
     .hl {
       color: #8bd1ff;
-      font-weight: 700
-    }
-
-    /* ---------- Toast ---------- */
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: #0f2030;
-      color: #d9f1ff;
-      border: 1px solid #275070;
-      border-radius: 10px;
-      padding: 10px 14px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .18s ease, transform .18s ease;
-      max-width: 86vw;
-      text-align: center;
-      font-size: .95rem;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0)
+      font-weight: 700;
     }
 
     /* ---------- Photo (big thumbnail with zoom icon) ---------- */
@@ -167,7 +164,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      align-items: center
+      align-items: center;
     }
 
     .zoom-thumb {
@@ -183,7 +180,7 @@
     .zoom-thumb img {
       display: block;
       width: 100%;
-      height: auto
+      height: auto;
     }
 
     .zoom-badge {
@@ -208,7 +205,7 @@
       border-radius: 4px;
       border: 1px solid #2b5676;
       background: linear-gradient(180deg, #123650, #0f2a3e);
-      position: relative
+      position: relative;
     }
 
     .zoom-badge .icon::before {
@@ -228,7 +225,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9998
+      z-index: 9998;
     }
 
     .lb-panel {
@@ -239,7 +236,7 @@
       border-radius: 12px;
       display: flex;
       flex-direction: column;
-      overflow: hidden
+      overflow: hidden;
     }
 
     .lb-header {
@@ -248,11 +245,11 @@
       justify-content: space-between;
       padding: 8px 10px;
       border-bottom: 1px solid #1f3a50;
-      background: #0f1a28
+      background: #0f1a28;
     }
 
     .lb-title {
-      font-weight: 600
+      font-weight: 600;
     }
 
     .lb-close {
@@ -261,14 +258,14 @@
       border: 1px solid #2b4c66;
       background: #102536;
       color: #cfe6f7;
-      cursor: pointer
+      cursor: pointer;
     }
 
     .lb-view {
       flex: 1;
       position: relative;
       overflow: hidden;
-      background: #07111b
+      background: #07111b;
     }
 
     .zoom-img {
@@ -278,7 +275,7 @@
       transform: translate(-50%, -50%) scale(1);
       max-width: none;
       user-select: none;
-      touch-action: none
+      touch-action: none;
     }
 
     .lb-tools {
@@ -287,7 +284,7 @@
       padding: 8px;
       border-top: 1px solid #1f3a50;
       background: #0f1a28;
-      justify-content: center
+      justify-content: center;
     }
 
     .lb-tools button {
@@ -296,7 +293,7 @@
       border: 1px solid #2b4c66;
       background: #102536;
       color: #cfe6f7;
-      cursor: pointer
+      cursor: pointer;
     }
 
     /* ---------- Diffuser Protocol (5×5) ---------- */
@@ -304,17 +301,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px
+      gap: 8px;
     }
 
     .q-grid {
       display: grid;
       gap: 6px;
-      justify-content: center
+      justify-content: center;
     }
 
     .q-grid.small {
-      grid-template-columns: repeat(7, 52px)
+      grid-template-columns: repeat(7, 52px);
     }
 
     .diff-cell {
@@ -328,7 +325,7 @@
       cursor: pointer;
       filter: saturate(1) brightness(.92);
       position: relative;
-      overflow: hidden
+      overflow: hidden;
     }
 
     .diff-cell .jewel {
@@ -336,21 +333,35 @@
       height: 64%;
       display: block;
       pointer-events: none;
-      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35))
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
     }
 
     .diff-cell.attacked {
-      box-shadow: inset 0 0 0 3px #c44
+      box-shadow: inset 0 0 0 3px #c44;
+    }
+
+    /* --- Diffuser: cross mark --- */
+    .diff-cell.mark-cross::after {
+      content: '✕';
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #111;
+      text-shadow: 0 0 6px rgba(0, 0, 0, .45);
+      pointer-events: none;
     }
 
     .q-tools {
       display: flex;
       gap: 8px;
-      justify-content: center
+      justify-content: center;
     }
 
     .q-status {
-      min-height: 1.2rem
+      min-height: 1.2rem;
     }
 
     /* ---------- Findings formatting ---------- */
@@ -376,7 +387,6 @@
       border-bottom: none;
     }
 
-    /* Inputs & messages */
     #findings-body .code-line {
       display: flex;
       flex-wrap: wrap;
@@ -416,55 +426,27 @@
       font-weight: 600;
     }
 
-    /* Reveal location styling (Agency FB bold + italic) */
-    :root {
-      --title-font: "Agency FB", Teko, Antonio, Impact, Haettenschweiler, "Arial Narrow", sans-serif;
+    .success-points {
+      list-style: disc;
+      list-style-position: inside;
+      text-align: left;
+      padding: 0;
+      margin: 12px auto;
+      max-width: 720px;
+      color: var(--good);
     }
 
+    .success-points li {
+      margin: 6px 0;
+    }
+
+    /* Reveal location styling (Agency FB bold + italic) */
     .reveal-location {
       font-family: var(--title-font);
       font-weight: 700;
       font-style: italic;
       color: color-mix(in srgb, #8bd1ff 35%, #ffffff 65%);
       display: inline-block;
-    }
-
-    /* Headings */
-    :root {
-      --sapphire: #0F52BA;
-    }
-
-    h1,
-    h2 {
-      font-family: var(--title-font);
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      line-height: 1.1;
-      margin-top: 6px;
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      font-size: clamp(2.0rem, 4.5vw, 2.4rem);
-      color: var(--sapphire);
-      text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
-    }
-
-    h2 {
-      font-size: clamp(1.4rem, 3.2vw, 1.7rem);
-      color: color-mix(in srgb, var(--sapphire) 72%, #cfe6f7 28%);
-    }
-
-    @supports not (color: color-mix(in srgb, black, white)) {
-      h2 {
-        color: #6C8ED6;
-      }
-    }
-
-    /* Small celebratory helper */
-    .celebrate {
-      display: inline-block;
-      margin-left: 6px;
     }
 
     /* Findings: mobile-friendly stacking */
@@ -588,15 +570,12 @@
     </section>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
   <script>
     // ---------- Session-scoped storage ----------
     const SS = { name: 'qc26s.name', code: 'qc26s.code', dept: 'qc26s.dept', gates: 'qc26s.gates' };
     const $ = s => document.querySelector(s);
     function loadGates() { try { return JSON.parse(sessionStorage.getItem(SS.gates) || '{}') } catch { return {} } }
     function saveGates(g) { try { sessionStorage.setItem(SS.gates, JSON.stringify(g)) } catch { } }
-    function toast(msg) { const t = $('#toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
     // gate keys now: river, diffuser, findings
     const gates = loadGates();
@@ -638,15 +617,10 @@
         sessionStorage.setItem(SS.code, code);
         sessionStorage.setItem(SS.dept, dept);
         regStatus.textContent = 'Access granted.'; regStatus.className = 'hint success';
-        openGate('river'); toast('Evidence: Lindholmen River View Photo and a note relating to it. ✨');
+        openGate('river');
 
         // ⬇️ Log START (registration)
-        sendToSheet({
-          name,
-          codename: code,
-          department: dept,
-          completed: false
-        });
+        sendToSheet({ name, codename: code, department: dept, completed: false });
       });
     }
 
@@ -660,11 +634,11 @@
           <ul class="success-points">
             <li>✅ Amazing find, Detective(s)! You found the final 3-digit code.</li>
             <li>This means that the following evidence shall reveal key confirmations to proceed.</li>
-            <li>Next: Findings <span class="celebrate">🎉</span></li>
+            <li>Next: Findings 🎉</li>
           </ul>`;
         $('#river-msg').className = 'hint success';
-        openGate('findings'); toast('Correct! Proceed to Findings.');
-        showFindings(); // render immediately
+        openGate('findings');
+        showFindings();
       } else {
         $('#river-msg').textContent = 'Not quite. Let\'s open the photo and review again.'; $('#river-msg').className = 'hint warn';
       }
@@ -735,7 +709,7 @@
       thumb?.addEventListener('click', openLightbox);
     })();
 
-    // ---------- Diffuser (5×5) — cross-only, mobile tap fix ----------
+    // ---------- Diffuser (5×5) — cross-only ----------
     function initDiffuser() {
       const SIZE = 5;
       const REGIONS = [
@@ -757,7 +731,6 @@
       const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
       if (!grid) return;
 
-      // 5 columns regardless of CSS
       grid.innerHTML = '';
       grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
 
@@ -773,61 +746,11 @@
           el.dataset.mark = '';               // '' | 'cross'
           el.style.background = COLORS[REGIONS[r][c]];
 
-          // CLICK: toggle jewel, but ignore synthetic click after touchend
-          el.addEventListener('click', (e) => {
-            if (el._suppressClick) {
-              e.preventDefault();
-              el._suppressClick = false;
-              return;
-            }
-            toggleJewel(el);
-          });
+          // CLICK: toggle jewel
+          el.addEventListener('click', () => toggleJewel(el));
 
-          // RIGHT-CLICK: toggle cross (no flags)
-          el.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            toggleCross(el);
-          });
-
-          // LONG-PRESS (mobile): toggle cross; short tap places jewel
-          let holdTimer = null, consumed = false, sx = 0, sy = 0;
-          const HOLD_MS = 450, LEEWAY = 8;
-
-          el.addEventListener('touchstart', (e) => {
-            if (!e.touches || e.touches.length !== 1) return;
-            const t = e.touches[0]; sx = t.clientX; sy = t.clientY;
-            consumed = false;
-            clearTimeout(holdTimer);
-            holdTimer = setTimeout(() => {
-              toggleCross(el);
-              consumed = true;
-              holdTimer = null;
-            }, HOLD_MS);
-          }, { passive: true });
-
-          el.addEventListener('touchmove', (e) => {
-            if (!holdTimer || !e.touches || e.touches.length !== 1) return;
-            const t = e.touches[0];
-            if (Math.abs(t.clientX - sx) > LEEWAY || Math.abs(t.clientY - sy) > LEEWAY) {
-              clearTimeout(holdTimer);
-              holdTimer = null;
-            }
-          }, { passive: true });
-
-          // touchend: block synthetic click
-          el.addEventListener('touchend', (e) => {
-            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-            if (!consumed) {
-              toggleJewel(el);
-            }
-            el._suppressClick = true;
-            setTimeout(() => { el._suppressClick = false; }, 300);
-            e.preventDefault();
-          }, { passive: false });
-
-          el.addEventListener('touchcancel', () => {
-            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-          }, { passive: true });
+          // RIGHT-CLICK: toggle cross
+          el.addEventListener('contextmenu', (e) => { e.preventDefault(); toggleCross(el); });
 
           grid.appendChild(el);
         }
@@ -856,19 +779,10 @@
         }
       }
 
-      function toggleJewel(el) {
-        el.dataset.q = (el.dataset.q === '1') ? '0' : '1';
-        render(el);
-      }
+      function toggleJewel(el) { el.dataset.q = (el.dataset.q === '1') ? '0' : '1'; render(el); }
+      function toggleCross(el) { el.dataset.mark = (el.dataset.mark === 'cross') ? '' : 'cross'; render(el); }
 
-      function toggleCross(el) {
-        el.dataset.mark = (el.dataset.mark === 'cross') ? '' : 'cross';
-        render(el);
-      }
-
-      function clearMarks() {
-        [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked'));
-      }
+      function clearMarks() { [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked')); }
 
       function validate() {
         clearMarks();
@@ -910,9 +824,9 @@
       const finishReveal = () => {
         const msg = `
           <ul class="success-points">
-            <li>✅ Yay, detective! The location revealed is <span class="celebrate">🎉</span></li>
+            <li>✅ Yay, detective! The location revealed is 🎉</li>
           </ul>
-          <p class="reveal-location"><b><i>A table with an enclosed view, by the chair of whispers, at the far end of the kitchen.</i></b> <span class="celebrate">🥳✨</span></p>
+          <p class="reveal-location"><b><i>A table with an enclosed view, by the chair of whispers, at the far end of the kitchen.</i></b> 🥳✨</p>
         `;
         status.innerHTML = msg;
 
@@ -923,19 +837,14 @@
           department: sessionStorage.getItem(SS.dept) || '',
           completed: true
         });
-
-        toast('Case note unlocked! 🎊');
       };
 
-      btnCheck?.addEventListener('click', () => {
-        if (validate()) {
-          finishReveal();
-        } else {
-          status.textContent = 'Conflicts detected - adjust placements.';
-        }
+      $('#qCheck')?.addEventListener('click', () => {
+        if (validate()) finishReveal();
+        else status.textContent = 'Conflicts detected - adjust placements.';
       });
 
-      btnClear?.addEventListener('click', () => {
+      $('#qClear')?.addEventListener('click', () => {
         for (const el of grid.children) {
           el.dataset.q = '0';
           el.dataset.mark = '';
@@ -946,7 +855,7 @@
       });
     }
 
-    // ---------- Findings (new: separate points + two verifications) ----------
+    // ---------- Findings (separate points + two verifications) ----------
     function showFindings() {
       const name = sessionStorage.getItem(SS.name) || '',
         code = sessionStorage.getItem(SS.code) || '',
@@ -975,11 +884,11 @@
           <li>
             <div class="code-line">
               <span class="code-label">River Code</span>
-              <span class="code-note"><b>243</b> <span class="celebrate">💧</span></span>
+              <span class="code-note"><b>243</b> 💧</span>
             </div>
           </li>
           <li id="unlockNote" style="display:none;">
-            <span class="code-note">We have a hunch that solving the following clue would lead us to a location, let's try it out and see where it leads us. <span class="celebrate">🗺️✨</span></span>
+            <span class="code-note">We have a hunch that solving the following clue would lead us to a location, let's try it out and see where it leads us. 🗺️✨</span>
           </li>
         </ul>
         <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>
@@ -999,15 +908,10 @@
 
       function tryUnlock() {
         if (okA && okB) {
-          if (!gates.diffuser) {
-            unlockNote.style.display = 'block';
-            openGate('diffuser');
-            toast('Diffuser Protocol unlocked! 🔓');
-            // scroll into view (optional)
-            setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
-          } else {
-            unlockNote.style.display = 'block';
-          }
+          unlockNote.style.display = 'block';
+          if (!gates.diffuser) openGate('diffuser');
+          // Optional scroll into view
+          setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
         } else {
           unlockNote.style.display = 'none';
         }
@@ -1040,7 +944,7 @@
           }
           tryUnlock();
         };
-        inp.addEventListener('input', onInput, { passive: true });
+        inp.addEventListener('input', onInput);
       }
 
       bind(IN1, MSG1, OK1,
@@ -1056,7 +960,11 @@
       );
     }
 
-    function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c])); }
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[c]));
+    }
 
     $('#restart')?.addEventListener('click', () => {
       sessionStorage.removeItem(SS.gates);
@@ -1075,7 +983,6 @@
 
     // Webhook (unchanged)
     const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
-
     async function sendToSheet(payload) {
       try {
         payload.client_user_agent = navigator.userAgent || '';

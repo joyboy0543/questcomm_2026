@@ -512,32 +512,34 @@
       <h2>🪪 Agent Check‑In<span class="qcpd_badge">QCPD Database</span></h2>
       <p class="hint">Sign-in with your name (required), a codename and a department to explore the digital evidence.
       </p>
-      #
-      <div class="row">
-        <div style="flex:1 1 240px;min-width:240px">
-          <label for="name">Name(s)</label>
-          <input id="name" placeholder="Sherlock Holmes, Hercule Poirot" autocomplete="name">
+
+      <!-- FIX: proper form wrapper (stray '#' removed) -->
+      <form id="reg-form" action="#" method="POST" style="margin:0">
+        <div class="row">
+          <div style="flex:1 1 240px;min-width:240px">
+            <label for="name">Name(s)</label>
+            <input id="name" placeholder="Sherlock Holmes, Hercule Poirot" autocomplete="name">
+          </div>
+          <div style="flex:1 1 240px;min-width:240px">
+            <label for="codename">Codename(s)</label>
+            <input id="codename" placeholder="Pikachu, 007">
+          </div>
+          <div style="flex:1 1 240px;min-width:240px">
+            <label for="dept">Department</label>
+            <select id="dept">
+              <option value="" disabled selected>Select department</option>
+              <option>Field Operations</option>
+              <option>Cyber Division</option>
+              <option>Forensics Unit</option>
+              <option>Homicide Unit</option>
+              <option>Special Tasks</option>
+            </select>
+          </div>
         </div>
-        <div style="flex:1 1 240px;min-width:240px">
-          <label for="codename">Codename(s)</label>
-          <input id="codename" placeholder="Pikachu, 007">
+        <div class="section-actions" style="margin-top:10px">
+          <button id="start" class="primary" type="submit">Enter</button>
+          <span id="reg-status" class="hint"></span>
         </div>
-        <div style="flex:1 1 240px;min-width:240px">
-          <label for="dept">Department</label>
-          <select id="dept">
-            <option value="" disabled selected>Select department</option>
-            <option>Field Operations</option>
-            <option>Cyber Division</option>
-            <option>Forensics Unit</option>
-            <option>Homicide Unit</option>
-            <option>Special Tasks</option>
-          </select>
-        </div>
-      </div>
-      <div class="section-actions" style="margin-top:10px">
-        <button id="start" class="primary" type="submit">Enter</button>
-        <span id="reg-status" class="hint"></span>
-      </div>
       </form>
     </section>
 
@@ -761,7 +763,7 @@
         4: "assets/jewels/hex.svg"
       };
 
-      const grid = $('#diff-grid'), status = $('#qStatus'), btnCheck = $('#qCheck'), btnClear = $('#qClear');
+      const grid = $('#diff-grid'), status = $('#qStatus');
       if (!grid) return;
 
       grid.innerHTML = '';
@@ -810,7 +812,6 @@
 
       function toggleJewel(el) { el.dataset.q = (el.dataset.q === '1') ? '0' : '1'; render(el); }
       function toggleCross(el) { el.dataset.mark = (el.dataset.mark === 'cross') ? '' : 'cross'; render(el); }
-
       function clearMarks() { [...grid.querySelectorAll('.diff-cell')].forEach(e => e.classList.remove('attacked')); }
 
       function validate() {
@@ -957,8 +958,8 @@
       const unlockNote = $('#unlockNote');
 
       // Reuse storage keys (keep backward compatibility with earlier build)
-      const saved1 = sessionStorage.getItem('qc26s.code.note') || '';
-      const saved2 = sessionStorage.getItem('qc26s.code.potion') || '';
+      const saved1 = sessionStorage.getItem(K_NOTE) || '';
+      const saved2 = sessionStorage.getItem(K_POTION) || '';
 
       const OKS = new Set(['287', '928']);
 
@@ -981,24 +982,20 @@
       }
 
       function validateBoth() {
-        // Get cleaned values
         const v1 = sanitize(BOX1.value);
         const v2 = sanitize(BOX2.value);
 
-        // Persist as we go (keep same keys you used before)
-        sessionStorage.setItem('qc26s.code.note', v1);
-        sessionStorage.setItem('qc26s.code.potion', v2);
+        // Persist values
+        sessionStorage.setItem(K_NOTE, v1);
+        sessionStorage.setItem(K_POTION, v2);
 
-        // Base: unknown until 3 digits
         let ok1 = (v1.length === 3) ? false : null;
         let ok2 = (v2.length === 3) ? false : null;
 
-        // Evaluate distinct correctness:
-        // Build a multiset of targets and try to match boxes without using same target twice.
-        const targets = new Map(); // code -> available count
+        // Assign codes without using the same target twice
+        const targets = new Map();
         for (const c of OKS) targets.set(c, 1);
 
-        // Helper to try assign one box to a code if available
         function tryAssign(val) {
           if (!OKS.has(val)) return false;
           const left = targets.get(val) || 0;
@@ -1007,19 +1004,15 @@
           return true;
         }
 
-        // First pass: assign BOX1
         if (v1.length === 3) ok1 = tryAssign(v1);
-        // Second pass: assign BOX2 with remaining target
         if (v2.length === 3) ok2 = tryAssign(v2);
 
-        // If a box has 0-2 digits, leave it neutral
         if (v1.length < 3) ok1 = null;
         if (v2.length < 3) ok2 = null;
 
         setState(BOX1, MSG1, ok1);
         setState(BOX2, MSG2, ok2);
 
-        // Unlock when both are true
         const bothOk = ok1 === true && ok2 === true;
         if (bothOk) {
           unlockNote.style.display = 'block';
@@ -1030,7 +1023,6 @@
         }
       }
 
-      // Bind
       BOX1.addEventListener('input', () => { BOX1.value = sanitize(BOX1.value); validateBoth(); });
       BOX2.addEventListener('input', () => { BOX2.value = sanitize(BOX2.value); validateBoth(); });
 
@@ -1051,12 +1043,12 @@
       sessionStorage.removeItem(SS.name);
       sessionStorage.removeItem(SS.code);
       sessionStorage.removeItem(SS.dept);
-      sessionStorage.removeItem('qc26s.code.note');
-      sessionStorage.removeItem('qc26s.code.potion');
+      sessionStorage.removeItem(K_NOTE);
+      sessionStorage.removeItem(K_POTION);
       location.reload();
     });
 
-    // Lazy init
+    // Lazy init: open sections once
     const initObs = new MutationObserver(() => {
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) {
         initDiffuser();

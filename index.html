@@ -92,7 +92,6 @@
       padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid var(--edge);
-      /* <- fixed */
       background: #102536;
       color: #fff;
     }
@@ -160,7 +159,7 @@
       font-weight: 700;
     }
 
-    /* ---------- Photo (big thumbnail with zoom icon) ---------- */
+    /* ---------- Photo ---------- */
     .photo-box {
       display: flex;
       flex-direction: column;
@@ -217,7 +216,7 @@
       border-radius: 3px;
     }
 
-    /* ---------- Lightbox Viewer ---------- */
+    /* ---------- Lightbox ---------- */
     .lb-backdrop {
       position: fixed;
       inset: 0;
@@ -297,7 +296,7 @@
       cursor: pointer;
     }
 
-    /* ---------- Diffuser Protocol (5×5) ---------- */
+    /* ---------- Diffuser (5×5) ---------- */
     .q-wrap {
       display: flex;
       flex-direction: column;
@@ -341,7 +340,7 @@
       box-shadow: inset 0 0 0 3px #c44;
     }
 
-    /* --- Diffuser: cross mark --- */
+    /* Cross note mark */
     .diff-cell.mark-cross::after {
       content: '✕';
       position: absolute;
@@ -365,7 +364,7 @@
       min-height: 1.2rem;
     }
 
-    /* ---------- Findings formatting ---------- */
+    /* ---------- Findings ---------- */
     #findings-body {
       line-height: 1.6;
       font-size: 1.05rem;
@@ -427,6 +426,13 @@
       font-weight: 600;
     }
 
+    #findings-body .code-note.bad {
+      color: var(--bad);
+      font-weight: 600;
+    }
+
+    /* red error */
+
     .success-points {
       list-style: disc;
       list-style-position: inside;
@@ -441,14 +447,24 @@
       margin: 6px 0;
     }
 
-    /* Reveal location styling (Agency FB bold + italic) */
+    /* Diffuser final reveal: larger + green; icons not italic */
     .reveal-location {
       font-family: var(--title-font);
       font-weight: 700;
       font-style: italic;
-      color: color-mix(in srgb, #8bd1ff 35%, #ffffff 65%);
+      /* keep text italic */
+      color: var(--good);
+      /* green */
       display: inline-block;
+      font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+      /* a bit larger */
     }
+
+    .icon-plain {
+      font-style: normal;
+    }
+
+    /* icons/emoji not italic */
 
     /* Findings: mobile-friendly stacking */
     @media (max-width: 560px) {
@@ -474,12 +490,11 @@
   <div class="wrap">
     <h1> 🔷 The Sapphire Heist 🔷</h1>
     <p class="hint">Welcome back, Detective(s)! In QCPD database we collect and preserve all evidence related to the
-      cases.
-    </p>
+      cases.</p>
 
     <!-- A) Landing -->
     <section class="card" id="sec-landing">
-      <h2>🪪 Agent Check‑In<span class="qcpd_badge">QCPD Database</span> </h2>
+      <h2>🪪 Agent Check‑In<span class="qcpd_badge">QCPD Database</span></h2>
       <p class="hint">Sign-in with your name (required), a codename and a department to explore the digital evidence.
       </p>
       <form id="reg-form" action="#" method="POST" style="margin:0">
@@ -525,7 +540,7 @@
       </div>
       <div class="photo-box">
         <figure class="zoom-thumb" id="river-thumb" aria-label="Tap to inspect">
-          <img src="assets/buildings.jpg" alt="Buildings panorama preview">
+          <img src="assets/buildings.jpg" alt="Buildings panorama">
           <figcaption class="zoom-badge"><span class="icon"></span>Tap to inspect</figcaption>
         </figure>
 
@@ -534,6 +549,17 @@
           <button id="river-submit" class="primary" type="button">Check</button>
         </div>
         <div id="river-msg" class="hint"></div>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+
+    <!-- C) Findings (between River and Diffuser) -->
+    <section class="card" id="sec-findings" style="display:none">
+      <h2>📜 Findings</h2>
+      <div id="findings-body" class="hint"></div>
+      <div class="footer-actions" style="margin-top:10px">
+        <button id="restart" type="button">Restart</button>
       </div>
     </section>
 
@@ -557,17 +583,6 @@
         <p id="qStatus" class="q-status"></p>
       </div>
     </section>
-
-    <div class="hr"></div>
-
-    <!-- F) Findings -->
-    <section class="card" id="sec-findings" style="display:none">
-      <h2>📜 Findings</h2>
-      <div id="findings-body" class="hint"></div>
-      <div class="footer-actions" style="margin-top:10px">
-        <button id="restart" type="button">Restart</button>
-      </div>
-    </section>
   </div>
 
   <script>
@@ -577,7 +592,7 @@
     function loadGates() { try { return JSON.parse(sessionStorage.getItem(SS.gates) || '{}') } catch { return {} } }
     function saveGates(g) { try { sessionStorage.setItem(SS.gates, JSON.stringify(g)) } catch { } }
 
-    // gate keys now: river, diffuser, findings
+    // gate keys: river, findings, diffuser
     const gates = loadGates();
     function toggle(sel, on) { const el = $(sel); if (!el) return; el.classList.toggle('open', !!on); el.style.display = on ? 'block' : 'none'; }
     function applyGates() {
@@ -826,7 +841,7 @@
           <ul class="success-points">
             <li>✅ Yay, detective! The location revealed is 🎉</li>
           </ul>
-          <p class="reveal-location"><b><i>A table with an enclosed view, by the chair of whispers, at the far end of the kitchen.</i></b> 🥳✨</p>
+          <p class="reveal-location"><b><i>A table with an enclosed view, by the chair of whispers, at the far end of the kitchen.</i></b> <span class="icon-plain">🥳✨</span></p>
         `;
         status.innerHTML = msg;
 
@@ -860,7 +875,7 @@
       const body = document.getElementById('findings-body');
       if (!body) return;
 
-      // ✅ Guard: render only once (prevents re-render loop while typing)
+      // Render once
       if (body.dataset.inited === '1') return;
       body.dataset.inited = '1';
 
@@ -932,16 +947,16 @@
         if (okA && okB) {
           unlockNote.style.display = 'block';
           if (!gates.diffuser) openGate('diffuser');
-          // Smoothly nudge focus to Diffuser
           setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
         } else {
           unlockNote.style.display = 'none';
         }
       }
 
-      function bind(inp, msgEl, correct, okSetter, okText, badText) {
+      // bind() supports per-field red error styling via makeBadRed
+      function bind(inp, msgEl, correct, okSetter, okText, badText, makeBadRed = false) {
         const onInput = () => {
-          // Keep only digits; cap length to 3
+          // digits only, cap 3
           let v = (inp.value || '').replace(/\D+/g, '').slice(0, 3);
           if (inp.value !== v) inp.value = v;
 
@@ -961,7 +976,7 @@
           } else {
             inp.classList.add('bad'); inp.classList.remove('ok');
             msgEl.textContent = badText || 'Enter to verify.';
-            msgEl.className = 'code-note';
+            msgEl.className = makeBadRed ? 'code-note bad' : 'code-note';
             okSetter(false);
           }
           tryUnlock();
@@ -972,13 +987,15 @@
       bind(IN1, MSG1, OK1,
         (v) => { okA = v; },
         "Yes, that looks quite right, Detective",
-        "Doesn't seem to look right, let's look from a larger perspective"
+        "Doesn't seem to look right, let's look from a larger perspective",
+        false // keep default color (not forced red)
       );
 
       bind(IN2, MSG2, OK2,
         (v) => { okB = v; },
         "Bingo, detective! This sounds right, recalling what the burglar's were talking about a potion.",
-        "Enter to verify."
+        "No there might be more to the Padlock Lock Potion note. Possibly the piece of evidence connected to it might give us a clue?",
+        true // make incorrect message red
       );
     }
 
@@ -1002,8 +1019,7 @@
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) {
         initDiffuser();
       }
-
-      // Init Findings ONCE: only when visible and not yet initialized
+      // Init Findings once when visible
       const secFind = document.getElementById('sec-findings');
       const fb = document.getElementById('findings-body');
       if (secFind && fb && secFind.style.display !== 'none' && fb.dataset.inited !== '1') {
@@ -1018,8 +1034,7 @@
     });
 
     // Webhook (unchanged)
-    const WEBHOOK_URL =
-      'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
     async function sendToSheet(payload) {
       try {
         payload.client_user_agent = navigator.userAgent || '';

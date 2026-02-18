@@ -17,6 +17,7 @@
       --good: #48e1a8;
       --sapphire: #0F52BA;
       --title-font: "Agency FB", Teko, Antonio, Impact, Haettenschweiler, "Arial Narrow", sans-serif;
+      --body-font: system-ui, Segoe UI, Roboto, Arial, sans-serif;
     }
 
     * {
@@ -27,7 +28,7 @@
       margin: 0;
       background: var(--bg);
       color: var(--ink);
-      font-family: system-ui, Segoe UI, Roboto, Arial;
+      font-family: var(--body-font);
     }
 
     .wrap {
@@ -39,6 +40,7 @@
       gap: 16px;
     }
 
+    /* Titles stay in Agency FB */
     h1,
     h2 {
       font-family: var(--title-font);
@@ -94,6 +96,8 @@
       border: 1px solid var(--edge);
       background: #102536;
       color: #fff;
+      font-family: var(--body-font);
+      /* ensure inputs are standard font */
     }
 
     input::placeholder {
@@ -165,6 +169,7 @@
       flex-direction: column;
       gap: 12px;
       align-items: center;
+      font-family: var(--body-font);
     }
 
     .zoom-thumb {
@@ -237,6 +242,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      font-family: var(--body-font);
     }
 
     .lb-header {
@@ -294,9 +300,20 @@
       background: #102536;
       color: #cfe6f7;
       cursor: pointer;
+      font-family: var(--body-font);
     }
 
     /* ---------- Diffuser (5×5) ---------- */
+    /* Content font switched to normal; keep h2 in title font implicitly */
+    #sec-diffuser {
+      font-family: var(--body-font);
+    }
+
+    #sec-diffuser h1,
+    #sec-diffuser h2 {
+      font-family: var(--title-font);
+    }
+
     .q-wrap {
       display: flex;
       flex-direction: column;
@@ -340,7 +357,6 @@
       box-shadow: inset 0 0 0 3px #c44;
     }
 
-    /* Cross note mark */
     .diff-cell.mark-cross::after {
       content: '✕';
       position: absolute;
@@ -365,6 +381,16 @@
     }
 
     /* ---------- Findings ---------- */
+    /* Findings content in normal font; heading keeps title font */
+    #sec-findings {
+      font-family: var(--body-font);
+    }
+
+    #sec-findings h1,
+    #sec-findings h2 {
+      font-family: var(--title-font);
+    }
+
     #findings-body {
       line-height: 1.6;
       font-size: 1.05rem;
@@ -431,8 +457,6 @@
       font-weight: 600;
     }
 
-    /* red error */
-
     .success-points {
       list-style: disc;
       list-style-position: inside;
@@ -447,17 +471,17 @@
       margin: 6px 0;
     }
 
-    /* Diffuser final reveal: larger + green; icons not italic */
+    /* Diffuser final reveal: larger + green; icons not italic; now use body font */
     .reveal-location {
-      font-family: var(--title-font);
+      font-family: var(--body-font);
+      /* standard font */
       font-weight: 700;
       font-style: italic;
-      /* keep text italic */
+      /* text italic */
       color: var(--good);
       /* green */
       display: inline-block;
       font-size: clamp(1.15rem, 2.4vw, 1.5rem);
-      /* a bit larger */
     }
 
     .icon-plain {
@@ -533,7 +557,7 @@
       <h2>📸 Lindholmen River View Photo </h2>
       <p>The following message and photo were recovered from the burglar's phone. We think it might be connected to a
         code. Do you see it?</p>
-      <div class="poem">
+      <div class="poem" style="font-family: var(--body-font);">
         <em>“The river reflects the view, but not the clue.”</em><br>
         <em>“Above the waterline, three numbers hide in tinted hue,”</em><br>
         <em>“Compare above with what's below; the key is found in the unmatched glow!”</em>
@@ -565,7 +589,7 @@
 
     <div class="hr"></div>
 
-    <!-- D) Diffuser Protocol -->
+    <!-- D) Diffuser Protocol (shows AFTER Findings) -->
     <section class="card gate" id="sec-diffuser">
       <h2>💥 Diffuser Protocol</h2>
       <ol class="status" style="text-align:left;max-width:560px;margin:0 auto">
@@ -588,6 +612,9 @@
   <script>
     // ---------- Session-scoped storage ----------
     const SS = { name: 'qc26s.name', code: 'qc26s.code', dept: 'qc26s.dept', gates: 'qc26s.gates' };
+    const K_NOTE = 'qc26s.code.note';
+    const K_POTION = 'qc26s.code.potion';
+
     const $ = s => document.querySelector(s);
     function loadGates() { try { return JSON.parse(sessionStorage.getItem(SS.gates) || '{}') } catch { return {} } }
     function saveGates(g) { try { sessionStorage.setItem(SS.gates, JSON.stringify(g)) } catch { } }
@@ -960,6 +987,10 @@
           let v = (inp.value || '').replace(/\D+/g, '').slice(0, 3);
           if (inp.value !== v) inp.value = v;
 
+          // persist current typed value
+          if (inp === IN1) sessionStorage.setItem(K_NOTE, v);
+          if (inp === IN2) sessionStorage.setItem(K_POTION, v);
+
           if (v.length < 3) {
             inp.classList.remove('ok', 'bad');
             msgEl.textContent = 'Enter to verify.';
@@ -982,21 +1013,30 @@
           tryUnlock();
         };
         inp.addEventListener('input', onInput);
+
+        // Expose a way to force-run validation after restoring saved values
+        inp._runValidate = onInput;
       }
 
       bind(IN1, MSG1, OK1,
         (v) => { okA = v; },
         "Yes, that looks quite right, Detective",
         "Doesn't seem to look right, let's look from a larger perspective",
-        false // keep default color (not forced red)
+        false
       );
 
       bind(IN2, MSG2, OK2,
         (v) => { okB = v; },
         "Bingo, detective! This sounds right, recalling what the burglar's were talking about a potion.",
         "No there might be more to the Padlock Lock Potion note. Possibly the piece of evidence connected to it might give us a clue?",
-        true // make incorrect message red
+        true
       );
+
+      // 🔁 Restore saved values and immediately validate (so green/red states survive refresh)
+      const savedNote = sessionStorage.getItem(K_NOTE) || '';
+      const savedPotion = sessionStorage.getItem(K_POTION) || '';
+      if (savedNote) { IN1.value = savedNote; IN1._runValidate?.(); }
+      if (savedPotion) { IN2.value = savedPotion; IN2._runValidate?.(); }
     }
 
     function escapeHtml(s) {
@@ -1010,6 +1050,8 @@
       sessionStorage.removeItem(SS.name);
       sessionStorage.removeItem(SS.code);
       sessionStorage.removeItem(SS.dept);
+      sessionStorage.removeItem(K_NOTE);
+      sessionStorage.removeItem(K_POTION);
       location.reload();
     });
 

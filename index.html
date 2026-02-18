@@ -97,7 +97,6 @@
       background: #102536;
       color: #fff;
       font-family: var(--body-font);
-      /* ensure inputs are standard font */
     }
 
     input::placeholder {
@@ -304,7 +303,6 @@
     }
 
     /* ---------- Diffuser (5×5) ---------- */
-    /* Content font switched to normal; keep h2 in title font implicitly */
     #sec-diffuser {
       font-family: var(--body-font);
     }
@@ -381,7 +379,6 @@
     }
 
     /* ---------- Findings ---------- */
-    /* Findings content in normal font; heading keeps title font */
     #sec-findings {
       font-family: var(--body-font);
     }
@@ -471,15 +468,12 @@
       margin: 6px 0;
     }
 
-    /* Diffuser final reveal: larger + green; icons not italic; now use body font */
+    /* Diffuser final reveal: larger + green; icons not italic; standard font */
     .reveal-location {
       font-family: var(--body-font);
-      /* standard font */
       font-weight: 700;
       font-style: italic;
-      /* text italic */
       color: var(--good);
-      /* green */
       display: inline-block;
       font-size: clamp(1.15rem, 2.4vw, 1.5rem);
     }
@@ -488,9 +482,6 @@
       font-style: normal;
     }
 
-    /* icons/emoji not italic */
-
-    /* Findings: mobile-friendly stacking */
     @media (max-width: 560px) {
       #findings-body li {
         display: block;
@@ -521,32 +512,32 @@
       <h2>🪪 Agent Check‑In<span class="qcpd_badge">QCPD Database</span></h2>
       <p class="hint">Sign-in with your name (required), a codename and a department to explore the digital evidence.
       </p>
-      <form id="reg-form" action="#" method="POST" style="margin:0">
-        <div class="row">
-          <div style="flex:1 1 240px;min-width:240px">
-            <label for="name">Name(s)</label>
-            <input id="name" placeholder="Sherlock Holmes, Hercule Poirot" autocomplete="name">
-          </div>
-          <div style="flex:1 1 240px;min-width:240px">
-            <label for="codename">Codename(s)</label>
-            <input id="codename" placeholder="Pikachu, 007">
-          </div>
-          <div style="flex:1 1 240px;min-width:240px">
-            <label for="dept">Department</label>
-            <select id="dept">
-              <option value="" disabled selected>Select department</option>
-              <option>Field Operations</option>
-              <option>Cyber Division</option>
-              <option>Forensics Unit</option>
-              <option>Homicide Unit</option>
-              <option>Special Tasks</option>
-            </select>
-          </div>
+      #
+      <div class="row">
+        <div style="flex:1 1 240px;min-width:240px">
+          <label for="name">Name(s)</label>
+          <input id="name" placeholder="Sherlock Holmes, Hercule Poirot" autocomplete="name">
         </div>
-        <div class="section-actions" style="margin-top:10px">
-          <button id="start" class="primary" type="submit">Enter</button>
-          <span id="reg-status" class="hint"></span>
+        <div style="flex:1 1 240px;min-width:240px">
+          <label for="codename">Codename(s)</label>
+          <input id="codename" placeholder="Pikachu, 007">
         </div>
+        <div style="flex:1 1 240px;min-width:240px">
+          <label for="dept">Department</label>
+          <select id="dept">
+            <option value="" disabled selected>Select department</option>
+            <option>Field Operations</option>
+            <option>Cyber Division</option>
+            <option>Forensics Unit</option>
+            <option>Homicide Unit</option>
+            <option>Special Tasks</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-actions" style="margin-top:10px">
+        <button id="start" class="primary" type="submit">Enter</button>
+        <span id="reg-status" class="hint"></span>
+      </div>
       </form>
     </section>
 
@@ -564,7 +555,7 @@
       </div>
       <div class="photo-box">
         <figure class="zoom-thumb" id="river-thumb" aria-label="Tap to inspect">
-          <img src="assets/buildings.jpg" alt="Buildings panorama">
+          assets/buildings.jpg
           <figcaption class="zoom-badge"><span class="icon"></span>Tap to inspect</figcaption>
         </figure>
 
@@ -593,7 +584,7 @@
     <section class="card gate" id="sec-diffuser">
       <h2>💥 Diffuser Protocol</h2>
       <ol class="status" style="text-align:left;max-width:560px;margin:0 auto">
-        <li>Place <b>7 jewels</b> on the 7×7 board.</li>
+        <li>Place <b>5 jewels</b> on the 5×5 board.</li>
         <li>No two jewels can share a <b>row</b> or a <b>column</b>.</li>
         <li>Jewels <b>cannot touch</b> — not even diagonally.</li>
         <li>Each <b>colored region</b> must contain <b>exactly one</b> jewels.</li>
@@ -610,7 +601,7 @@
   </div>
 
   <script>
-    // ---------- Session-scoped storage ----------
+    // ---------- Session storage ----------
     const SS = { name: 'qc26s.name', code: 'qc26s.code', dept: 'qc26s.dept', gates: 'qc26s.gates' };
     const K_NOTE = 'qc26s.code.note';
     const K_POTION = 'qc26s.code.potion';
@@ -661,7 +652,7 @@
         regStatus.textContent = 'Access granted.'; regStatus.className = 'hint success';
         openGate('river');
 
-        // ⬇️ Log START (registration)
+        // fire-and-forget log
         sendToSheet({ name, codename: code, department: dept, completed: false });
       });
     }
@@ -751,7 +742,7 @@
       thumb?.addEventListener('click', openLightbox);
     })();
 
-    // ---------- Diffuser (5×5) — cross-only ----------
+    // ---------- Diffuser (5×5) ----------
     function initDiffuser() {
       const SIZE = 5;
       const REGIONS = [
@@ -776,7 +767,6 @@
       grid.innerHTML = '';
       grid.style.gridTemplateColumns = `repeat(${SIZE}, 52px)`;
 
-      // Build cells
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
           const el = document.createElement('div');
@@ -785,13 +775,10 @@
           el.dataset.r = String(r);
           el.dataset.c = String(c);
           el.dataset.region = String(REGIONS[r][c]);
-          el.dataset.mark = '';               // '' | 'cross'
+          el.dataset.mark = '';
           el.style.background = COLORS[REGIONS[r][c]];
 
-          // CLICK: toggle jewel
           el.addEventListener('click', () => toggleJewel(el));
-
-          // RIGHT-CLICK: toggle cross
           el.addEventListener('contextmenu', (e) => { e.preventDefault(); toggleCross(el); });
 
           grid.appendChild(el);
@@ -866,13 +853,12 @@
       const finishReveal = () => {
         const msg = `
           <ul class="success-points">
-            <li>✅ Yay, detective! The location revealed is 🎉</li>
+            <li>✅ Yay, detective! You cracked it 🎉 Now figure out which location this clue points to and head there next!</li>
           </ul>
           <p class="reveal-location"><b><i>A table with an enclosed view, by the chair of whispers, at the far end of the kitchen.</i></b> <span class="icon-plain">🥳✨</span></p>
         `;
         status.innerHTML = msg;
 
-        // Log END (completed)
         sendToSheet({
           name: sessionStorage.getItem(SS.name) || '',
           codename: sessionStorage.getItem(SS.code) || '',
@@ -897,12 +883,10 @@
       });
     }
 
-    // ---------- Findings (separate points + two verifications) ----------
+    // ---------- Findings (two any-order codes with persistence) ----------
     function showFindings() {
       const body = document.getElementById('findings-body');
       if (!body) return;
-
-      // Render once
       if (body.dataset.inited === '1') return;
       body.dataset.inited = '1';
 
@@ -912,12 +896,17 @@
 
       body.innerHTML = `
         <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
+
+        <p class="hint" style="margin-top:6px;">
+          Please enter the two 3-digit codes, that you have derived from the clues in the briefcase, to confirm that they are correct. You can enter them in any order.
+        </p>
+
         <ul>
           <li>
             <div class="code-line">
-              <span class="code-label">Enter 3 digit code found from the wrinkled note to confirm:</span>
+              <span class="code-label">Code Box 1</span>
               <input
-                id="codeNote"
+                id="codeBox1"
                 class="code-input"
                 type="tel"
                 inputmode="numeric"
@@ -925,16 +914,16 @@
                 autocomplete="one-time-code"
                 maxlength="3"
                 placeholder="___"
-                aria-label="Wrinkled note 3-digit code"
+                aria-label="Code box 1"
               />
-              <span id="noteMsg" class="code-note">Enter to verify.</span>
+              <span id="msgBox1" class="code-note">Enter to verify.</span>
             </div>
           </li>
           <li>
             <div class="code-line">
-              <span class="code-label">Enter 3 digit code decoded from Padlock Lock Potion to confirm:</span>
+              <span class="code-label">Code Box 2</span>
               <input
-                id="codePotion"
+                id="codeBox2"
                 class="code-input"
                 type="tel"
                 inputmode="numeric"
@@ -942,9 +931,9 @@
                 autocomplete="one-time-code"
                 maxlength="3"
                 placeholder="___"
-                aria-label="Padlock Lock Potion 3-digit code"
+                aria-label="Code box 2"
               />
-              <span id="potionMsg" class="code-note">Enter to verify.</span>
+              <span id="msgBox2" class="code-note">Enter to verify.</span>
             </div>
           </li>
           <li>
@@ -954,24 +943,85 @@
             </div>
           </li>
           <li id="unlockNote" style="display:none;">
-            <span class="code-note">We have a hunch that solving the following clue would lead us to a location, let's try it out and see where it leads us. 🗺️✨</span>
+            <span class="code-note">We have a hunch that solving the following clue - The Diffuser Protocol - would lead us to a location, let's try it out and see where it leads us. 🗺️✨</span>
           </li>
         </ul>
+
         <p class='hint'>All digital evidence has been recorded in Archives. Congratulations, Detective(s)! 🎉</p>
       `;
 
-      const IN1 = $('#codeNote');
-      const IN2 = $('#codePotion');
-      const MSG1 = $('#noteMsg');
-      const MSG2 = $('#potionMsg');
+      const BOX1 = $('#codeBox1');
+      const BOX2 = $('#codeBox2');
+      const MSG1 = $('#msgBox1');
+      const MSG2 = $('#msgBox2');
       const unlockNote = $('#unlockNote');
 
-      const OK1 = '287';
-      const OK2 = '928';
-      let okA = false, okB = false;
+      // Reuse storage keys (keep backward compatibility with earlier build)
+      const saved1 = sessionStorage.getItem('qc26s.code.note') || '';
+      const saved2 = sessionStorage.getItem('qc26s.code.potion') || '';
 
-      function tryUnlock() {
-        if (okA && okB) {
+      const OKS = new Set(['287', '928']);
+
+      function sanitize(v) { return (v || '').replace(/\D+/g, '').slice(0, 3); }
+
+      function setState(el, msgEl, ok) {
+        if (ok === null) {
+          el.classList.remove('ok', 'bad');
+          msgEl.textContent = 'Enter to verify.';
+          msgEl.className = 'code-note';
+        } else if (ok) {
+          el.classList.add('ok'); el.classList.remove('bad');
+          msgEl.textContent = 'Great detective! looks correct.';
+          msgEl.className = 'code-note ok';
+        } else {
+          el.classList.add('bad'); el.classList.remove('ok');
+          msgEl.textContent = "Doesn't look correct, detective! Let's look back at the evidence in the briefcase";
+          msgEl.className = 'code-note bad';
+        }
+      }
+
+      function validateBoth() {
+        // Get cleaned values
+        const v1 = sanitize(BOX1.value);
+        const v2 = sanitize(BOX2.value);
+
+        // Persist as we go (keep same keys you used before)
+        sessionStorage.setItem('qc26s.code.note', v1);
+        sessionStorage.setItem('qc26s.code.potion', v2);
+
+        // Base: unknown until 3 digits
+        let ok1 = (v1.length === 3) ? false : null;
+        let ok2 = (v2.length === 3) ? false : null;
+
+        // Evaluate distinct correctness:
+        // Build a multiset of targets and try to match boxes without using same target twice.
+        const targets = new Map(); // code -> available count
+        for (const c of OKS) targets.set(c, 1);
+
+        // Helper to try assign one box to a code if available
+        function tryAssign(val) {
+          if (!OKS.has(val)) return false;
+          const left = targets.get(val) || 0;
+          if (left <= 0) return false;
+          targets.set(val, left - 1);
+          return true;
+        }
+
+        // First pass: assign BOX1
+        if (v1.length === 3) ok1 = tryAssign(v1);
+        // Second pass: assign BOX2 with remaining target
+        if (v2.length === 3) ok2 = tryAssign(v2);
+
+        // If a box has 0-2 digits, leave it neutral
+        if (v1.length < 3) ok1 = null;
+        if (v2.length < 3) ok2 = null;
+
+        setState(BOX1, MSG1, ok1);
+        setState(BOX2, MSG2, ok2);
+
+        // Unlock when both are true
+        const bothOk = ok1 === true && ok2 === true;
+        if (bothOk) {
           unlockNote.style.display = 'block';
           if (!gates.diffuser) openGate('diffuser');
           setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
@@ -980,63 +1030,14 @@
         }
       }
 
-      // bind() supports per-field red error styling via makeBadRed
-      function bind(inp, msgEl, correct, okSetter, okText, badText, makeBadRed = false) {
-        const onInput = () => {
-          // digits only, cap 3
-          let v = (inp.value || '').replace(/\D+/g, '').slice(0, 3);
-          if (inp.value !== v) inp.value = v;
+      // Bind
+      BOX1.addEventListener('input', () => { BOX1.value = sanitize(BOX1.value); validateBoth(); });
+      BOX2.addEventListener('input', () => { BOX2.value = sanitize(BOX2.value); validateBoth(); });
 
-          // persist current typed value
-          if (inp === IN1) sessionStorage.setItem(K_NOTE, v);
-          if (inp === IN2) sessionStorage.setItem(K_POTION, v);
-
-          if (v.length < 3) {
-            inp.classList.remove('ok', 'bad');
-            msgEl.textContent = 'Enter to verify.';
-            msgEl.className = 'code-note';
-            okSetter(false);
-            tryUnlock();
-            return;
-          }
-          if (v === correct) {
-            inp.classList.add('ok'); inp.classList.remove('bad');
-            msgEl.textContent = okText;
-            msgEl.className = 'code-note ok';
-            okSetter(true);
-          } else {
-            inp.classList.add('bad'); inp.classList.remove('ok');
-            msgEl.textContent = badText || 'Enter to verify.';
-            msgEl.className = makeBadRed ? 'code-note bad' : 'code-note';
-            okSetter(false);
-          }
-          tryUnlock();
-        };
-        inp.addEventListener('input', onInput);
-
-        // Expose a way to force-run validation after restoring saved values
-        inp._runValidate = onInput;
-      }
-
-      bind(IN1, MSG1, OK1,
-        (v) => { okA = v; },
-        "Yes, that looks quite right, Detective",
-        "Doesn't seem to look right, let's look from a larger perspective",
-        false
-      );
-
-      bind(IN2, MSG2, OK2,
-        (v) => { okB = v; },
-        "Bingo, detective! This sounds right, recalling what the burglar's were talking about a potion.",
-        "No there might be more to the Padlock Lock Potion note. Possibly the piece of evidence connected to it might give us a clue?",
-        true
-      );
-
-      // 🔁 Restore saved values and immediately validate (so green/red states survive refresh)
-      const savedNote = sessionStorage.getItem(K_NOTE) || '';
-      const savedPotion = sessionStorage.getItem(K_POTION) || '';
-      if (savedNote) { IN1.value = savedNote; IN1._runValidate?.(); }
-      if (savedPotion) { IN2.value = savedPotion; IN2._runValidate?.(); }
+      // Restore saved values and validate immediately
+      if (saved1) BOX1.value = sanitize(saved1);
+      if (saved2) BOX2.value = sanitize(saved2);
+      validateBoth();
     }
 
     function escapeHtml(s) {
@@ -1050,32 +1051,25 @@
       sessionStorage.removeItem(SS.name);
       sessionStorage.removeItem(SS.code);
       sessionStorage.removeItem(SS.dept);
-      sessionStorage.removeItem(K_NOTE);
-      sessionStorage.removeItem(K_POTION);
+      sessionStorage.removeItem('qc26s.code.note');
+      sessionStorage.removeItem('qc26s.code.potion');
       location.reload();
     });
 
-    // Initialize sections when they first open (lazy-init, no re-render loop)
+    // Lazy init
     const initObs = new MutationObserver(() => {
-      // Init Diffuser once when opened
       if ($('#sec-diffuser')?.classList.contains('open') && !$('#diff-grid')?.hasChildNodes()) {
         initDiffuser();
       }
-      // Init Findings once when visible
       const secFind = document.getElementById('sec-findings');
       const fb = document.getElementById('findings-body');
       if (secFind && fb && secFind.style.display !== 'none' && fb.dataset.inited !== '1') {
         showFindings();
       }
     });
+    initObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
 
-    initObs.observe(document.body, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style']
-    });
-
-    // Webhook (unchanged)
+    // Webhook
     const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx2uauoTt0M4nRoXtpyOa3YINMhXAVEFHfqju4NICeu5bmLTlxtmWtzMVcKdEG8Fz7-/exec';
     async function sendToSheet(payload) {
       try {

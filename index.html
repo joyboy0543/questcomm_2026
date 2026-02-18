@@ -498,6 +498,15 @@
         margin-bottom: 4px;
       }
     }
+
+    .zoom-thumb {
+      aspect-ratio: 16 / 9;
+    }
+
+    .zoom-thumb img {
+      object-fit: cover;
+      height: 100%;
+    }
   </style>
 </head>
 
@@ -557,10 +566,9 @@
       </div>
       <div class="photo-box">
         <figure class="zoom-thumb" id="river-thumb" aria-label="Tap to inspect">
-          assets/buildings.jpg
+          <img src="assets/buildings.jpg" alt="Buildings panorama" />
           <figcaption class="zoom-badge"><span class="icon"></span>Tap to inspect</figcaption>
         </figure>
-
         <div class="row" style="width:100%;justify-content:center">
           <input id="river-answer" placeholder="Enter the code" style="min-width:260px">
           <button id="river-submit" class="primary" type="button">Check</button>

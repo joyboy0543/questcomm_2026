@@ -507,6 +507,11 @@
       object-fit: cover;
       height: 100%;
     }
+
+    #findings-body .code-note svg {
+      vertical-align: text-bottom;
+      margin-left: 6px;
+    }
   </style>
 </head>
 
@@ -892,6 +897,30 @@
       });
     }
 
+    const ICON_PAPER_COLORED = `
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
+     style="vertical-align:text-bottom;margin-left:6px">
+  <path fill="#FFFFFF" stroke="#111" stroke-width="1.6"
+        d="M7 3h7l5 5v11a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V6a3 3 0 0 1 2-3z"/>
+  <path fill="#F7F7F7" stroke="#111" stroke-width="1.6" stroke-linecap="round"
+        d="M8.8 8.2l2.4-.9l1.6 1.1l2.2-.8m-8.7 5.5l2.4-.9l1.6 1.1l2.2-.8m-8.7 5.5l2.4-.9l1.6 1.1l2.2-.8"/>
+  <path d="M14 3.5V8h4.5" fill="#EFEFEF" stroke="#111" stroke-width="1.2"/>
+</svg>`;
+
+    const ICON_POTION_COLORED = `
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
+     style="vertical-align:text-bottom;margin-left:6px">
+  <path d="M7.5 9.5c-2.6 1.8-3.2 5.3-1.4 7.9c1.8 2.6 5.3 3.2 7.9 1.4c2.6-1.8 3.2-5.3 1.4-7.9c-.3-.4-.6-.8-1-1.1l-1.3-1.6V5.5h1.2V3.5H9.7v2H11v2.7l-1.5 1.2c-.1.1-.3.2-.4.3z"
+        fill="#59C1AE" stroke="#111" stroke-width="1.5"/>
+  <path d="M8 12.2c2.1-.9 4.7-.7 6.4.5" fill="none" stroke="#9BE3D7" stroke-width="1.4" stroke-linecap="round"/>
+  <rect x="10.2" y="3.5" width="3.6" height="1.8" rx="0.5" fill="#DA9C43" stroke="#111" stroke-width="1.2"/>
+  <ellipse cx="12" cy="6" rx="3.2" ry="1.2" fill="#7ED9C8" stroke="#111" stroke-width="1.2"/>
+  <g fill="#FFE88A" stroke="#111" stroke-width="1">
+    <path d="M18 10 l1 1.6 l1.8.4 l-1.3 1.3 l.3 1.8L18 14l-1.8 1.1l.3-1.8l-1.3-1.3l1.8-.4z"/>
+    <path d="M7 7 l.7 1.2 l1.3.3 l-.9.9 l.2 1.3L7 10l-1.3.8l.2-1.3l-.9-.9l1.3-.3z"/>
+  </g>
+</svg>`;
+
     // ---------- Findings (two any-order codes with persistence) ----------
     function showFindings() {
       const body = document.getElementById('findings-body');
@@ -905,15 +934,14 @@
 
       body.innerHTML = `
         <p><b>Name:</b> ${escapeHtml(name)} &nbsp; <b>Codename:</b> ${escapeHtml(code)} &nbsp; <b>Dept:</b> ${escapeHtml(dept)}</p>
-
         <p class="hint" style="margin-top:6px;">
-          Please enter the two 3-digit codes, that you have derived from the clues in the briefcase, to confirm that they are correct. You can enter them in any order.
+          Please enter the two 3-digit codes, decoded from the clues in the briefcase, to confirm that they are correct. You can enter them in any order.
         </p>
 
         <ul>
           <li>
             <div class="code-line">
-              <span class="code-label">Code Box 1</span>
+              <span class="code-label">Enter the 3-digit code to verify</span>
               <input
                 id="codeBox1"
                 class="code-input"
@@ -922,15 +950,15 @@
                 pattern="[0-9]*"
                 autocomplete="one-time-code"
                 maxlength="3"
-                placeholder="___"
+                placeholder="_ _ _"
                 aria-label="Code box 1"
               />
-              <span id="msgBox1" class="code-note">Enter to verify.</span>
+               <span id="msgBox1" class="code-note">Let's give it a try.</span> 
             </div>
           </li>
           <li>
             <div class="code-line">
-              <span class="code-label">Code Box 2</span>
+              <span class="code-label">Enter the 3-digit code to verify</span>
               <input
                 id="codeBox2"
                 class="code-input"
@@ -939,16 +967,46 @@
                 pattern="[0-9]*"
                 autocomplete="one-time-code"
                 maxlength="3"
-                placeholder="___"
+                placeholder="_ _ _"
                 aria-label="Code box 2"
               />
-              <span id="msgBox2" class="code-note">Enter to verify.</span>
+              <span id="msgBox2" class="code-note"Let's give it a try.</span>
             </div>
           </li>
           <li>
             <div class="code-line">
               <span class="code-label">River Code</span>
-              <span class="code-note"><b>243</b> 💧</span>
+              <span class="code-note"><b>243</b>
+                <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"
+                    style="vertical-align:text-bottom;margin-left:6px">
+                    <rect x="2.5" y="6.5" width="5.5" height="7.5" rx="0.8" fill="#E27A3F" stroke="#111" stroke-width="1.5" />
+                    <rect x="9.5" y="4.5" width="6.0" height="9.5" rx="0.8" fill="#D8C3A5" stroke="#111" stroke-width="1.5" />
+                    <rect x="17.5" y="6.0" width="4.5" height="8.0" rx="0.8" fill="#E6D5BE" stroke="#111" stroke-width="1.5" />
+                    <path d="M18 6 L19.6 4.9 L21 6" fill="#F4EAD5" stroke="#111" stroke-width="1.2" />
+                    <g fill="#FFD54A" stroke="#111" stroke-width="0.9">
+                      <rect x="3.6" y="7.6" width="1.6" height="1.6" rx="0.2" />
+                      <rect x="5.8" y="7.6" width="1.6" height="1.6" rx="0.2" />
+                      <rect x="3.6" y="10.1" width="1.6" height="1.6" rx="0.2" />
+                      <rect x="5.8" y="10.1" width="1.6" height="1.6" rx="0.2" />
+                      <rect x="3.6" y="12.6" width="1.6" height="1.6" rx="0.2" />
+                      <rect x="5.8" y="12.6" width="1.6" height="1.6" rx="0.2" />
+                      <rect x="10.5" y="5.8" width="1.7" height="1.7" rx="0.2" />
+                      <rect x="12.8" y="5.8" width="1.7" height="1.7" rx="0.2" />
+                      <rect x="10.5" y="8.4" width="1.7" height="1.7" rx="0.2" />
+                      <rect x="12.8" y="8.4" width="1.7" height="1.7" rx="0.2" />
+                      <rect x="10.5" y="11.0" width="1.7" height="1.7" rx="0.2" />
+                      <rect x="12.8" y="11.0" width="1.7" height="1.7" rx="0.2" />
+                      <rect x="18.3" y="7.3" width="1.5" height="1.5" rx="0.2" />
+                      <rect x="18.3" y="9.6" width="1.5" height="1.5" rx="0.2" />
+                      <rect x="18.3" y="11.9" width="1.5" height="1.5" rx="0.2" />
+                    </g>
+                    <rect x="2" y="14.5" width="20" height="3.0" fill="#3B7EA8" stroke="#111" stroke-width="1.2" rx="0.8" />
+                    <path
+                      d="M2 15.5c1 0 1.6-.6 2.5-.6s1.6.6 2.5.6 1.6-.6 2.5-.6 1.6.6 2.5.6 1.6-.6 2.5-.6 1.6.6 2.5.6 1.6-.6 2.5-.6V18H2z"
+                      fill="#6EC6FF" stroke="#111" stroke-width="1.2" />
+                </svg>
+              </span>
+
             </div>
           </li>
           <li id="unlockNote" style="display:none;">
@@ -973,14 +1031,19 @@
 
       function sanitize(v) { return (v || '').replace(/\D+/g, '').slice(0, 3); }
 
-      function setState(el, msgEl, ok) {
+      function setState(el, msgEl, ok, matchedCode /* '287' | '928' | null */) {
         if (ok === null) {
           el.classList.remove('ok', 'bad');
           msgEl.textContent = 'Enter to verify.';
           msgEl.className = 'code-note';
-        } else if (ok) {
+          return;
+        }
+        if (ok) {
           el.classList.add('ok'); el.classList.remove('bad');
-          msgEl.textContent = 'Great detective! looks correct.';
+          let icon = '';
+          if (matchedCode === '287') icon = ICON_PAPER_COLORED;  // crinkled paper
+          if (matchedCode === '928') icon = ICON_POTION_COLORED; // potion
+          msgEl.innerHTML = 'Great detective! looks correct.' + icon;
           msgEl.className = 'code-note ok';
         } else {
           el.classList.add('bad'); el.classList.remove('ok');
@@ -999,33 +1062,36 @@
 
         let ok1 = (v1.length === 3) ? false : null;
         let ok2 = (v2.length === 3) ? false : null;
+        let match1 = null; // '287' | '928' | null
+        let match2 = null;
 
         // Assign codes without using the same target twice
-        const targets = new Map();
-        for (const c of OKS) targets.set(c, 1);
-
-        function tryAssign(val) {
-          if (!OKS.has(val)) return false;
+        const targets = new Map([['287', 1], ['928', 1]]);
+        const tryAssign = (val) => {
+          if (!targets.has(val)) return false;
           const left = targets.get(val) || 0;
           if (left <= 0) return false;
           targets.set(val, left - 1);
           return true;
-        }
+        };
 
-        if (v1.length === 3) ok1 = tryAssign(v1);
-        if (v2.length === 3) ok2 = tryAssign(v2);
+        if (v1.length === 3 && tryAssign(v1)) { ok1 = true; match1 = v1; }
+        else if (v1.length === 3) ok1 = false;
 
-        if (v1.length < 3) ok1 = null;
-        if (v2.length < 3) ok2 = null;
+        if (v2.length === 3 && tryAssign(v2)) { ok2 = true; match2 = v2; }
+        else if (v2.length === 3) ok2 = false;
 
-        setState(BOX1, MSG1, ok1);
-        setState(BOX2, MSG2, ok2);
+        if (v1.length < 3) { ok1 = null; match1 = null; }
+        if (v2.length < 3) { ok2 = null; match2 = null; }
+
+        setState(BOX1, MSG1, ok1, match1);
+        setState(BOX2, MSG2, ok2, match2);
 
         const bothOk = ok1 === true && ok2 === true;
         if (bothOk) {
           unlockNote.style.display = 'block';
           if (!gates.diffuser) openGate('diffuser');
-          setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+          // setTimeout(() => $('#sec-diffuser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
         } else {
           unlockNote.style.display = 'none';
         }

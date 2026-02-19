@@ -512,6 +512,60 @@
       vertical-align: text-bottom;
       margin-left: 6px;
     }
+
+    /* Badge next to H2 titles (e.g., 'QCPD Database') */
+    h2 {
+      display: inline-flex;
+      /* allow inline content with gap */
+      align-items: center;
+      gap: 8px;
+      /* space between title and badge */
+    }
+
+    /* Compact pill badge */
+    .qcpd_badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      /* compact pill padding */
+      border-radius: 999px;
+      border: 1px solid #2b4c66;
+      /* subtle border */
+      background: #0f1a28;
+      /* darker panel than card */
+      color: #9ec4df;
+      /* softer ink than heading */
+      font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      /* not Agency FB */
+      font-weight: 600;
+      line-height: 1.2;
+      font-size: 0.78em;
+      /* ~78% of the H2 size so it stays small */
+      white-space: nowrap;
+      transform: translateY(1px);
+      /* tiny optical align with H2 baseline */
+    }
+
+    /* Optional: tiny badge icon */
+    .qcpd_badge::before {
+      content: "🗄️";
+      /* change if you want another symbol */
+      font-size: 1em;
+      /* follow the badge font-size */
+    }
+
+    /* Tight phones: reduce gap/padding a bit */
+    @media (max-width: 480px) {
+      h2 {
+        gap: 6px;
+      }
+
+      .qcpd_badge {
+        padding: 2px 7px;
+        font-size: 0.76em;
+      }
+    }
   </style>
 </head>
 

@@ -566,13 +566,35 @@
         font-size: 0.76em;
       }
     }
+
+    .title-nowarp {
+      white-space: nowrap;
+    }
+
+    h1 span.title-nowarp {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4ch;
+    }
+
+    h1 span.title-nowarp .emoji {
+      font-size: 0.8em;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <!-- <h1> 🔷 The Sapphire Heist 🔷</h1> -->
-    <h1>🔷&nbsp;The Sapphire Heist&nbsp;🔷</h1>
+    <!-- <h1>🔷&nbsp;The Sapphire Heist&nbsp;🔷</h1> -->
+    <!-- <h1><span class="title-nowarp">🔷 The Sapphire Heist 🔷</span></h1> -->
+    <h1>
+      <span class="title-nowarp">
+        <span class="emoji">🔷</span>
+        The Sapphire Heist
+        <span class="emoji">🔷</span>
+      </span>
+    </h1>
     <p class="hint">Welcome back, Detective(s)! In QCPD database we collect and preserve all evidence related to the
       cases.</p>
 
